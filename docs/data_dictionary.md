@@ -95,6 +95,37 @@ only) to support survival analysis and EDA.
 
 ---
 
+## mart_customer_churn_features (dbt mart — Phase 4)
+
+Pre-aggregated feature mart built by dbt. One row per **active** customer (WHERE `is_active = TRUE`). Queried at inference time by `ChurnFeatureExtractor` (~1ms per request). All 15 model features sourced here.
+
+| Column | Type | Description |
+|---|---|---|
+| `customer_id` | VARCHAR | FK → customers |
+| `mrr` | DECIMAL | Monthly Recurring Revenue (USD) |
+| `tenure_days` | INTEGER | Days from `signup_date` to reference date |
+| `plan_tier` | VARCHAR | starter \| growth \| enterprise |
+| `industry` | VARCHAR | fintech \| healthtech \| legaltech \| proptech \| saas |
+| `total_events` | INTEGER | Lifetime usage event count |
+| `events_last_30d` | INTEGER | Events in 30-day window before reference date |
+| `events_last_7d` | INTEGER | Events in 7-day window before reference date |
+| `avg_adoption_score` | FLOAT | Mean `feature_adoption_score` across all events |
+| `days_since_last_event` | INTEGER | Days since most recent usage event |
+| `retention_signal_count` | INTEGER | Count of high-value events: `evidence_upload`, `monitoring_run`, `report_view` |
+| `integration_connects_first_30d` | INTEGER | `integration_connect` events in first 30 days (activation gate) |
+| `tickets_last_30d` | INTEGER | Support tickets created in 30-day window |
+| `high_priority_tickets` | INTEGER | Count of `high` or `critical` priority tickets |
+| `avg_resolution_hours` | FLOAT | Mean hours to ticket resolution |
+| `is_early_stage` | BOOLEAN | TRUE if `tenure_days ≤ 90` |
+
+**Derived at runtime (not in mart):**
+
+| Computed value | Where | Description |
+|---|---|---|
+| `usage_decay_score` | `DuckDBRiskSignalsRepository` | `max(0, 1 - events_last_30d / events_prev_30d)` — 0 = no decay, 1 = complete drop-off |
+
+---
+
 ## risk_signals
 
 Computed/external risk flags per customer. Updated periodically.

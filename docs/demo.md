@@ -58,16 +58,20 @@ Key dashboards to show:
 
 ---
 
-### Step 3 – EDA Notebooks (JupyterLab)
+### Step 3 – EDA & Model Notebooks (JupyterLab)
 
 Open **http://localhost:8888**
 
 Key notebooks to show:
 
-- `phase3_cohort_analysis.ipynb`: Kaplan-Meier survival curves by plan tier
-- `phase3_ab_test_simulation.ipynb`: Bayesian A/B test with power analysis
+- `phase3_01_eda_cohort_analysis.ipynb`: Monthly retention cohorts, churn rate by tier × industry, correlation heatmap
+- `phase3_02_survival_analysis.ipynb`: Kaplan-Meier survival curves, Cox PH model, integration activation gate
+- `phase3_03_ab_test_simulation.ipynb`: Bayesian A/B test with power analysis — why frequentist tests fail in B2B SaaS
+- `phase4_01_model_training.ipynb`: XGBoost training, AUC/Brier evaluation, SHAP global importance + individual waterfall
 
-**Talking point:** *"We ran a Bayesian test instead of a classical one because our customer segments are small — this is typical in B2B SaaS."*
+**Talking point (Phase 3):** *"We ran a Bayesian test instead of a classical one because our customer segments are small — this is typical in B2B SaaS."*
+
+**Talking point (Phase 4):** *"The SHAP waterfall shows exactly which features pushed this customer's churn probability from the baseline to 0.78. CS teams see this on every API call."*
 
 ---
 
@@ -100,7 +104,7 @@ Show the GitHub Actions tab: lint → TDD tests → dbt build → Docker push.
 |---|---|
 | Customers in dataset | 5,000 |
 | Usage events | ~10M |
-| Churn model AUC (target) | >0.85 |
+| Churn model AUC (target) | >0.80 |
 | Test coverage | >80% |
 | Time from `git clone` to live demo | <5 minutes |
 | Revenue impact of 1% churn reduction | $2M+ on $200M ARR |

@@ -15,6 +15,7 @@ Reusable SOPs for consistent, production-grade delivery. Each skill enforces a s
 | **exec-story** | `/exec-story` | Turn findings into C-level slides and ROI narratives |
 | **self-critique** | `/self-critique` | Structured quality review before handing off any output |
 | **data-contract** | `/data-contract` | Define schema tests, Pydantic validation, freshness SLAs |
+| **commit-and-close** | `/commit-and-close` | Verify tests, commit with conventional message, push, close GitHub issues |
 
 ## How to Use
 
@@ -63,3 +64,4 @@ To create a new skill:
 | Version | Change |
 |---|---|
 | 1.0.0 | Initial 9 skills: tdd-cycle, ddd-entity, phase-advance, mkdocs-autoupdate, docker-harden, dvc-version, exec-story, self-critique, data-contract |
+| 1.1.0 | Added commit-and-close skill — git commit + push + GitHub issue closing SOP |

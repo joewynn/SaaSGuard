@@ -211,8 +211,9 @@ Reusable delivery SOPs live in `skills/`. Invoke with `/skill-name` or trigger a
 | `exec-story` | `/exec-story` | Turning findings into C-level narratives + ROI slides |
 | `self-critique` | `/self-critique` | Quality review before handing off any output |
 | `data-contract` | `/data-contract` | Defining schema tests, Pydantic validation, freshness SLAs |
+| `commit-and-close` | `/commit-and-close` | Verify tests, commit with conventional message, push, close GitHub issues |
 
 **Skill chaining:** `/ddd-entity` → auto-chains to `/tdd-cycle` → auto-chains to `/mkdocs-autoupdate`.
-**Phase chaining:** `/phase-advance` → runs `/self-critique` → then `/mkdocs-autoupdate`.
+**Phase chaining:** `/phase-advance` → runs `/self-critique` → then `/mkdocs-autoupdate` → then `/commit-and-close`.
 
 Full skill documentation: `skills/README.md`
