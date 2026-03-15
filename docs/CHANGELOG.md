@@ -11,6 +11,58 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.5.0] – 2026-03-14 – Phase 5: AI/LLM Layer
+
+### Added
+
+- `src/domain/ai_summary/` — new bounded context: `ExecutiveSummary`, `SummaryContext`,
+  `GuardrailResult` entities; `SummaryPort` ABC; `GuardrailsService` with three-layer
+  hallucination defence (feature whitelist, probability accuracy ±2pp, watermark)
+- `src/infrastructure/llm/groq_summary_service.py` — `GroqSummaryService` implementing
+  `SummaryPort` via Groq Cloud API (`llama-3.1-8b-instant`, temperature=0.2)
+- `src/infrastructure/llm/ollama_summary_service.py` — `OllamaSummaryService` local fallback
+  via Ollama Docker sidecar (`llama3.1:8b`)
+- `src/infrastructure/llm/prompt_builder.py` — `PromptBuilder`: assembles structured
+  `[CONTEXT]` + `[INSTRUCTION]` + `[CONSTRAINT]` prompts from `SummaryContext` data
+- `src/application/use_cases/generate_executive_summary.py` — `GenerateExecutiveSummaryUseCase`:
+  full pipeline (fetch customer → predict churn → build context → LLM call → guardrails)
+- `src/application/use_cases/ask_customer_question.py` — `AskCustomerQuestionUseCase`:
+  RAG chatbot using context-stuffing strategy; `scope_exceeded` flag for out-of-context questions
+- `app/routers/summaries.py` — `POST /summaries/customer` + `POST /summaries/customer/ask`
+- `app/schemas/summary.py` — `GenerateSummaryRequest/Response`, `AskCustomerRequest/Response`
+- `app/dependencies.py` — `get_summary_use_case()`, `get_ask_use_case()` with `LLM_PROVIDER`
+  env-var switching (groq | ollama)
+- `docker-compose.yml` — `ollama` service under dev profile; `ollama_data` named volume
+- `.env.example` — `GROQ_API_KEY`, `LLM_PROVIDER`, `LLM_MODEL`, `OLLAMA_HOST`
+- `pyproject.toml` — `groq>=0.9.0`, `ollama>=0.3.0` dependencies
+- `docs/ethical-guardrails.md` — three-layer guardrail documentation, bias considerations,
+  human-in-loop annotation plan, escalation path by confidence score
+- `docs/llm-time-saved.md` — CS productivity ROI: 15 min → 30 sec, $129K annual savings,
+  compounding churn-reduction ROI, Phase 7 feedback loop design
+- `tests/unit/domain/test_guardrails_service.py` — 8 tests: clean pass, watermark, hallucinated
+  feature detection, probability mismatch, confidence score degradation
+- `tests/unit/application/test_generate_executive_summary.py` — 7 tests: entity returned,
+  watermark present, unknown customer 404, guardrail failure graceful, clean pass
+- `tests/e2e/test_summary_endpoints.py` — 6 endpoint tests with mocked use cases
+- `tests/integration/test_groq_summary_service.py` — 3 integration tests (skip if no GROQ_API_KEY)
+
+### Changed
+
+- `app/main.py` — includes `summaries.router` at `/summaries`
+- `app/dependencies.py` — extended with LLM dependency wiring
+- `src/domain/ai_summary/entities.py` — `ExecutiveSummary` stores `prediction` for router access
+
+### Metrics Targets
+
+| Metric | Target |
+|---|---|
+| Guardrail pass rate | > 90% |
+| Probability accuracy | ±2pp |
+| Latency (Groq) | < 3s p95 |
+| Latency (Ollama) | < 15s p95 |
+
+---
+
 ## [0.4.0] – 2026-03-14 – Phase 4: Predictive Models
 
 ### Added

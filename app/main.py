@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from app.routers import customers, predictions
+from app.routers import customers, predictions, summaries
 
 logger = structlog.get_logger(__name__)
 
@@ -34,6 +34,7 @@ Instrumentator().instrument(app).expose(app)
 
 app.include_router(predictions.router, prefix="/predictions", tags=["Predictions"])
 app.include_router(customers.router, prefix="/customers", tags=["Customers"])
+app.include_router(summaries.router, prefix="/summaries", tags=["AI Summaries"])
 
 
 @app.get("/health", tags=["Health"])

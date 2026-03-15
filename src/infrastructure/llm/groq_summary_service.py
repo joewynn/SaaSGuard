@@ -1,0 +1,105 @@
+"""GroqSummaryService – primary LLM backend via Groq Cloud API.
+
+Uses llama-3.1-8b-instant by default: fast inference, free tier, 128k context.
+Temperature is kept low (0.2) for factual grounding in production.
+"""
+
+from __future__ import annotations
+
+import groq as groq_sdk
+
+from src.domain.ai_summary.entities import SummaryContext
+from src.domain.ai_summary.summary_port import SummaryPort
+from src.infrastructure.llm.prompt_builder import PromptBuilder
+
+_SYSTEM_PROMPT = (
+    "You are a B2B SaaS customer success analyst. "
+    "Be concise, factual, and actionable. "
+    "Only reference information explicitly provided to you. "
+    "Never invent statistics, feature names, or customer details."
+)
+
+
+class GroqSummaryService(SummaryPort):
+    """Implements SummaryPort using Groq Cloud inference API.
+
+    Business Context: Groq provides sub-3-second inference for Llama-3 models
+    on free tier, making it cost-effective for per-request executive summaries.
+    No infrastructure to manage — just an API key.
+
+    Args:
+        api_key: Groq API key (from GROQ_API_KEY environment variable).
+        model: Groq model ID. Defaults to 'llama-3.1-8b-instant' for speed;
+               use 'llama-3.1-70b-versatile' for higher quality at higher cost.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "llama-3.1-8b-instant",
+    ) -> None:
+        self._client = groq_sdk.Groq(api_key=api_key)
+        self._model = model
+        self._prompt_builder = PromptBuilder()
+
+    def generate(self, context: SummaryContext, audience: str) -> str:
+        """Call Groq API and return the raw LLM-generated narrative.
+
+        Business Context: Low temperature (0.2) keeps the output factual and
+        consistent. max_tokens=400 enforces the 3-5 sentence length constraint
+        for CSM briefings. Guardrails are applied by the caller.
+
+        Args:
+            context: Structured facts from DuckDB that ground the prompt.
+            audience: 'csm' or 'executive' — controls tone and focus.
+
+        Returns:
+            Raw LLM text string (no watermark; guardrails applied by caller).
+        """
+        prompt = self._prompt_builder.build_summary_prompt(context, audience)
+        response = self._client.chat.completions.create(
+            model=self._model,
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=400,
+            temperature=0.2,
+        )
+        return response.choices[0].message.content or ""
+
+    def answer_question(self, context: SummaryContext, question: str) -> str:
+        """Answer a free-text question about a customer, constrained to DuckDB context.
+
+        Business Context: Used by the RAG chatbot endpoint. The prompt includes
+        a strict [CONSTRAINT] block that prevents the LLM from fabricating answers
+        to questions outside the available customer data.
+
+        Args:
+            context: All structured facts for the customer from DuckDB.
+            question: CSM's free-text question (5–500 chars).
+
+        Returns:
+            LLM answer string, or the scope-exceeded sentinel phrase.
+        """
+        prompt = self._prompt_builder.build_question_prompt(context, question)
+        response = self._client.chat.completions.create(
+            model=self._model,
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=300,
+            temperature=0.1,
+        )
+        return response.choices[0].message.content or ""
+
+    @property
+    def model_name(self) -> str:
+        """LLM model identifier reported in ExecutiveSummary provenance."""
+        return self._model
+
+    @property
+    def provider_name(self) -> str:
+        """Inference provider name reported in ExecutiveSummary provenance."""
+        return "groq"
