@@ -23,10 +23,14 @@ stages:
       - ../data/saasguard.duckdb
 
   train_churn_model:
-    cmd: python -m src.domain.prediction.churn_model_service train
+    cmd: python -m src.infrastructure.ml.train_churn_model
     deps:
-      - src/domain/prediction/churn_model_service.py
+      - src/infrastructure/ml/train_churn_model.py
       - ../data/saasguard.duckdb
+    params:
+      - params.yaml:
+          - random_seed
+          - train_cutoff
     outs:
       - ../models/churn_model.pkl
       - ../models/churn_model_metadata.json

@@ -7,24 +7,34 @@ The model artifact is injected as a dependency (no direct file I/O here).
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Protocol, Sequence
+from typing import Protocol
 
 from src.domain.customer.entities import Customer
 from src.domain.prediction.entities import PredictionResult, ShapFeature
 from src.domain.prediction.value_objects import ChurnProbability, RiskScore
-from src.domain.usage.entities import UsageEvent
 
 
 class ChurnFeatureVector(Protocol):
-    """Protocol for feature extraction – implemented in infrastructure layer."""
+    """Protocol for feature extraction – implemented in infrastructure layer.
 
-    def extract(
-        self, customer: Customer, events: Sequence[UsageEvent]
-    ) -> dict[str, float]:
-        """Extract model features from domain entities.
+    Phase 4 update: the extractor queries the dbt mart directly (single DuckDB
+    read), so events no longer need to be passed from the use case layer.
+    This keeps the protocol minimal and moves feature logic into dbt.
+    """
 
-        Returns a flat dict of feature_name → numeric value.
-        Infrastructure layer handles the actual computation.
+    def extract(self, customer: Customer) -> dict[str, float]:
+        """Extract the model's feature vector for a customer.
+
+        Args:
+            customer: Active Customer entity (used to look up mart row by ID).
+
+        Returns:
+            Flat dict of feature_name → numeric value (15 features total).
+            All feature engineering lives in mart_customer_churn_features.
+
+        Raises:
+            ValueError: If the customer is not found in the mart (e.g. churned
+                        customers are excluded from the mart).
         """
         ...
 
@@ -58,7 +68,7 @@ class ChurnModelService:
 
     Args:
         model: Concrete ML model (injected from infrastructure layer).
-        feature_extractor: Extracts features from domain entities.
+        feature_extractor: Queries the dbt mart for the customer's feature vector.
     """
 
     def __init__(self, model: ChurnModelPort, feature_extractor: ChurnFeatureVector) -> None:
@@ -68,21 +78,23 @@ class ChurnModelService:
     def predict(
         self,
         customer: Customer,
-        recent_events: Sequence[UsageEvent],
         risk_score: RiskScore,
     ) -> PredictionResult:
         """Generate a full PredictionResult for a customer.
 
+        Business Context: Feature extraction, model inference, and SHAP
+        computation are all delegated to injected dependencies. This service
+        only owns the assembly logic, keeping it testable in isolation.
+
         Args:
-            customer: Customer entity with current state.
-            recent_events: Usage events for feature engineering.
-            risk_score: Pre-computed risk score (from RiskModelService).
+            customer: Active Customer entity.
+            risk_score: Pre-computed composite risk score (from RiskModelService).
 
         Returns:
-            PredictionResult with churn probability, SHAP explanations,
-            and recommended CS action.
+            PredictionResult with calibrated churn probability, SHAP explanations,
+            and a deterministic recommended CS action.
         """
-        features = self._feature_extractor.extract(customer, recent_events)
+        features = self._feature_extractor.extract(customer)
         churn_prob = self._model.predict_proba(features)
         shap_features = self._model.explain(features)
 

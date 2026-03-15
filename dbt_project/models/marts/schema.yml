@@ -47,6 +47,12 @@ models:
       - name: retention_signal_count
         description: "Count of high-value retention events (integration_connect, api_call, monitoring_run)."
         tests: [not_null]
+      - name: integration_connects_first_30d
+        description: >
+          Count of integration_connect events in the customer's first 30 days of tenure.
+          Phase 3 EDA finding: ≥3 integrations → 2.7× lower churn rate (log-rank p < 0.001).
+          Phase 4 addition to feature set.
+        tests: [not_null]
       - name: tickets_last_30d
         description: "Support tickets opened in the last 30 days."
         tests: [not_null]

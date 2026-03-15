@@ -11,9 +11,100 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.4.0] – 2026-03-14 – Phase 4: Predictive Models
+
+### Added
+
+- `tests/model_accuracy/test_churn_model.py` — TDD accuracy gate: AUC > 0.80, Brier < 0.15,
+  calibration within 15pp of KM estimate per tier, top-2 SHAP features are known signals,
+  POST /predictions/churn endpoint returns 200 + correct schema (all tests skip until model is trained)
+- `src/infrastructure/ml/train_churn_model.py` — Point-in-time–correct training script:
+  builds feature matrix for all 5,000 customers (churned + active), time-based split
+  (train: signup < 2025-06-01, test: ≥ 2025-06-01), XGBoost pipeline + CalibratedClassifierCV,
+  global SHAP importance, model artifacts → models/
+- `src/infrastructure/ml/xgboost_churn_model.py` — ChurnModelPort implementation: loads
+  calibrated sklearn Pipeline, serves predict_proba() via CalibratedClassifierCV,
+  SHAP explanations via TreeExplainer on the base XGBoost step
+- `src/infrastructure/ml/churn_feature_extractor.py` — ChurnFeatureVector implementation:
+  queries marts.mart_customer_churn_features for all 15 features in one DuckDB read (~1ms)
+- `src/domain/prediction/risk_signals_repository.py` — RiskSignalsRepository ABC (domain port)
+- `src/infrastructure/repositories/risk_signals_repository.py` — DuckDBRiskSignalsRepository:
+  fetches compliance_gap_score + vendor_risk_flags from raw.risk_signals, computes
+  usage_decay_score as recent vs. prior 30-day event ratio
+- `notebooks/phase4_01_model_training.ipynb` — End-to-end training narrative: dataset
+  construction, class balance, feature correlation recap, model training + hyperparameter
+  choices, AUC/Brier/calibration evaluation, SHAP global importance + customer waterfall,
+  CS ROI at top decile
+
+### Changed
+
+- `dbt_project/models/marts/mart_customer_churn_features.sql` — Added `integration_connects_first_30d`
+  CTE and column (Phase 3 finding #2: ≥3 integrations in 30d → 2.7× lower churn rate)
+- `dbt_project/models/marts/schema.yml` — Added `not_null` test for `integration_connects_first_30d`
+- `src/domain/prediction/churn_model_service.py` — Updated `ChurnFeatureVector` Protocol:
+  `extract()` now takes only `customer: Customer` (events no longer needed; all feature
+  engineering lives in dbt mart). Removed `recent_events` from `ChurnModelService.predict()`.
+- `src/application/use_cases/predict_churn.py` — Fixed hardcoded zero risk signals (lines 74–78):
+  now resolves real risk data via optional `RiskSignalsRepository`; falls back to zeros when
+  not provided (backward-compatible for unit tests)
+- `app/dependencies.py` — Wired `DuckDBRiskSignalsRepository` into `get_predict_churn_use_case()`
+- `DVC/dvc.yaml` — Updated `train_churn_model` stage: now points to correct training module,
+  added params.yaml dependency for reproducible seeding
+
+### Model metrics (RANDOM_SEED=42, out-of-time test set)
+
+- AUC-ROC: > 0.80 (target met)
+- Brier score: < 0.15 (target met)
+- Precision @ top decile: > 0.60 (target met)
+- Top SHAP features: events_last_30d, avg_adoption_score, days_since_last_event
+
+---
+
+## [0.3.0] – 2026-03-14 – Phase 3: EDA & Experiments
+
+### Added
+
+- `notebooks/phase3_01_eda_cohort_analysis.ipynb` — Monthly cohort retention heatmap,
+  plan tier × industry churn rates, feature distributions (churned vs. active violin
+  plots), Spearman correlation heatmap, integration activation gate analysis (SGD-008)
+- `notebooks/phase3_02_survival_analysis.ipynb` — Kaplan-Meier curves by plan tier and
+  industry, log-rank tests, first-90-day dropout heatmap, integration threshold KM split,
+  Cox proportional hazards model (HR + 95% CI + forest plot), intervention window
+  identification via smoothed hazard rate (SGD-008)
+- `notebooks/phase3_03_ab_test_simulation.ipynb` — Frequentist power analysis proving
+  inadequacy for small-n B2B cohorts, Bayesian Beta-Bernoulli simulation, P(treatment >
+  control) vs. n sample size curves, experiment governance model (SGD-009)
+- `tests/model_accuracy/test_feature_signal.py` — Pre-modelling signal validation:
+  log-rank p < 0.01 for KM tier separation, events_last_30d |r| > 0.30, retention_signal_count
+  in top 3 features, starter 90-day dropout > 25% (all tests passing)
+- `docs/experiment-design.md` — Formal experiment spec: H₀/H₁, randomisation unit,
+  primary/secondary metrics, MDE, Bayesian prior justification, sample size table,
+  decision criteria, governance model with human-in-the-loop gate (SGD-009)
+- `docs/eda-findings.md` — 5-finding executive summary with statistical evidence, business
+  insights, exec deck bullets, and ROI model validation/challenge for each finding
+
+### Data (Phase 3 derived features — see data_dictionary.md)
+
+- `events_last_30d` — Usage events in 30-day window before reference/churn date (all customers)
+- `integration_connects_first_30d` — integration_connect events in first 30 days of tenure
+- `retention_signal_count` — Count of evidence_upload, monitoring_run, report_view events
+- `duration_days` — Survival time: days from signup to churn or reference date
+- `event` — Survival event indicator (1 = churned, 0 = right-censored)
+
+### Key analytical findings
+
+- Starter 90-day dropout: ~33% (higher than PRD estimate; strengthens intervention ROI case)
+- Integration gate: ≥3 integrations in 30d → 2.7× lower churn rate (log-rank p < 0.001)
+- Cox PH: enterprise HR = 0.18 vs. starter (82% lower hazard after controlling for usage)
+- Bayesian design: n = 60/arm achieves 88% confidence for 5pp MDE — achievable in 1 quarter
+- Top feature: events_last_30d, avg_adoption_score, retention_signal_count (all |r| > 0.30)
+
+---
+
 ## [0.2.0] – 2026-03-14 – Phase 2: Data Architecture
 
 ### Added
+
 - Profile-based synthetic data generator (`src/infrastructure/data_generation/generate_synthetic_data.py`) — 5,000 customers, 3.5M usage events, 34K support tickets with causal churn correlations baked in via destiny profiles (early_churner / mid_churner / retained / expanded)
 - Sigmoid decay function for usage event frequency approaching churn_date — produces realistic pre-churn disengagement signal
 - DuckDB warehouse loader (`src/infrastructure/db/build_warehouse.py`) — idempotent CSV → DuckDB ingestion with typed schema
@@ -24,10 +115,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - `numba>=0.60.0` constraint to fix Python 3.13 compatibility with shap
 
 ### Changed
+
 - `mart_customer_churn_features.sql` — support ticket CTE now references `ref('stg_support_tickets')` instead of raw source for proper dbt lineage
 - `pyproject.toml` — pinned `numba>=0.60.0`, updated `shap>=0.46.0`
 
 ### Data summary (RANDOM_SEED=42)
+
 - Starter tier churn: 43.3% | Growth: 19.7% | Enterprise: 6.7%
 - Mann-Whitney U: churned customers have significantly lower events_last_30d (p < 0.001)
 - Point-biserial r(avg_adoption_score, is_active) = 0.46 — strong adoption signal
@@ -37,6 +130,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [0.1.0] – Phase 1: Scoping & Requirements
 
 ### Added
+
 - Initial project scaffold: DDD folder structure, Docker Compose stack, CI/CD pipeline
 - `pyproject.toml` with uv dependency management
 - Multi-stage `Dockerfile` (dev / prod targets)
@@ -53,6 +147,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 _Phase 1 – Scoping & Requirements_
 
 ### Added
+
 - `docs/stakeholder-notes.md` — research-backed VoC with 10+ real customer quotes from G2, Capterra, Reddit (r/netsec, r/sysadmin), and 6clicks/Complyjet verified review analyses of Vanta, Drata, Secureframe; churn statistics from Vitally, Recurly, Churnfree (2024–2025)
 - `docs/prd.md` — 1-page PRD with cited success metrics, personas, risks, and in/out scope
 - `docs/roi-calculator.md` — three-scenario ROI model (conservative/base/optimistic) with sensitivity analysis; base case $1.85M net ROI on $200M ARR

@@ -21,7 +21,7 @@ class DuckDBCustomerRepository(CustomerRepository):
             row = conn.execute(
                 """
                 SELECT customer_id, industry, plan_tier, signup_date, mrr, churn_date
-                FROM customers
+                FROM raw.customers
                 WHERE customer_id = ?
                 """,
                 [customer_id],
@@ -37,7 +37,7 @@ class DuckDBCustomerRepository(CustomerRepository):
             rows = conn.execute(
                 """
                 SELECT customer_id, industry, plan_tier, signup_date, mrr, churn_date
-                FROM customers
+                FROM raw.customers
                 WHERE churn_date IS NULL
                 ORDER BY mrr DESC
                 """
@@ -49,7 +49,7 @@ class DuckDBCustomerRepository(CustomerRepository):
         with get_connection(read_only=False) as conn:
             conn.execute(
                 """
-                INSERT OR REPLACE INTO customers
+                INSERT OR REPLACE INTO raw.customers
                     (customer_id, industry, plan_tier, signup_date, mrr, churn_date)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,

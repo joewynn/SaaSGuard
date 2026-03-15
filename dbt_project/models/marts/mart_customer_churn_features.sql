@@ -1,5 +1,6 @@
 -- Churn feature mart – the ML feature store served to the prediction domain.
--- One row per active customer with all features required by the churn model.
+-- One row per active customer with all 15 features required by the churn model.
+-- Phase 4 addition: integration_connects_first_30d (finding #2 from Phase 3 EDA).
 
 WITH customer_base AS (
     SELECT * FROM {{ ref('stg_customers') }}
@@ -18,6 +19,20 @@ event_summary AS (
         SUM(is_retention_signal::INT)                               AS retention_signal_count
     FROM {{ ref('stg_usage_events') }}
     GROUP BY customer_id
+),
+
+-- Phase 4: integration activation gate — ≥3 connects in first 30 days predicts 2.7× lower churn
+integration_summary AS (
+    SELECT
+        e.customer_id,
+        COUNT(*) FILTER (
+            WHERE e.event_type = 'integration_connect'
+              AND e.event_timestamp::DATE
+                  <= c.signup_date::DATE + INTERVAL '30 days'
+        )                                                           AS integration_connects_first_30d
+    FROM {{ ref('stg_usage_events') }} e
+    JOIN customer_base c USING (customer_id)
+    GROUP BY e.customer_id
 ),
 
 ticket_summary AS (
@@ -44,10 +59,13 @@ SELECT
     COALESCE(e.avg_adoption_score, 0)        AS avg_adoption_score,
     COALESCE(e.days_since_last_event, 999)   AS days_since_last_event,
     COALESCE(e.retention_signal_count, 0)    AS retention_signal_count,
+    -- Phase 4 integration gate feature
+    COALESCE(i.integration_connects_first_30d, 0) AS integration_connects_first_30d,
     -- Support features
     COALESCE(t.tickets_last_30d, 0)          AS tickets_last_30d,
     COALESCE(t.high_priority_tickets, 0)     AS high_priority_tickets,
     COALESCE(t.avg_resolution_hours, 0)      AS avg_resolution_hours
 FROM customer_base c
-LEFT JOIN event_summary e USING (customer_id)
-LEFT JOIN ticket_summary t USING (customer_id)
+LEFT JOIN event_summary      e USING (customer_id)
+LEFT JOIN integration_summary i USING (customer_id)
+LEFT JOIN ticket_summary      t USING (customer_id)

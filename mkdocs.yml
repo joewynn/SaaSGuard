@@ -100,6 +100,12 @@ nav:
   - Phase 2 – Data Architecture:
     - Data Dictionary: data_dictionary.md
     - Data Generation Methodology: data-generation.md
+  - Phase 3 – EDA & Experiments:
+    - EDA Findings: eda-findings.md
+    - Experiment Design (CS Intervention): experiment-design.md
+  - Phase 4 – Predictive Models:
+    - Model Design & Accuracy: model-design.md
+    - SHAP Feature Importance: shap-analysis.md
   - API Reference:
     - Overview: api-reference/index.md
     - Customer Domain: api-reference/customer.md
