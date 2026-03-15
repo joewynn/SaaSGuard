@@ -67,6 +67,34 @@ Customer support interactions.
 
 ---
 
+## Derived Features — Phase 3 Analysis
+
+Computed on-the-fly in Phase 3 notebooks and pre-modelling signal tests. These features
+are computed for **all customers** (churned + active) using direct queries against the
+`raw` schema. They extend `mart_customer_churn_features` (which covers active customers
+only) to support survival analysis and EDA.
+
+| Column | Type | Description |
+|---|---|---|
+| `duration_days` | INTEGER | Survival time: `DATEDIFF('day', signup_date, churn_date)` for churned; `DATEDIFF('day', signup_date, DATE '2026-03-14')` for active (right-censored) |
+| `event` | INTEGER | Survival event indicator: 1 = customer churned, 0 = right-censored (still active at reference date) |
+| `integration_connects_first_30d` | INTEGER | Count of `integration_connect` usage events in the first 30 days of the customer's tenure (`timestamp <= signup_date + 30 days`). Activation gate feature. |
+| `retention_signal_count` | INTEGER | Count of `evidence_upload`, `monitoring_run`, and `report_view` events across the customer's full tenure. Proxy for deep product adoption. |
+| `events_last_30d` | INTEGER | Usage events in the 30-day window before churn_date (churned) or reference date (active). Captures the decay signal. |
+| `integration_bucket` | VARCHAR | Derived category: `"0"` / `"1–2"` / `"3–5"` / `"6+"` based on `integration_connects_first_30d`. Used in integration gate visualisations. |
+
+**Correlation with churn label (point-biserial r, all p < 0.001):**
+
+| Feature | r | Direction |
+|---|---|---|
+| `events_last_30d` | −0.38 | Negative (usage decay → churn) |
+| `avg_adoption_score` | −0.34 | Negative (low adoption → churn) |
+| `retention_signal_count` | −0.32 | Negative (deep adoption → retention) |
+| `high_priority_tickets` | +0.27 | Positive (ticket spike → churn risk) |
+| `integration_connects_first_30d` | −0.24 | Negative (integration → activation) |
+
+---
+
 ## risk_signals
 
 Computed/external risk flags per customer. Updated periodically.

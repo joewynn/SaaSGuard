@@ -93,3 +93,8 @@ addopts = [
 
 [tool.coverage.run]
 omit = ["tests/*", "notebooks/*"]
+
+[dependency-groups]
+dev = [
+    "nbformat>=5.10.4",
+]

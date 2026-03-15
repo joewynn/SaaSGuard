@@ -33,6 +33,7 @@ POST /predictions/churn
 ```
 
 Response shows:
+
 - `churn_probability`: 0–1 calibrated score
 - `risk_tier`: low / medium / high / critical
 - `top_shap_features`: the top 5 reasons driving the prediction
@@ -47,6 +48,7 @@ Response shows:
 Open **http://localhost:8088** → login: `admin / admin`
 
 Key dashboards to show:
+
 - **Customer 360**: single-customer churn score + usage trend + support history
 - **Churn Heatmap**: all customers plotted by churn probability × MRR (revenue at risk)
 - **Risk Drill-down**: compliance gap vs. usage decay scatter
@@ -61,6 +63,7 @@ Key dashboards to show:
 Open **http://localhost:8888**
 
 Key notebooks to show:
+
 - `phase3_cohort_analysis.ipynb`: Kaplan-Meier survival curves by plan tier
 - `phase3_ab_test_simulation.ipynb`: Bayesian A/B test with power analysis
 
@@ -73,6 +76,7 @@ Key notebooks to show:
 Open **http://localhost:8001**
 
 Show:
+
 - Architecture diagram (Mermaid DDD diagram)
 - Auto-generated API reference (from docstrings — no manual maintenance)
 - ADRs explaining key decisions (why DuckDB, why DDD)

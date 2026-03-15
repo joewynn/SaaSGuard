@@ -4140,6 +4140,11 @@ notebooks = [
     { name = "seaborn" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "nbformat" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "duckdb", specifier = ">=0.10.0" },
@@ -4177,6 +4182,9 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
     { name = "xgboost", specifier = ">=2.0.0" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "nbformat", specifier = ">=5.10.4" }]
 
 [[package]]
 name = "scikit-learn"
