@@ -24,7 +24,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Literal
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -230,7 +230,7 @@ def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
         DataFrame matching the usage_events schema.
     """
     today = date(2026, 3, 14)
-    all_events: list[dict] = []
+    all_events: list[dict[str, Any]] = []
 
     for _, cust in customers.iterrows():
         destiny: str = cust["_destiny"]
@@ -334,7 +334,7 @@ def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
         DataFrame matching the support_tickets schema.
     """
     today = date(2026, 3, 14)
-    tickets: list[dict] = []
+    tickets: list[dict[str, Any]] = []
 
     for _, cust in customers.iterrows():
         destiny: str = cust["_destiny"]
@@ -343,7 +343,6 @@ def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
             date.fromisoformat(cust["churn_date"]) if pd.notna(cust["churn_date"]) else None
         )
         end_date = churn_date if churn_date else today
-        total_months = max(1, (end_date - signup).days // 30)
 
         priorities = ["low", "medium", "high", "critical"]
         is_churner = destiny in ("early_churner", "mid_churner")
@@ -375,6 +374,7 @@ def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
 
         # Pre-churn spike (last 60 days)
         if churn_date and is_churner:
+            assert spike_start is not None  # set above when churn_date is truthy
             spike_days = (churn_date - spike_start).days
             spike_months = max(1, spike_days // 30)
             n_spike = int(rng.poisson(TICKET_RATE_SPIKE[destiny] * spike_months))
@@ -415,7 +415,7 @@ def _generate_gtm_opportunities(customers: pd.DataFrame) -> pd.DataFrame:
         DataFrame matching the gtm_opportunities schema.
     """
     today = date(2026, 3, 14)
-    opps: list[dict] = []
+    opps: list[dict[str, Any]] = []
     sales_owners = [fake.name() for _ in range(20)]
 
     for _, cust in customers.iterrows():
@@ -436,7 +436,7 @@ def _generate_gtm_opportunities(customers: pd.DataFrame) -> pd.DataFrame:
         else:  # early_churner
             n_opps = int(rng.poisson(0.05))
 
-        for i in range(n_opps):
+        for _ in range(n_opps):
             tenure_days = (today - signup).days if not churn_date else (churn_date - signup).days
             opp_day = int(rng.integers(min(30, tenure_days // 2), max(31, tenure_days)))
             close_date = signup + timedelta(days=opp_day)

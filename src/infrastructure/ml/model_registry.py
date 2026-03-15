@@ -21,7 +21,7 @@ _MODELS_DIR = Path(os.getenv("MODELS_DIR", "models"))
 
 
 @lru_cache(maxsize=4)
-def load_model(name: str) -> Any:
+def load_model(name: str) -> Any:  # noqa: ANN401 — generic model loader, return type depends on artifact
     """Load a pickled model artifact by name (cached after first load).
 
     Args:

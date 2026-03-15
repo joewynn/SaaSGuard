@@ -6,9 +6,7 @@ This pattern keeps use-case tests fast and isolated.
 
 from __future__ import annotations
 
-from datetime import date
-from decimal import Decimal
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from unittest.mock import MagicMock
 
 import pytest
@@ -16,13 +14,11 @@ import pytest
 from src.application.use_cases.predict_churn import PredictChurnRequest, PredictChurnUseCase
 from src.domain.customer.entities import Customer
 from src.domain.customer.repository import CustomerRepository
-from src.domain.customer.value_objects import Industry, MRR, PlanTier
 from src.domain.prediction.churn_model_service import ChurnModelPort, ChurnModelService
 from src.domain.prediction.entities import PredictionResult, ShapFeature
 from src.domain.prediction.risk_model_service import RiskModelService
 from src.domain.usage.entities import UsageEvent
 from src.domain.usage.repository import UsageRepository
-
 
 # ── Fakes (in-memory implementations of repository ports) ────────────────────
 
@@ -30,7 +26,7 @@ class FakeCustomerRepository(CustomerRepository):
     def __init__(self, customers: list[Customer]) -> None:
         self._store = {c.customer_id: c for c in customers}
 
-    def get_by_id(self, customer_id: str) -> Optional[Customer]:
+    def get_by_id(self, customer_id: str) -> Customer | None:
         return self._store.get(customer_id)
 
     def get_all_active(self) -> Sequence[Customer]:

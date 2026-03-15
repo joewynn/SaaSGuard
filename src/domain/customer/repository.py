@@ -5,7 +5,7 @@ The domain layer depends only on this interface, never on DuckDB directly.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.domain.customer.entities import Customer
 
@@ -14,7 +14,7 @@ class CustomerRepository(ABC):
     """Port (interface) for persisting and retrieving Customer entities."""
 
     @abstractmethod
-    def get_by_id(self, customer_id: str) -> Optional[Customer]:
+    def get_by_id(self, customer_id: str) -> Customer | None:
         """Retrieve a customer by their unique ID.
 
         Returns:

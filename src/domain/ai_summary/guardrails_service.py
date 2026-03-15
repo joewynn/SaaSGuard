@@ -106,9 +106,9 @@ class GuardrailsService:
         # NOT in the KNOWN_FEATURES whitelist.
         # This catches both explicit suffix patterns (e.g. _score, _days) and
         # general feature-name patterns like "days_until_renewal".
-        _FEATURE_PATTERN = re.compile(r"^[a-z][a-z0-9]*(_[a-z0-9]+){1,}$")
+        _FEATURE_PATTERN = re.compile(r"^[a-z][a-z0-9]*(_[a-z0-9]+){1,}$")  # noqa: N806
         # Tokens that look like feature names but are safe (common English compounds)
-        _SAFE_TOKENS: frozenset[str] = frozenset(
+        _SAFE_TOKENS: frozenset[str] = frozenset(  # noqa: N806
             ["plan_tier", "customer_id", "risk_tier", "churn_date", "sign_up",
              "follow_up", "well_known", "opt_in", "check_in", "log_in"]
         )

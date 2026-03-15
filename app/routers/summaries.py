@@ -19,12 +19,16 @@ from app.schemas.summary import (
     ShapFeatureSummary,
 )
 from src.application.use_cases.ask_customer_question import (
-    AskCustomerRequest as DomainAskRequest,
     AskCustomerQuestionUseCase,
+)
+from src.application.use_cases.ask_customer_question import (
+    AskCustomerRequest as DomainAskRequest,
+)
+from src.application.use_cases.generate_executive_summary import (
+    GenerateExecutiveSummaryUseCase,
 )
 from src.application.use_cases.generate_executive_summary import (
     GenerateSummaryRequest as DomainSummaryRequest,
-    GenerateExecutiveSummaryUseCase,
 )
 
 logger = structlog.get_logger(__name__)

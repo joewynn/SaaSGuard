@@ -1,7 +1,7 @@
 """OpportunityRepository – abstract port for the GTM domain."""
 
 from abc import ABC, abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 
 from src.domain.gtm.entities import Opportunity
 

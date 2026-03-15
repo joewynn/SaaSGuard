@@ -7,7 +7,7 @@ calls the LLM via SummaryPort, and validates output with GuardrailsService.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import structlog
 
@@ -107,7 +107,7 @@ class GenerateExecutiveSummaryUseCase:
         )
 
         # Step 3 — build context (RAG retrieval from DuckDB)
-        context = self._build_context(customer, prediction)  # type: ignore[arg-type]
+        context = self._build_context(customer, prediction)
 
         # Step 4 — call LLM
         raw_text = self._summary_service.generate(context, request.audience)
@@ -127,7 +127,7 @@ class GenerateExecutiveSummaryUseCase:
             audience=request.audience,
             content=final_text,
             guardrail=guardrail,
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             model_used=self._summary_service.model_name,
             llm_provider=self._summary_service.provider_name,
             prediction=prediction,
@@ -154,7 +154,7 @@ class GenerateExecutiveSummaryUseCase:
         assert isinstance(prediction, PredictionResult)
 
         # Fetch events in last 30 days and aggregate by type
-        since_30d = datetime.now(timezone.utc) - timedelta(days=30)
+        since_30d = datetime.now(UTC) - timedelta(days=30)
         events = self._usage_repo.get_events_for_customer(
             customer.customer_id, since=since_30d
         )

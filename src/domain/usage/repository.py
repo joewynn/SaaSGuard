@@ -1,8 +1,8 @@
 """UsageRepository – abstract port for the Usage domain."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Sequence
 
 from src.domain.usage.entities import UsageEvent
 

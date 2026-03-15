@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
 from decimal import Decimal
-from typing import Optional, Sequence
 
 from src.domain.customer.entities import Customer
 from src.domain.customer.repository import CustomerRepository
-from src.domain.customer.value_objects import Industry, MRR, PlanTier
+from src.domain.customer.value_objects import MRR, Industry, PlanTier
 from src.infrastructure.db.duckdb_adapter import get_connection
 
 
 class DuckDBCustomerRepository(CustomerRepository):
     """Reads Customer entities from the DuckDB warehouse."""
 
-    def get_by_id(self, customer_id: str) -> Optional[Customer]:
+    def get_by_id(self, customer_id: str) -> Customer | None:
         """Fetch a single customer by ID."""
         with get_connection() as conn:
             row = conn.execute(

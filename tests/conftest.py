@@ -10,7 +10,7 @@ from decimal import Decimal
 import pytest
 
 from src.domain.customer.entities import Customer
-from src.domain.customer.value_objects import Industry, MRR, PlanTier
+from src.domain.customer.value_objects import MRR, Industry, PlanTier
 from src.domain.prediction.risk_model_service import RiskModelService
 from src.domain.usage.entities import UsageEvent
 from src.domain.usage.value_objects import EventType, FeatureAdoptionScore

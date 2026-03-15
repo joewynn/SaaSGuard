@@ -4,7 +4,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from src.domain.usage.value_objects import EventType, FeatureAdoptionScore
+from src.domain.usage.value_objects import FeatureAdoptionScore
 
 
 class TestFeatureAdoptionScore:

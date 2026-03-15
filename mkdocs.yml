@@ -130,7 +130,6 @@ nav:
     - AI Summary Domain: api-reference/ai-summary.md
     - Infrastructure: api-reference/infrastructure.md
     - FastAPI Endpoints: API.md
-  - Data Dictionary: data_dictionary.md
   - ADRs:
     - ADR-001 DuckDB: ADR/ADR-001-duckdb-over-postgres.md
     - ADR-002 DDD: ADR/ADR-002-ddd-architecture.md

@@ -5,7 +5,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from src.domain.prediction.risk_model_service import RiskModelService, RiskSignals
-from src.domain.prediction.value_objects import ChurnProbability, RiskScore, RiskTier
+from src.domain.prediction.value_objects import ChurnProbability, RiskTier
 
 
 class TestChurnProbability:

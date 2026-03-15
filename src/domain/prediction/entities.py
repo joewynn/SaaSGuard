@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 
 from src.domain.prediction.value_objects import ChurnProbability, RiskScore
 
@@ -39,7 +39,7 @@ class PredictionResult:
     risk_score: RiskScore
     top_shap_features: list[ShapFeature] = field(default_factory=list)
     model_version: str = "0.0.0"
-    predicted_at: datetime = field(default_factory=datetime.utcnow)
+    predicted_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def recommended_action(self) -> str:

@@ -5,7 +5,7 @@ TDD: these tests were written before the implementation.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 import pytest
@@ -16,7 +16,6 @@ from app.main import app
 from src.domain.ai_summary.entities import ExecutiveSummary, GuardrailResult
 from src.domain.ai_summary.guardrails_service import WATERMARK
 
-
 MOCK_SUMMARY = ExecutiveSummary(
     customer_id="cust-e2e-001",
     audience="csm",
@@ -25,7 +24,7 @@ MOCK_SUMMARY = ExecutiveSummary(
         "Recommend CS outreach within 48 hours.\n\n" + WATERMARK
     ),
     guardrail=GuardrailResult(passed=True, flags=[], confidence_score=1.0),
-    generated_at=datetime(2026, 3, 14, 12, 0, 0, tzinfo=timezone.utc),
+    generated_at=datetime(2026, 3, 14, 12, 0, 0, tzinfo=UTC),
     model_used="llama-3.1-8b-instant",
     llm_provider="groq",
 )
@@ -80,8 +79,9 @@ class TestSummaryEndpoints:
 
     def test_post_summaries_customer_ask_returns_answer(self, client: TestClient) -> None:
         """POST /summaries/customer/ask should return 200 with answer."""
+        from datetime import datetime
+
         from src.application.use_cases.ask_customer_question import AskCustomerResponse
-        from datetime import datetime, timezone
 
         ask_resp = AskCustomerResponse(
             customer_id="cust-e2e-001",
@@ -90,7 +90,7 @@ class TestSummaryEndpoints:
             confidence_score=1.0,
             guardrail_flags=[],
             scope_exceeded=False,
-            generated_at=datetime(2026, 3, 14, 12, 0, 0, tzinfo=timezone.utc),
+            generated_at=datetime(2026, 3, 14, 12, 0, 0, tzinfo=UTC),
             model_used="llama-3.1-8b-instant",
             llm_provider="groq",
         )

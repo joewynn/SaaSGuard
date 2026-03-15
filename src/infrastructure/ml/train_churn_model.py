@@ -28,7 +28,7 @@ from __future__ import annotations
 import json
 import os
 import pickle
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import duckdb
@@ -312,7 +312,7 @@ def _compute_global_shap(
 
     mean_abs = np.abs(shap_values).mean(axis=0)
     ranked = sorted(
-        zip(ALL_FEATURES, mean_abs.tolist()),
+        zip(ALL_FEATURES, mean_abs.tolist(), strict=False),
         key=lambda x: x[1],
         reverse=True,
     )
@@ -397,7 +397,7 @@ def train() -> None:
     metadata = {
         "version": "1.0.0",
         "model_type": "XGBoostClassifier + CalibratedClassifierCV(isotonic, cv=5)",
-        "training_date": datetime.utcnow().isoformat(),
+        "training_date": datetime.now(UTC).isoformat(),
         "training_data_cutoff": TRAIN_CUTOFF,
         "reference_date": REFERENCE_DATE,
         "random_seed": RANDOM_SEED,
@@ -423,8 +423,8 @@ def train() -> None:
     print(f"  Brier score:          {metrics['brier']:.4f}  (target < 0.15)")
     print(f"  Precision @decile 1:  {metrics['precision_at_decile1']:.4f}  (target > 0.60)")
     print(f"\n  Artifacts → {MODELS_DIR}/")
-    print(f"    churn_model.pkl")
-    print(f"    churn_model_metadata.json")
+    print("    churn_model.pkl")
+    print("    churn_model_metadata.json")
     print("=" * 60)
 
 

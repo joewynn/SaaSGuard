@@ -9,11 +9,9 @@ All tests query the live DuckDB warehouse directly — no mocking.
 Reference date: 2026-03-14 (Phase 2 data generation date).
 """
 
-import os
 from pathlib import Path
 
 import duckdb
-import numpy as np
 import pandas as pd
 import pytest
 from lifelines import KaplanMeierFitter

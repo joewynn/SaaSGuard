@@ -6,8 +6,8 @@ All SQL lives here. Domain layer remains pure Python.
 from __future__ import annotations
 
 import os
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
 import duckdb
 import structlog

@@ -5,22 +5,21 @@ TDD: these tests were written before the implementation.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
 
 from src.application.use_cases.generate_executive_summary import (
-    GenerateSummaryRequest,
     GenerateExecutiveSummaryUseCase,
+    GenerateSummaryRequest,
 )
-from src.domain.ai_summary.entities import ExecutiveSummary, SummaryContext
+from src.domain.ai_summary.entities import ExecutiveSummary
 from src.domain.ai_summary.guardrails_service import WATERMARK, GuardrailsService
 from src.domain.ai_summary.summary_port import SummaryPort
 from src.domain.customer.entities import Customer
 from src.domain.customer.repository import CustomerRepository
-from src.domain.customer.value_objects import Industry, MRR, PlanTier
+from src.domain.customer.value_objects import MRR, Industry, PlanTier
 from src.domain.prediction.entities import PredictionResult, ShapFeature
 from src.domain.prediction.value_objects import ChurnProbability, RiskScore
 from src.domain.usage.repository import UsageRepository

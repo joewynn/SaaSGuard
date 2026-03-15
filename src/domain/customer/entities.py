@@ -8,9 +8,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Optional
 
-from src.domain.customer.value_objects import Industry, MRR, PlanTier
+from src.domain.customer.value_objects import MRR, Industry, PlanTier
 
 
 @dataclass
@@ -34,7 +33,7 @@ class Customer:
     plan_tier: PlanTier
     signup_date: date
     mrr: MRR
-    churn_date: Optional[date] = field(default=None)
+    churn_date: date | None = field(default=None)
 
     @property
     def is_active(self) -> bool:

@@ -7,14 +7,12 @@ from DuckDB and passing it to the LLM with a strict grounding constraint.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 import structlog
 
 from src.application.use_cases.generate_executive_summary import (
     GenerateExecutiveSummaryUseCase,
-    GenerateSummaryRequest,
 )
 from src.application.use_cases.predict_churn import PredictChurnRequest, PredictChurnUseCase
 from src.domain.ai_summary.guardrails_service import GuardrailsService
@@ -143,16 +141,16 @@ class AskCustomerQuestionUseCase:
         )
 
         # Build full context (RAG retrieval)
-        context = self._summary_uc._build_context(customer, prediction)  # type: ignore[arg-type]
+        context = self._summary_uc._build_context(customer, prediction)
 
         # Call LLM with question
         if hasattr(self._summary_service, "answer_question"):
-            raw_answer = self._summary_service.answer_question(context, request.question)  # type: ignore[attr-defined]
+            raw_answer = self._summary_service.answer_question(context, request.question)
         else:
             # Fallback: use generate with a question-framed prompt
             from src.infrastructure.llm.prompt_builder import PromptBuilder
 
-            prompt = PromptBuilder().build_question_prompt(context, request.question)
+            _ = PromptBuilder().build_question_prompt(context, request.question)
             raw_answer = self._summary_service.generate(context, "csm")
 
         log.info("ask.llm.response_received", length=len(raw_answer))
@@ -170,7 +168,7 @@ class AskCustomerQuestionUseCase:
             confidence_score=guardrail.confidence_score,
             guardrail_flags=guardrail.flags,
             scope_exceeded=scope_exceeded,
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             model_used=self._summary_service.model_name,
             llm_provider=self._summary_service.provider_name,
         )

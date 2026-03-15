@@ -98,7 +98,8 @@ def build(db_path: Path = DB_PATH, data_dir: Path = DATA_DIR) -> None:
 
             conn.execute(ddl)
             conn.execute(f"COPY raw.{table} FROM '{csv_path}' (HEADER TRUE, NULLSTR '')")
-            count = conn.execute(f"SELECT COUNT(*) FROM raw.{table}").fetchone()[0]
+            row = conn.execute(f"SELECT COUNT(*) FROM raw.{table}").fetchone()
+            count = row[0] if row else 0
             logger.info("warehouse.table.loaded", table=table, rows=count)
             print(f"  ✓ raw.{table:<22} {count:>10,} rows")
 

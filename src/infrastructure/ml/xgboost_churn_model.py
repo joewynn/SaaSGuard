@@ -13,8 +13,8 @@ import pandas as pd
 import shap
 import structlog
 
-from src.domain.prediction.entities import ShapFeature
 from src.domain.prediction.churn_model_service import ChurnModelPort
+from src.domain.prediction.entities import ShapFeature
 from src.infrastructure.ml import model_registry
 
 logger = structlog.get_logger(__name__)

@@ -6,8 +6,6 @@ Latency target: < 15s p95 on CPU. Used when LLM_PROVIDER=ollama.
 
 from __future__ import annotations
 
-import json
-
 import httpx
 
 from src.domain.ai_summary.entities import SummaryContext

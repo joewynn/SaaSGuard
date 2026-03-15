@@ -5,16 +5,14 @@ TDD: these tests were written before the implementation.
 
 from __future__ import annotations
 
-import pytest
+from datetime import date
 
 from src.domain.ai_summary.entities import SummaryContext
 from src.domain.ai_summary.guardrails_service import WATERMARK, GuardrailsService
 from src.domain.customer.entities import Customer
-from src.domain.customer.value_objects import Industry, MRR, PlanTier
+from src.domain.customer.value_objects import MRR, Industry, PlanTier
 from src.domain.prediction.entities import PredictionResult, ShapFeature
 from src.domain.prediction.value_objects import ChurnProbability, RiskScore
-
-from datetime import date
 
 
 def _make_context(churn_prob: float = 0.72) -> SummaryContext:

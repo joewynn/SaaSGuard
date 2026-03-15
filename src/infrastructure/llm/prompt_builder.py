@@ -46,7 +46,7 @@ class PromptBuilder:
         else:  # executive
             instruction = (
                 "Write a 3-sentence executive summary for a VP of Customer Success. "
-                f"Lead with annual revenue at risk (MRR × 12). "
+                "Lead with annual revenue at risk (MRR × 12). "
                 "State the single most important risk factor from the SHAP features. "
                 "Close with the estimated ROI of CS intervention (assume 10-15% churn reduction). "
                 "Tone: concise, quantified, boardroom-ready."
@@ -133,7 +133,7 @@ class PromptBuilder:
             f"  customer_id: {c.customer_id}\n"
             f"  industry: {c.industry}\n"
             f"  plan_tier: {c.plan_tier}\n"
-            f"  mrr: ${c.mrr.value:,.2f}/mo  (ARR: ${c.mrr.value * 12:,.2f})\n"
+            f"  mrr: ${c.mrr.amount:,.2f}/mo  (ARR: ${c.mrr.amount * 12:,.2f})\n"
             f"  tenure_days: {c.tenure_days}\n"
             f"  is_early_stage: {c.is_early_stage}\n"
             f"\n"

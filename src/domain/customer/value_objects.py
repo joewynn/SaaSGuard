@@ -51,7 +51,7 @@ class MRR:
             raise ValueError(f"MRR cannot be negative, got {self.amount}")
 
     @classmethod
-    def from_float(cls, value: float) -> "MRR":
+    def from_float(cls, value: float) -> MRR:
         """Create MRR from a float, rounding to 2 decimal places."""
         return cls(amount=Decimal(str(round(value, 2))))
 

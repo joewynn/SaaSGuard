@@ -7,7 +7,6 @@ This layer has no knowledge of FastAPI, DuckDB, or pickle files.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from src.domain.customer.repository import CustomerRepository
 from src.domain.prediction.churn_model_service import ChurnModelService
@@ -45,7 +44,7 @@ class PredictChurnUseCase:
         usage_repo: UsageRepository,
         churn_service: ChurnModelService,
         risk_service: RiskModelService,
-        risk_signals_repo: Optional[RiskSignalsRepository] = None,
+        risk_signals_repo: RiskSignalsRepository | None = None,
     ) -> None:
         self._customer_repo = customer_repo
         self._usage_repo = usage_repo

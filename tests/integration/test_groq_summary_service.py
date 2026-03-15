@@ -13,7 +13,7 @@ import pytest
 
 from src.domain.ai_summary.entities import SummaryContext
 from src.domain.customer.entities import Customer
-from src.domain.customer.value_objects import Industry, MRR, PlanTier
+from src.domain.customer.value_objects import MRR, Industry, PlanTier
 from src.domain.prediction.entities import PredictionResult, ShapFeature
 from src.domain.prediction.value_objects import ChurnProbability, RiskScore
 
@@ -52,7 +52,7 @@ def sample_context() -> SummaryContext:
 
 
 @pytest.fixture()
-def groq_service() -> "GroqSummaryService":  # noqa: F821
+def groq_service() -> GroqSummaryService:  # noqa: F821
     from src.infrastructure.llm.groq_summary_service import GroqSummaryService
 
     api_key = os.environ["GROQ_API_KEY"]
@@ -60,7 +60,7 @@ def groq_service() -> "GroqSummaryService":  # noqa: F821
 
 
 def test_real_groq_call_returns_non_empty_summary(
-    groq_service: "GroqSummaryService",  # noqa: F821
+    groq_service: GroqSummaryService,  # noqa: F821
     sample_context: SummaryContext,
 ) -> None:
     """Groq API should return a non-empty string for a valid context."""
@@ -70,7 +70,7 @@ def test_real_groq_call_returns_non_empty_summary(
 
 
 def test_groq_response_is_grounded_in_context(
-    groq_service: "GroqSummaryService",  # noqa: F821
+    groq_service: GroqSummaryService,  # noqa: F821
     sample_context: SummaryContext,
 ) -> None:
     """Groq response should reference facts from the context (customer_id or feature names)."""
@@ -84,7 +84,7 @@ def test_groq_response_is_grounded_in_context(
 
 
 def test_groq_provider_and_model_names(
-    groq_service: "GroqSummaryService",  # noqa: F821
+    groq_service: GroqSummaryService,  # noqa: F821
 ) -> None:
     """GroqSummaryService should report correct provider and model names."""
     assert groq_service.provider_name == "groq"

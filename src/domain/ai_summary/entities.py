@@ -8,9 +8,8 @@ Defines the core data structures for the AI/LLM layer:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from src.domain.customer.entities import Customer
 from src.domain.prediction.entities import PredictionResult
@@ -38,7 +37,7 @@ class SummaryContext:
     prediction: PredictionResult
     events_last_30d_by_type: dict[str, int]
     open_tickets: list[dict[str, object]]
-    gtm_opportunity: Optional[dict[str, object]]
+    gtm_opportunity: dict[str, object] | None
     cohort_churn_rate: float
 
 
@@ -89,4 +88,4 @@ class ExecutiveSummary:
     generated_at: datetime
     model_used: str
     llm_provider: str
-    prediction: Optional[PredictionResult] = None
+    prediction: PredictionResult | None = None

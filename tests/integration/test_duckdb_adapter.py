@@ -8,9 +8,8 @@ row-to-entity mapping work against an actual DuckDB connection.
 from __future__ import annotations
 
 import os
-from datetime import date
+from collections.abc import Generator
 from decimal import Decimal
-from typing import Generator
 
 import duckdb
 import pytest
@@ -18,7 +17,9 @@ import pytest
 # Override DB path to use in-memory DB for tests
 os.environ["DUCKDB_PATH"] = ":memory:"
 
-from src.infrastructure.repositories.customer_repository import DuckDBCustomerRepository  # noqa: E402
+from src.infrastructure.repositories.customer_repository import (
+    DuckDBCustomerRepository,  # noqa: E402
+)
 
 
 @pytest.fixture
