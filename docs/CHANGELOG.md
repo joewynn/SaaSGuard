@@ -11,6 +11,42 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.6.0] – 2026-03-14 – Phase 6: Dashboard
+
+### Added
+
+- `dbt_project/models/marts/mart_customer_risk_scores.sql` — new dbt mart:
+  rule-based churn scores, risk tier, ARR at risk, intervention value,
+  top risk drivers; 9 risk flag signals derived from Phase 4 feature set
+- `dbt_project/models/marts/schema.yml` — added `mart_customer_risk_scores`
+  model with column-level tests (not_null, unique, accepted_values)
+- `superset/dashboards/sql/customer_360.sql` — 5 chart definitions:
+  Risk KPI header, flag breakdown, usage trend (90d), open tickets, GTM opportunity
+- `superset/dashboards/sql/churn_heatmap.sql` — 6 chart definitions:
+  plan_tier × industry heatmap, risk tier donut, ARR by tier, churn by industry,
+  KPI row, score distribution histogram
+- `superset/dashboards/sql/risk_drilldown.sql` — 5 chart definitions:
+  at-risk customer table (conditional formatting), usage-decay scatter,
+  engagement funnel, support correlation, onboarding activation gate
+- `superset/dashboards/sql/uplift_simulator.sql` — 5 chart definitions:
+  cumulative ARR recovery curve, ROI table (top-10/25/50/100),
+  segment uplift, KPI summary, early-stage intervention value
+- `superset/init_dashboards.py` — Flask CLI script: creates DuckDB connection,
+  registers 5 datasets, creates 4 dashboard stubs; run inside Superset container
+- `superset/dashboards/README.md` — quick-start setup guide
+- `docs/dashboard-guide.md` — comprehensive guide: chart interpretations,
+  business narratives, how-to-use for each of the 4 dashboards,
+  data freshness schedule, known limitations
+
+### Dashboard Business Narratives
+
+- **Customer 360**: CSM pre-call prep 15min → 30sec
+- **Churn Heatmap**: VP CS portfolio risk posture in 30s; data-driven resource allocation
+- **Risk Drill-Down**: Daily CS intervention queue; validates Phase 3/4 analytical findings
+- **Uplift Simulator**: $10M at-risk ARR → $580K recoverable from top-50 accounts at 4:1 ROI
+
+---
+
 ## [0.5.0] – 2026-03-14 – Phase 5: AI/LLM Layer
 
 ### Added

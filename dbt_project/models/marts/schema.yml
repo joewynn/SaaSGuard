@@ -62,3 +62,33 @@ models:
       - name: avg_resolution_hours
         description: "Average ticket resolution time (hours). Higher = worse CS experience."
         tests: [not_null]
+
+  - name: mart_customer_risk_scores
+    description: >
+      Customer risk scoring mart for BI dashboards — one row per active customer
+      with rule-based churn_score, risk_tier, ARR at risk, and top_risk_drivers.
+      Refreshed by dbt run. Used by all 4 Superset dashboards (Phase 6).
+    columns:
+      - name: customer_id
+        description: "UUID primary key."
+        tests: [not_null, unique]
+      - name: churn_score
+        description: "Rule-based churn probability [0,1]. Correlated with ML model output."
+        tests: [not_null]
+      - name: risk_tier
+        description: "Derived tier from churn_score: critical/high/medium/low."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [critical, high, medium, low]
+      - name: arr_at_risk
+        description: "ARR × churn_score. Estimated ARR lost if this customer churns."
+        tests: [not_null]
+      - name: intervention_value_10pct
+        description: "arr_at_risk × 0.10. ARR recoverable at 10% intervention effectiveness."
+        tests: [not_null]
+      - name: top_risk_drivers
+        description: "Comma-separated top-2 active risk flags (e.g. 'low_events, inactive_14d')."
+      - name: risk_flag_count
+        description: "Total number of active risk flags (0–9)."
+        tests: [not_null]

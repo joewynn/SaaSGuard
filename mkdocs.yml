@@ -110,6 +110,8 @@ nav:
   - Phase 5 – AI/LLM Layer:
     - Ethical Guardrails: ethical-guardrails.md
     - LLM Time Saved (ROI): llm-time-saved.md
+  - Phase 6 – Dashboard:
+    - Dashboard Guide: dashboard-guide.md
   - API Reference:
     - Overview: api-reference/index.md
     - Customer Domain: api-reference/customer.md
