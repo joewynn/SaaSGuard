@@ -87,6 +87,15 @@ I wanted a codebase that enforces the same discipline a real product analytics t
 
 The result is a system that runs end-to-end with one command and scales from a solo builder to a full team without breaking.
 
+| Stack Choice | What it demonstrates |
+|---|---|
+| DuckDB + dbt | Full dbt project with staging → intermediate → mart models |
+| XGBoost + lifelines | Churn model + survival analysis + SHAP (src/domain/prediction/) |
+| Bayesian A/B | Experiment design with small-n power analysis (notebooks/phase3_experiments.ipynb) |
+| Llama-3 + guardrails | AI-generated summaries with 3-layer hallucination prevention |
+| Apache Superset | BI dashboards with DuckDB — Customer 360, heatmaps, uplift simulator |
+| DDD + TDD + CI/CD | Bounded contexts, 153 tests, Docker, semantic versioning, DVC |
+
 ---
 
 ## Project phases
