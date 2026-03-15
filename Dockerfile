@@ -35,6 +35,7 @@ FROM deps AS prod
 
 COPY src/ ./src/
 COPY app/ ./app/
+COPY gunicorn.conf.py ./
 
 # Non-root user for security
 RUN addgroup --system saasguard && adduser --system --ingroup saasguard saasguard
@@ -45,9 +46,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["gunicorn", "app.main:app", \
-     "--workers", "4", \
-     "--worker-class", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:8000", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+CMD ["gunicorn", "app.main:app", "-c", "gunicorn.conf.py"]

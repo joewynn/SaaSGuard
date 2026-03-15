@@ -9,3 +9,7 @@ The application layer orchestrates domain objects to fulfil business use cases. 
 ## Compute Risk Score
 
 ::: src.application.use_cases.compute_risk_score
+
+## Get Customer 360
+
+::: src.application.use_cases.get_customer_360

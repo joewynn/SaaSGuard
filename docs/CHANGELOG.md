@@ -11,6 +11,45 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.7.0] – 2026-03-14 – Phase 7: Deployment & Change Management
+
+### Added
+
+- `app/routers/customers.py` — `GET /customers/{customer_id}` Customer 360 endpoint (replaced placeholder)
+- `app/schemas/customer.py` — `Customer360Response` and `ShapFeatureSummary` Pydantic schemas
+- `src/application/use_cases/get_customer_360.py` — `GetCustomer360UseCase` orchestrates customer data, churn prediction, usage velocity, support health, and GTM stage
+- `app/main.py` — `/ready` readiness probe (returns 503 when model artifacts missing); `model_registry_loaded()` helper
+- `gunicorn.conf.py` — extracted Gunicorn tuning from Dockerfile; auto-scales workers to `2 * cpu_count + 1`
+- `.github/workflows/ci.yml` — `security-scan` job (Trivy, SARIF upload to GitHub Security tab) and `smoke-test` job (pulls image, hits `/health` and `/ready`)
+- `docs/change-management.md` — 5-section stakeholder plan: stakeholder map, training plan, phased rollout, governance, success metrics
+- `docs/runbook.md` — on-call operations: alert response, deployment procedure, rollback, data refresh, model retraining
+- `tests/unit/api/test_customers_router.py` — 4 TDD tests for Customer 360 endpoint
+- `tests/unit/api/test_health_endpoints.py` — 3 TDD tests for `/health` and `/ready`
+- `tests/e2e/test_production_scenarios.py` — CORS lockdown and full flow E2E tests
+
+### Changed
+
+- `app/main.py` — CORS now restricted to `ALLOWED_ORIGINS` env var (default: `localhost:3000,localhost:8088`); bumped version to `0.7.0`
+- `Dockerfile` — production CMD uses `gunicorn.conf.py` instead of hardcoded flags; copies `gunicorn.conf.py` in prod stage
+- `docker-compose.prod.yml` — added `ALLOWED_ORIGINS` env var; updated CMD to use `gunicorn.conf.py`
+- `.env.example` — added `ALLOWED_ORIGINS` configuration variable
+- `mkdocs.yml` — added Phase 7 nav entries (Change Management + Runbook)
+
+### Security
+
+- CORS wildcard `allow_origins=["*"]` replaced with explicit origin allowlist
+- Container vulnerability scanning (Trivy) added to CI/CD; fails on CRITICAL/HIGH CVEs
+- Production smoke tests validate `/health` and `/ready` on every main/develop push
+
+### Metrics Targets (v0.7)
+
+- Customer 360 API response time: < 200ms p95
+- `/ready` probe correctly reflects model artifact state
+- CORS allows only configured origins
+- CI passes with Trivy scan and smoke test
+
+---
+
 ## [0.6.0] – 2026-03-14 – Phase 6: Dashboard
 
 ### Added

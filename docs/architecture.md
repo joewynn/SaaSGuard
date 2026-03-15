@@ -43,6 +43,7 @@ graph TB
         CRS[ComputeRiskScoreUseCase]
         GESC[GenerateExecutiveSummaryUseCase]
         AQU[AskCustomerQuestionUseCase]
+        GC360[GetCustomer360UseCase]
     end
 
     subgraph infrastructure["Infrastructure Layer"]
@@ -54,6 +55,9 @@ graph TB
         SUP[Apache Superset\n4 Dashboards]
     end
 
+    GC360 --> PCS
+    GC360 --> CE
+    GC360 --> DB
     PCS --> CM
     PCS --> CE
     CRS --> RM

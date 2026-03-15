@@ -8,14 +8,12 @@ services:
       target: prod
     environment:
       APP_ENV: production
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8088}
     command:
       - gunicorn
       - app.main:app
-      - --workers=4
-      - --worker-class=uvicorn.workers.UvicornWorker
-      - --bind=0.0.0.0:8000
-      - --access-logfile=-
-      - --error-logfile=-
+      - -c
+      - gunicorn.conf.py
     restart: always
     deploy:
       resources:

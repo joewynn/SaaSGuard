@@ -24,7 +24,20 @@ _Phase 7 addition — JWT bearer token via `Authorization: Bearer <token>` heade
 Liveness probe. Returns 200 if the service is up.
 
 ```json
-{ "status": "ok", "version": "0.1.0" }
+{ "status": "ok", "version": "0.7.0" }
+```
+
+#### `GET /ready`
+
+Readiness probe. Returns 503 if model artifacts are not loaded (run `dvc pull` first).
+
+```json
+{ "status": "ready", "version": "0.7.0" }
+```
+
+**503 response:**
+```json
+{ "detail": "Model not loaded" }
 ```
 
 ---
@@ -102,7 +115,31 @@ Bulk scores for all active customers. Returns paginated results.
 
 #### `GET /customers/{customer_id}`
 
-Retrieve Customer 360 profile — entity data, latest churn score, risk score, recent events summary.
+Retrieve full Customer 360 profile — entity data, churn prediction, SHAP drivers, usage velocity, support health, and GTM stage.
+
+**Response `200`:**
+
+```json
+{
+  "customer_id": "uuid-string",
+  "plan_tier": "enterprise",
+  "industry": "fintech",
+  "mrr": 12500.0,
+  "tenure_days": 420,
+  "churn_probability": 0.72,
+  "risk_tier": "HIGH",
+  "top_shap_features": [
+    { "feature": "events_last_30d", "value": 3.0, "shap_impact": 0.41 },
+    { "feature": "open_ticket_count", "value": 4.0, "shap_impact": 0.28 }
+  ],
+  "events_last_30d": 3,
+  "open_ticket_count": 4,
+  "gtm_stage": "Renewal",
+  "latest_prediction_at": "2026-03-14T12:00:00"
+}
+```
+
+**404** — customer not found.
 
 ---
 

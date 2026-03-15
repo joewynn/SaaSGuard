@@ -13,6 +13,7 @@ from src.application.use_cases.ask_customer_question import AskCustomerQuestionU
 from src.application.use_cases.generate_executive_summary import (
     GenerateExecutiveSummaryUseCase,
 )
+from src.application.use_cases.get_customer_360 import GetCustomer360UseCase
 from src.application.use_cases.predict_churn import PredictChurnUseCase
 from src.domain.ai_summary.guardrails_service import GuardrailsService
 from src.domain.prediction.risk_model_service import RiskModelService
@@ -87,6 +88,18 @@ def get_summary_use_case() -> GenerateExecutiveSummaryUseCase:
         usage_repo=DuckDBUsageRepository(),
         summary_service=summary_service,
         guardrails=GuardrailsService(),
+    )
+
+
+@lru_cache(maxsize=1)
+def get_customer_360_use_case() -> GetCustomer360UseCase:
+    """Build and cache the GetCustomer360UseCase.
+
+    Reuses the cached PredictChurnUseCase to avoid duplicate model loading.
+    """
+    return GetCustomer360UseCase(
+        customer_repo=DuckDBCustomerRepository(),
+        predict_use_case=get_predict_churn_use_case(),
     )
 
 
