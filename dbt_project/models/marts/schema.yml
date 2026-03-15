@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: mart_customer_churn_features
+    description: >
+      ML feature store — one row per active customer with all features required
+      by ChurnFeatureExtractor. This is the single source of truth for model
+      training and batch scoring. Column names are frozen as part of the
+      ChurnModelPort interface contract.
+    columns:
+      - name: customer_id
+        description: "UUID primary key — joins to customers table."
+        tests: [not_null, unique]
+      - name: industry
+        description: "Customer industry vertical."
+        tests: [not_null]
+      - name: plan_tier
+        description: "Subscription tier."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [starter, growth, enterprise]
+      - name: mrr
+        description: "Monthly Recurring Revenue (USD). Used for revenue-at-risk weighting."
+        tests: [not_null]
+      - name: tenure_days
+        description: "Days since signup (or until churn for churned customers)."
+        tests: [not_null]
+      - name: is_early_stage
+        description: "TRUE if tenure_days <= 90. First-90-day cohort is highest churn risk."
+        tests: [not_null]
+      - name: total_events
+        description: "Lifetime count of all usage events."
+        tests: [not_null]
+      - name: events_last_30d
+        description: "Usage events in the last 30 days. Primary decay signal."
+        tests: [not_null]
+      - name: events_last_7d
+        description: "Usage events in the last 7 days. Leading indicator of disengagement."
+        tests: [not_null]
+      - name: avg_adoption_score
+        description: "Average feature_adoption_score across all events. Correlated with retention."
+        tests: [not_null]
+      - name: days_since_last_event
+        description: "Days since most recent usage event. 999 if no events."
+        tests: [not_null]
+      - name: retention_signal_count
+        description: "Count of high-value retention events (integration_connect, api_call, monitoring_run)."
+        tests: [not_null]
+      - name: tickets_last_30d
+        description: "Support tickets opened in the last 30 days."
+        tests: [not_null]
+      - name: high_priority_tickets
+        description: "Lifetime count of high/critical priority tickets. Pre-churn spike signal."
+        tests: [not_null]
+      - name: avg_resolution_hours
+        description: "Average ticket resolution time (hours). Higher = worse CS experience."
+        tests: [not_null]

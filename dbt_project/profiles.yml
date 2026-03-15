@@ -1,0 +1,11 @@
+saasguard:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: /data/saasguard.duckdb
+      threads: 4
+    prod:
+      type: duckdb
+      path: /data/saasguard.duckdb
+      threads: 8
