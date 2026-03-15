@@ -1,0 +1,22 @@
+# Custom MkDocs image with Material theme + all required plugins.
+# Extends the official squidfunk/mkdocs-material image.
+#
+# Why a custom image instead of using squidfunk/mkdocs-material directly?
+# The base image doesn't include mkdocstrings[python] or the git-revision plugin.
+
+FROM squidfunk/mkdocs-material:latest
+
+# Install additional MkDocs plugins
+RUN pip install --no-cache-dir \
+    mkdocstrings[python]>=0.25.0 \
+    mkdocs-git-revision-date-localized-plugin>=1.2.0 \
+    mkdocs-gen-files>=0.5.0
+
+# Default working directory expected by MkDocs
+WORKDIR /docs
+
+EXPOSE 8000
+
+# Default: live-reload dev server
+# Override with `mkdocs build` for static site generation
+CMD ["serve", "--dev-addr=0.0.0.0:8000"]

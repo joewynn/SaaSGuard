@@ -2,7 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
-
+docs/project-local.md
 # C extensions
 *.so
 
@@ -190,6 +190,15 @@ cython_debug/
 
 # Ruff stuff:
 .ruff_cache/
+
+# SaaSGuard — DVC-tracked artifacts (tracked via .dvc files, not raw content)
+data/raw/*.csv
+data/*.duckdb
+models/*.pkl
+models/*.json
+
+# MkDocs built site
+site/
 
 # PyPI configuration file
 .pypirc

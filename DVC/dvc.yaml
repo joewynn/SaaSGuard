@@ -1,0 +1,41 @@
+stages:
+  generate_data:
+    cmd: python -m src.infrastructure.data_generation.generate_synthetic_data
+    deps:
+      - src/infrastructure/data_generation/generate_synthetic_data.py
+    outs:
+      - ../data/raw/customers.csv
+      - ../data/raw/usage_events.csv
+      - ../data/raw/gtm_opportunities.csv
+      - ../data/raw/support_tickets.csv
+      - ../data/raw/risk_signals.csv
+
+  build_duckdb:
+    cmd: python -m src.infrastructure.db.build_warehouse
+    deps:
+      - src/infrastructure/db/build_warehouse.py
+      - ../data/raw/customers.csv
+      - ../data/raw/usage_events.csv
+      - ../data/raw/gtm_opportunities.csv
+      - ../data/raw/support_tickets.csv
+      - ../data/raw/risk_signals.csv
+    outs:
+      - ../data/saasguard.duckdb
+
+  train_churn_model:
+    cmd: python -m src.domain.prediction.churn_model_service train
+    deps:
+      - src/domain/prediction/churn_model_service.py
+      - ../data/saasguard.duckdb
+    outs:
+      - ../models/churn_model.pkl
+      - ../models/churn_model_metadata.json
+
+  train_risk_model:
+    cmd: python -m src.domain.prediction.risk_model_service train
+    deps:
+      - src/domain/prediction/risk_model_service.py
+      - ../data/saasguard.duckdb
+    outs:
+      - ../models/risk_model.pkl
+      - ../models/risk_model_metadata.json

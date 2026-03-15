@@ -1,0 +1,96 @@
+services:
+
+  # ── FastAPI – prediction & customer API ──────────────────────────────────────
+  api:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./src:/app/src
+      - ./app:/app/app
+      - ./data:/app/data
+      - ./models:/app/models
+    depends_on:
+      dbt:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+  # ── dbt – one-shot transformation run ────────────────────────────────────────
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-duckdb:1.8.latest
+    volumes:
+      - ./dbt_project:/usr/app/dbt
+      - ./data:/data
+    working_dir: /usr/app/dbt
+    command: ["dbt", "run", "--profiles-dir", "."]
+    restart: "no"
+
+  # ── MkDocs – live documentation site ────────────────────────────────────────
+  mkdocs:
+    build:
+      context: .
+      dockerfile: Dockerfile.mkdocs
+    profiles: ["dev"]
+    ports:
+      - "8001:8000"
+    volumes:
+      - .:/docs                  # mount repo root so mkdocstrings can reach src/
+    command: serve --dev-addr=0.0.0.0:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
+
+  # ── JupyterLab – EDA & notebooks ──────────────────────────────────────────────
+  jupyterlab:
+    profiles: ["dev"]
+    build:
+      context: .
+      target: dev
+    ports:
+      - "8888:8888"
+    env_file: .env
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./src:/app/src
+    command: >
+      jupyter lab --ip=0.0.0.0 --no-browser --allow-root
+      --NotebookApp.token='' --NotebookApp.password=''
+    restart: unless-stopped
+
+  # ── Apache Superset – BI dashboard ───────────────────────────────────────────
+  superset:
+    image: apache/superset:latest
+    ports:
+      - "8088:8088"
+    env_file: .env
+    environment:
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+    volumes:
+      - superset_home:/app/superset_home
+      - ./data:/app/data
+      - ./superset/superset_config.py:/app/pythonpath/superset_config.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  superset_home:

@@ -1,0 +1,41 @@
+# Production overrides – applied on top of docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+
+  api:
+    build:
+      target: prod
+    environment:
+      APP_ENV: production
+    command:
+      - gunicorn
+      - app.main:app
+      - --workers=4
+      - --worker-class=uvicorn.workers.UvicornWorker
+      - --bind=0.0.0.0:8000
+      - --access-logfile=-
+      - --error-logfile=-
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+      labels:
+        # Kubernetes-ready labels for future migration
+        app.kubernetes.io/name: saasguard-api
+        app.kubernetes.io/component: serving
+        app.kubernetes.io/part-of: saasguard
+
+  jupyterlab:
+    # Disable JupyterLab in production
+    profiles: ["dev"]
+
+  superset:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G

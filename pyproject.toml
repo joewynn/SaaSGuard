@@ -1,0 +1,95 @@
+[project]
+name = "saasguard"
+version = "0.1.0"
+description = "B2B SaaS Churn & Risk Prediction Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    # API
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.30.0",
+    "gunicorn>=22.0.0",
+    # Data
+    "duckdb>=0.10.0",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    # Config & Logging
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "structlog>=24.1.0",
+    "python-dotenv>=1.0.0",
+    # Observability
+    "prometheus-fastapi-instrumentator>=7.0.0",
+    # ML
+    "scikit-learn>=1.5.0",
+    "xgboost>=2.0.0",
+    "lightgbm>=4.3.0",
+    "lifelines>=0.29.0",
+    "shap>=0.46.0",
+    "numba>=0.60.0",  # shap dependency; numba<0.60 lacks Python 3.13 support
+    "scipy>=1.13.0",
+    "statsmodels>=0.14.0",
+    # LLM
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-cov>=5.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",        # for FastAPI TestClient
+    "hypothesis>=6.100.0",  # property-based testing
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+    "faker>=25.0.0",
+    "dvc>=3.50.0",
+]
+notebooks = [
+    "jupyterlab>=4.2.0",
+    "matplotlib>=3.9.0",
+    "seaborn>=0.13.0",
+    "plotly>=5.22.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+# ── Ruff ──────────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "ANN"]
+ignore = ["ANN101", "ANN102"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# ── Mypy ──────────────────────────────────────────────────────────────────────
+[tool.mypy]
+strict = true
+python_version = "3.11"
+ignore_missing_imports = true
+exclude = ["notebooks/", "dbt_project/"]
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = [
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+    "-v",
+]
+
+[tool.coverage.run]
+omit = ["tests/*", "notebooks/*"]

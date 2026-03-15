@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Project Brain & Standards
+    url: https://github.com/josephwam/saasguard/blob/main/CLAUDE.md
+    about: Read CLAUDE.md before opening an issue — it contains the full project brain, skills reference, and conventions.
+  - name: Skill Reference
+    url: https://github.com/josephwam/saasguard/blob/main/skills/README.md
+    about: Check which Claude skill to invoke for this type of work.
