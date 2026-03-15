@@ -26,6 +26,14 @@ docker compose --profile dev up -d   # dev profile adds MkDocs + JupyterLab
 | **MkDocs (docs)** | **http://localhost:8001** | **Full documentation site** |
 | Prometheus Metrics | http://localhost:8000/metrics | Observability |
 
+## Live Demo
+
+| Resource | Link |
+|---|---|
+| MkDocs Documentation | Deploy: `docker compose run --rm mkdocs mkdocs gh-deploy` |
+| FastAPI Endpoint | Deploy to Render / Fly.io / Railway |
+| 15-min Loom Walkthrough | See [docs/presentation/video-script.md](docs/presentation/video-script.md) |
+
 ---
 
 ## What this is
@@ -88,14 +96,14 @@ Full DDD diagram: [docs/architecture.md](docs/architecture.md)
 
 | Phase | Status | Deliverable |
 |---|---|---|
-| 1 – Scoping | 🔲 | PRD, tickets, ROI calculator |
-| 2 – Data Architecture | 🔲 | dbt project + DuckDB warehouse |
-| 3 – EDA & Experiments | 🔲 | Cohort analysis, survival curves, A/B test |
-| 4 – Predictive Models | 🔲 | XGBoost + survival + SHAP |
-| 5 – AI/LLM Layer | 🔲 | Executive summaries + RAG chatbot |
-| 6 – Dashboard | 🔲 | Superset Customer 360 + heatmaps |
-| 7 – Deployment | 🔲 | FastAPI + Docker + change-management deck |
-| 8 – Presentation | 🔲 | 10-slide deck + recorded walkthrough |
+| 1 – Scoping | ✅ | PRD, tickets, ROI calculator |
+| 2 – Data Architecture | ✅ | dbt project + DuckDB warehouse |
+| 3 – EDA & Experiments | ✅ | Cohort analysis, survival curves, A/B test |
+| 4 – Predictive Models | ✅ | XGBoost + survival + SHAP |
+| 5 – AI/LLM Layer | ✅ | Executive summaries + RAG chatbot |
+| 6 – Dashboard | ✅ | Superset Customer 360 + heatmaps |
+| 7 – Deployment | ✅ | FastAPI + Docker + change-management deck |
+| 8 – Presentation | ✅ | 10-slide deck + Loom video script |
 
 ---
 
@@ -114,6 +122,7 @@ SaaSGuard uses **Claude Skills** (`skills/` folder) — reusable SOPs that enfor
 | `exec-story` | `/exec-story` | C-level slides + ROI narrative |
 | `self-critique` | `/self-critique` | Quality gate before every handoff |
 | `data-contract` | `/data-contract` | Schema tests + Pydantic validation + freshness SLAs |
+| `commit-and-close` | `/commit-and-close` | Verify tests, commit, push, close GitHub issues |
 
 See [`skills/README.md`](skills/README.md) for full documentation.
 
@@ -162,3 +171,7 @@ docker compose exec dbt dbt run && dbt test
 See [docs/API.md](docs/API.md) for HTTP endpoint reference.
 See [docs/data_dictionary.md](docs/data_dictionary.md) for schema details.
 See [docs/getting-started.md](docs/getting-started.md) for full setup guide.
+
+---
+
+⭐ **Star this repo** if it helped you think about how to structure a production analytics portfolio.

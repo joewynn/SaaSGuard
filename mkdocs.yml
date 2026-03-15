@@ -115,6 +115,11 @@ nav:
   - Phase 7 – Deployment:
     - Change Management: change-management.md
     - Runbook: runbook.md
+  - Phase 8 – Presentation:
+    - Executive Deck: presentation/deck.md
+    - Speaker Notes: presentation/speaker-notes.md
+    - Video Script: presentation/video-script.md
+    - One-Pager: one-pager.md
   - API Reference:
     - Overview: api-reference/index.md
     - Customer Domain: api-reference/customer.md

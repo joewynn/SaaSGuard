@@ -11,6 +11,28 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.8.0] – 2026-03-15 – Phase 8: Executive Presentation
+
+### Added
+
+- `docs/presentation/deck.md` — 10-slide executive deck in Markdown; renders in MkDocs, pasteable to Google Slides
+- `docs/presentation/speaker-notes.md` — full per-slide speaker notes with Vanta-specific language, timing guide, and lightning (5-min) variant
+- `docs/presentation/video-script.md` — 15-min Loom walkthrough script with `[MM:SS]` timestamps, `[SCREEN: ...]` cues, `[PAUSE]` markers, and post-production notes
+- `docs/one-pager.md` — 4-section 30-second-skim executive summary: problem, platform, proof, ask
+- `README.md` — Live Demo section, phase status `🔲→✅` for all 8 completed phases, `commit-and-close` skill added to table, star CTA at bottom
+
+### Changed
+
+- `mkdocs.yml` — Phase 8 nav section (deck, speaker notes, video script, one-pager)
+
+### Metrics Targets (v0.8)
+
+- Deck: 10 slides, ≤15 min to present, ≤5 min lightning version
+- Video: 15 min, 7 segments, timestamped chapters for Loom
+- One-pager: ≤30 seconds to skim, 4 sections only
+
+---
+
 ## [0.7.0] – 2026-03-14 – Phase 7: Deployment & Change Management
 
 ### Added
