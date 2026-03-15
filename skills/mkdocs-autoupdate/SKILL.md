@@ -46,7 +46,7 @@ def method(self, arg: Type) -> ReturnType:
     """
 ```
 
-Flag any docstring missing the **Business Context** section — this is required for SaaSGuard (it is the differentiator in interviews).
+Flag any docstring missing the **Business Context** section — this is required for SaaSGuard to keep domain intent visible across all layers.
 
 ### Step 3 — Update API Reference Pages
 

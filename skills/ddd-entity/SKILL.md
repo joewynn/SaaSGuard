@@ -94,7 +94,7 @@ Create a domain service when an operation:
 If the logic belongs in an entity method instead, put it there and skip the service.
 
 ### Step 3 — Update Architecture Diagram
-Add the new entity/service to `docs/architecture.md` Mermaid diagram. Keep the diagram current — it is shown to interviewers.
+Add the new entity/service to `docs/architecture.md` Mermaid diagram. Keep the diagram current — it is the canonical reference for the bounded-context topology.
 
 ### Step 4 — Chain to /tdd-cycle
 After producing all domain files, immediately say:

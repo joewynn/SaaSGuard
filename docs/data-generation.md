@@ -187,5 +187,5 @@ all statistical guardrails will still pass (by design of the profile system).
 | No customer-to-customer effects | Real churn can propagate within an enterprise (one power user leaving reduces other seats) | Not modelled — acceptable for v1 |
 | MRR is static | Real MRR changes with seat counts and tier upgrades | Survival analysis (Phase 3) handles time-varying risk better than snapshot MRR |
 
-These limitations are documented here so interviewers understand the deliberate design
+These limitations are documented here so readers understand the deliberate design
 tradeoffs — not unexamined assumptions.

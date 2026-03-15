@@ -78,7 +78,7 @@ Data Ingestion → Risk Scoring → CS Alert → Intervention
 > "Base case assumes 10% of high-risk customers convert after CS outreach."
 
 ### Slide 7 — Pilot Results / Validation
-**Format:** Before/after metric (use synthetic data results during portfolio phase)
+**Format:** Before/after metric (use pilot cohort results or synthetic data for pre-launch validation)
 - Cohort A (no alert): 8.2% 90-day churn
 - Cohort B (SaaSGuard alert): 6.1% 90-day churn
 - Delta: -26% relative reduction

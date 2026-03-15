@@ -15,7 +15,7 @@ Epics map to the 8 project phases. Each story has acceptance criteria written fr
 ### SGD-001 · Conduct VoC research and document pain points
 **Type:** Research | **Priority:** P0 | **Phase:** 1
 
-**User story:** As a stakeholder, I want to see real customer evidence backing the problem statement so that the project has credibility in an interview or board context.
+**User story:** As a stakeholder, I want to see real customer evidence backing the problem statement so that the project has credibility with executives and the wider team.
 
 **Acceptance criteria:**
 - [ ] ≥5 direct customer quotes sourced from G2, Capterra, Reddit, or equivalent (no simulated quotes)

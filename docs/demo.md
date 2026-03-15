@@ -1,6 +1,6 @@
 # Demo Guide
 
-Step-by-step walkthrough for running the full SaaSGuard demo — designed for showing to interviewers or stakeholders.
+Step-by-step walkthrough for running the full SaaSGuard demo — designed for stakeholders, new team members, or anyone evaluating the platform.
 
 ---
 

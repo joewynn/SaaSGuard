@@ -26,12 +26,13 @@ import sys
 
 # Superset's Flask app context is available when running inside the container
 try:
-    from superset import app as superset_app  # type: ignore[import]
-    from superset.models.core import Database  # type: ignore[import]
-    from superset.models.slice import Slice  # type: ignore[import]
-    from superset.models.dashboard import Dashboard  # type: ignore[import]
     from superset.connectors.sqla.models import SqlaTable, TableColumn  # type: ignore[import]
     from superset.extensions import db  # type: ignore[import]
+    from superset.models.core import Database  # type: ignore[import]
+    from superset.models.dashboard import Dashboard  # type: ignore[import]
+    from superset.models.slice import Slice  # type: ignore[import]
+
+    from superset import app as superset_app  # type: ignore[import]
     HAS_SUPERSET = True
 except ImportError:
     HAS_SUPERSET = False

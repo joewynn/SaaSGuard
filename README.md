@@ -32,7 +32,7 @@ docker compose --profile dev up -d   # dev profile adds MkDocs + JupyterLab
 |---|---|
 | MkDocs Documentation | Deploy: `docker compose run --rm mkdocs mkdocs gh-deploy` |
 | FastAPI Endpoint | Deploy to Render / Fly.io / Railway |
-| 15-min Loom Walkthrough | See [docs/presentation/video-script.md](docs/presentation/video-script.md) |
+| 15-min Loom Walkthrough | Record using the stack above — FastAPI, Superset, JupyterLab, MkDocs |
 
 ---
 
@@ -77,18 +77,15 @@ Full DDD diagram: [docs/architecture.md](docs/architecture.md)
 
 ---
 
-## How this maps to any Product Analytics / Senior DS job description
+## Why I built SaaSGuard
 
-| JD Requirement | SaaSGuard Demonstrates |
-|---|---|
-| SQL + dbt | Full dbt project with staging → intermediate → mart models |
-| Python / ML | XGBoost + survival analysis + SHAP (src/domain/prediction/) |
-| Experiment design | Bayesian A/B test simulation (notebooks/phase3_experiments.ipynb) |
-| Executive storytelling | AI-generated summaries + 10-slide deck (docs/presentation/) |
-| BI tooling | Apache Superset dashboards with DuckDB |
-| Responsible AI | Ethical guardrails doc + bias checks + human-in-loop annotation |
-| Software engineering | DDD, TDD, CI/CD, Docker, semantic versioning, DVC |
-| Change management | 5-page change-management deck (docs/change_management/) |
+Most churn tools stop at a dashboard. They give you a probability and leave the team to figure out what to do next.
+
+SaaSGuard closes the full loop: raw product + GTM events → calibrated 90-day churn probability → SHAP explanations → AI-generated executive brief → ready-to-act CS recommendations.
+
+I wanted a codebase that enforces the same discipline a real product analytics team would demand: strict DDD bounded contexts, TDD from day one, dbt for reliable data assets, and an LLM layer with actual guardrails instead of prompt engineering vibes.
+
+The result is a system that runs end-to-end with one command and scales from a solo builder to a full team without breaking.
 
 ---
 
@@ -103,7 +100,7 @@ Full DDD diagram: [docs/architecture.md](docs/architecture.md)
 | 5 – AI/LLM Layer | ✅ | Executive summaries + RAG chatbot |
 | 6 – Dashboard | ✅ | Superset Customer 360 + heatmaps |
 | 7 – Deployment | ✅ | FastAPI + Docker + change-management deck |
-| 8 – Presentation | ✅ | 10-slide deck + Loom video script |
+| 8 – Presentation | ✅ | Executive deck + ROI close + change-management narrative |
 
 ---
 
@@ -174,4 +171,4 @@ See [docs/getting-started.md](docs/getting-started.md) for full setup guide.
 
 ---
 
-⭐ **Star this repo** if it helped you think about how to structure a production analytics portfolio.
+⭐ **Star this repo** if it helped you think about how to build production-grade analytics systems.

@@ -102,9 +102,9 @@ features:
   min_events_threshold: 3
 ```
 
-### Step 5 — Configure DVC Remote (for team/portfolio sharing)
+### Step 5 — Configure DVC Remote (for team sharing)
 ```bash
-# Option A: DagsHub (free, recommended for portfolio)
+# Option A: DagsHub (free, works well for open-source projects)
 dvc remote add -d origin https://dagshub.com/{username}/saasguard.dvc
 dvc remote modify origin --local auth basic
 dvc remote modify origin --local user {username}
