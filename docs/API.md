@@ -110,18 +110,71 @@ Retrieve Customer 360 profile — entity data, latest churn score, risk score, r
 
 #### `POST /summaries/customer`
 
-Generate an AI executive summary for a customer account.
+Generate a 3–5 sentence AI executive summary grounded in DuckDB customer data.
 
 **Request body:**
 
 ```json
 {
   "customer_id": "uuid-string",
-  "audience": "csm"   // csm | executive | board
+  "audience": "csm"
 }
 ```
 
-> ⚠️ **Guardrail note:** All LLM outputs are prefixed with a confidence disclaimer and must be reviewed by a human before customer-facing use.
+**Audience values:** `csm` (tactical, action-focused) | `executive` (revenue-focused, quantified)
+
+**Response:**
+
+```json
+{
+  "customer_id": "...",
+  "audience": "csm",
+  "summary": "Customer X has a 72% churn probability... ⚠️ AI-generated. Requires human review.",
+  "churn_probability": 0.72,
+  "risk_tier": "high",
+  "top_shap_features": [{"feature": "events_last_30d", "value": 3.0, "shap_impact": 0.42}],
+  "confidence_score": 1.0,
+  "guardrail_flags": [],
+  "generated_at": "2026-03-14T12:00:00+00:00",
+  "model_used": "llama-3.1-8b-instant",
+  "llm_provider": "groq"
+}
+```
+
+> ⚠️ **Guardrail note:** All LLM outputs include `⚠️ AI-generated. Requires human review.` and a `confidence_score`. Scores < 0.5 indicate guardrail failures and require manual review before use.
+
+---
+
+#### `POST /summaries/customer/ask`
+
+Answer a free-text question about a customer using their DuckDB history as context.
+
+**Request body:**
+
+```json
+{
+  "customer_id": "uuid-string",
+  "question": "Why is this customer at risk?"
+}
+```
+
+**Response:**
+
+```json
+{
+  "customer_id": "...",
+  "question": "Why is this customer at risk?",
+  "answer": "Based on available data, low events_last_30d... ⚠️ AI-generated. Requires human review.",
+  "confidence_score": 1.0,
+  "guardrail_flags": [],
+  "scope_exceeded": false,
+  "generated_at": "2026-03-14T12:00:00+00:00",
+  "model_used": "llama-3.1-8b-instant",
+  "llm_provider": "groq"
+}
+```
+
+`scope_exceeded: true` means the question could not be answered from available customer data — no hallucinated answer is returned.
 
 ---
 

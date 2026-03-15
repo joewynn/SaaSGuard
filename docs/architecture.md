@@ -31,28 +31,45 @@ graph TB
         GR[OpportunityRepository Interface]
     end
 
+    subgraph ai_summary_domain["AI Summary Domain – Phase 5"]
+        SP[SummaryPort ABC]
+        GS[GuardrailsService]
+        ESE[ExecutiveSummary Entity]
+        SC[SummaryContext]
+    end
+
     subgraph application["Application Layer"]
         PCS[PredictChurnUseCase]
         CRS[ComputeRiskScoreUseCase]
-        CS[CustomerService]
+        GESC[GenerateExecutiveSummaryUseCase]
+        AQU[AskCustomerQuestionUseCase]
     end
 
     subgraph infrastructure["Infrastructure Layer"]
         DB[(DuckDB)]
-        DBT[dbt Models]
-        API[FastAPI]
+        DBT[dbt Models\nmart_churn_features\nmart_risk_scores]
+        API[FastAPI\n/predictions\n/summaries]
         ML[Model Registry .pkl]
-        SUP[Apache Superset]
+        LLM[LLM Adapters\nGroq / Ollama]
+        SUP[Apache Superset\n4 Dashboards]
     end
 
     PCS --> CM
     PCS --> CE
     CRS --> RM
-    CS --> CE
-    CS --> UE
+    GESC --> PCS
+    GESC --> CE
+    GESC --> SP
+    GESC --> GS
+    AQU --> PCS
+    AQU --> SP
 
     CM --> PE
     RM --> PE
+    SP --> LLM
+    GS --> ESE
+    SC --> CE
+    SC --> PE
 
     CR --> DB
     UR --> DB
@@ -61,6 +78,8 @@ graph TB
     DBT --> SUP
     API --> PCS
     API --> CRS
+    API --> GESC
+    API --> AQU
     ML --> CM
     ML --> RM
 ```
@@ -86,6 +105,32 @@ sequenceDiagram
     Domain-->>UseCase: PredictionResult
     UseCase-->>FastAPI: PredictionResult
     FastAPI-->>Client: 200 {churn_probability, risk_score, shap_values}
+```
+
+## AI Summary Request Flow (Phase 5)
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant FastAPI as FastAPI (app/)
+    participant UC as GenerateExecutiveSummaryUseCase
+    participant Predict as PredictChurnUseCase
+    participant LLM as SummaryPort (Groq/Ollama)
+    participant Guard as GuardrailsService
+    participant DB as DuckDB
+
+    Client->>FastAPI: POST /summaries/customer {customer_id, audience}
+    FastAPI->>UC: execute(customer_id, audience)
+    UC->>DB: get_by_id(customer_id)
+    UC->>Predict: execute(customer_id)
+    Predict-->>UC: PredictionResult + SHAP features
+    UC->>DB: fetch events, tickets, GTM context
+    UC->>LLM: generate(SummaryContext, audience)
+    LLM-->>UC: raw narrative
+    UC->>Guard: validate(raw_text, context)
+    Guard-->>UC: (final_text + watermark, GuardrailResult)
+    UC-->>FastAPI: ExecutiveSummary entity
+    FastAPI-->>Client: 200 {summary, churn_probability, confidence_score, guardrail_flags}
 ```
 
 ## Folder → Layer Mapping

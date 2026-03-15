@@ -6,6 +6,14 @@
 
 -- ── Chart 1: At-risk customer table (main view) ───────────────────────────────
 -- Table with conditional formatting: risk_tier → background colour
+WITH latest_opp AS (
+    -- DuckDB-compatible: use ROW_NUMBER() instead of DISTINCT ON (PostgreSQL-only)
+    SELECT
+        customer_id, stage, amount,
+        ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY close_date DESC) AS rn
+    FROM raw.gtm_opportunities
+    WHERE stage NOT IN ('closed_won', 'closed_lost')
+)
 SELECT
     r.customer_id,
     r.plan_tier,
@@ -32,13 +40,7 @@ SELECT
     COALESCE(g.stage, 'none')      AS gtm_stage,
     COALESCE(ROUND(g.amount, 0), 0) AS gtm_amount_usd
 FROM marts.mart_customer_risk_scores r
-LEFT JOIN (
-    SELECT DISTINCT ON (customer_id)
-        customer_id, stage, amount
-    FROM raw.gtm_opportunities
-    WHERE stage NOT IN ('closed_won', 'closed_lost')
-    ORDER BY customer_id, close_date DESC
-) g USING (customer_id)
+LEFT JOIN latest_opp g ON g.customer_id = r.customer_id AND g.rn = 1
 WHERE r.risk_tier IN ('critical', 'high')
 ORDER BY r.arr_at_risk DESC
 LIMIT 200
