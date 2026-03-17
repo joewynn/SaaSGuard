@@ -4,7 +4,7 @@
 > SHAP-grounded explanation → action-ready CS brief. One pipeline. One command.
 
 [![Live API](https://img.shields.io/badge/API-live-brightgreen)](https://saasguard.up.railway.app/docs)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://joewynn.github.io/saasguard/)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://joewynn.github.io/SaaSGuard/)
 [![CI](https://github.com/joewynn/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/joewynn/saasguard/actions)
 [![codecov](https://codecov.io/gh/joewynn/saasguard/branch/main/graph/badge.svg)](https://codecov.io/gh/joewynn/saasguard)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)

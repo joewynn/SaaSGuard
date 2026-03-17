@@ -1,11 +1,11 @@
 site_name: SaaSGuard – Churn & Risk Prediction Platform
-site_url: https://josephwam.github.io/saasguard/
+site_url: https://joewynn.github.io/SaaSGuard/
 site_description: >
   Production-grade B2B SaaS churn and compliance risk prediction platform.
   Built with DDD, TDD, FastAPI, DuckDB, and Apache Superset.
 site_author: Joseph M
-repo_url: https://github.com/josephwam/saasguard
-repo_name: josephwam/saasguard
+repo_url: https://github.com/joewynn/SaaSGuard
+repo_name: joewynn/SaaSGuard
 edit_uri: edit/main/docs/
 
 theme:
@@ -138,6 +138,6 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/josephwam/saasguard
+      link: https://github.com/joewynn/SaaSGuard
     - icon: fontawesome/brands/linkedin
       link: https://linkedin.com/in/joseph-mwangoka
