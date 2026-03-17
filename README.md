@@ -3,9 +3,9 @@
 > **Production-ready** B2B SaaS Churn & Risk Prediction Platform
 
 [![Live API](https://img.shields.io/badge/API-Live-brightgreen)](https://saasguard.up.railway.app/docs)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://josephwam.github.io/saasguard/)
-[![CI](https://github.com/josephwam/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/josephwam/saasguard/actions)
-[![codecov](https://codecov.io/gh/josephwam/saasguard/branch/main/graph/badge.svg)](https://codecov.io/gh/josephwam/saasguard)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://joewynn.github.io/saasguard/)
+[![CI](https://github.com/joewynn/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/joewynn/saasguard/actions)
+[![codecov](https://codecov.io/gh/joewynn/saasguard/branch/main/graph/badge.svg)](https://codecov.io/gh/joewynn/saasguard)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -38,7 +38,7 @@ This project is deployed live as a fully automated MLOps architecture:
 ## One-command demo
 
 ```bash
-git clone https://github.com/josephwam/saasguard
+git clone https://github.com/joewynn/saasguard
 cd saasguard
 cp .env.example .env
 docker compose --profile dev up -d   # dev profile adds MkDocs + JupyterLab
