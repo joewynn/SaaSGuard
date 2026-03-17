@@ -1,4 +1,4 @@
-"""Unit tests for GET /customers/{customer_id} – Customer 360 endpoint.
+"""Unit tests for GET /customers list and GET /customers/{customer_id} endpoints.
 
 TDD: these tests were written before the implementation.
 """
@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_customer_360_use_case
+from app.dependencies import get_customer_360_use_case, get_customer_repository
 from app.main import app
 from src.application.use_cases.get_customer_360 import (
     Customer360Profile,
@@ -40,6 +40,77 @@ MOCK_PROFILE = Customer360Profile(
 def client() -> TestClient:
     """TestClient with clean dependency overrides reset after each test."""
     return TestClient(app)
+
+
+MOCK_CUSTOMERS = [
+    {
+        "customer_id": "cust-001",
+        "plan_tier": "enterprise",
+        "industry": "fintech",
+        "mrr": 12500.0,
+        "is_churned": False,
+    },
+    {
+        "customer_id": "cust-002",
+        "plan_tier": "growth",
+        "industry": "healthcare",
+        "mrr": 4200.0,
+        "is_churned": True,
+    },
+]
+
+
+class TestCustomerListEndpoint:
+    """Unit tests for GET /customers (list endpoint)."""
+
+    def setup_method(self) -> None:
+        app.dependency_overrides.clear()
+
+    def teardown_method(self) -> None:
+        app.dependency_overrides.clear()
+
+    def test_list_customers_returns_200(self, client: TestClient) -> None:
+        """GET /customers returns 200 with a list of CustomerSummary records."""
+        mock_repo = MagicMock()
+        mock_repo.get_sample.return_value = [
+            MagicMock(
+                customer_id=r["customer_id"],
+                plan_tier=MagicMock(value=r["plan_tier"]),
+                industry=MagicMock(value=r["industry"]),
+                mrr=MagicMock(amount=r["mrr"]),
+                churn_date=None if not r["is_churned"] else "2024-01-01",
+            )
+            for r in MOCK_CUSTOMERS
+        ]
+        app.dependency_overrides[get_customer_repository] = lambda: mock_repo
+
+        response = client.get("/customers")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        assert data[0]["customer_id"] == "cust-001"
+
+    def test_list_customers_default_limit_is_20(self, client: TestClient) -> None:
+        """GET /customers calls get_sample with n=20 by default."""
+        mock_repo = MagicMock()
+        mock_repo.get_sample.return_value = []
+        app.dependency_overrides[get_customer_repository] = lambda: mock_repo
+
+        client.get("/customers")
+
+        mock_repo.get_sample.assert_called_once_with(20)
+
+    def test_list_customers_clamps_limit_to_100(self, client: TestClient) -> None:
+        """GET /customers?limit=9999 clamps n to 100."""
+        mock_repo = MagicMock()
+        mock_repo.get_sample.return_value = []
+        app.dependency_overrides[get_customer_repository] = lambda: mock_repo
+
+        client.get("/customers?limit=9999")
+
+        mock_repo.get_sample.assert_called_once_with(100)
 
 
 class TestCustomersRouter:

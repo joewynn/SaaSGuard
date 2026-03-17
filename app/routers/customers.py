@@ -5,13 +5,13 @@ from __future__ import annotations
 import structlog
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.dependencies import get_customer_360_use_case
+from app.dependencies import get_customer_360_use_case, get_customer_repository
 from app.schemas.customer import Customer360Response, CustomerSummary, ShapFeatureSummary
 from src.application.use_cases.get_customer_360 import (
     GetCustomer360Request,
     GetCustomer360UseCase,
 )
-from src.infrastructure.db.duckdb_adapter import get_connection
+from src.infrastructure.repositories.customer_repository import DuckDBCustomerRepository
 
 logger = structlog.get_logger(__name__)
 
@@ -19,7 +19,10 @@ router = APIRouter()
 
 
 @router.get("", response_model=list[CustomerSummary])
-async def list_customers(limit: int = 20) -> list[CustomerSummary]:
+async def list_customers(
+    limit: int = 20,
+    repo: DuckDBCustomerRepository = Depends(get_customer_repository),
+) -> list[CustomerSummary]:
     """Return a random sample of customers for demo and load-test seeding.
 
     Args:
@@ -29,25 +32,16 @@ async def list_customers(limit: int = 20) -> list[CustomerSummary]:
         List of lightweight CustomerSummary records.
     """
     n = min(limit, 100)
-    with get_connection() as conn:
-        rows = conn.execute(
-            """
-            SELECT customer_id, plan_tier, industry, mrr,
-                   churn_date IS NOT NULL AS is_churned
-            FROM raw.customers
-            USING SAMPLE reservoir(? ROWS) REPEATABLE(42)
-            """,
-            [n],
-        ).fetchall()
+    customers = repo.get_sample(n)
     return [
         CustomerSummary(
-            customer_id=str(r[0]),
-            plan_tier=str(r[1]),
-            industry=str(r[2]),
-            mrr=float(r[3]),
-            is_churned=bool(r[4]),
+            customer_id=c.customer_id,
+            plan_tier=c.plan_tier.value,
+            industry=c.industry.value,
+            mrr=float(c.mrr.amount),
+            is_churned=c.churn_date is not None,
         )
-        for r in rows
+        for c in customers
     ]
 
 

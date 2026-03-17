@@ -24,6 +24,15 @@ from src.infrastructure.repositories.risk_signals_repository import (
 from src.infrastructure.repositories.usage_repository import DuckDBUsageRepository
 
 
+def get_customer_repository() -> DuckDBCustomerRepository:
+    """Provide a DuckDBCustomerRepository instance for request-scoped injection.
+
+    Not cached — DuckDB connections are managed via context managers inside
+    each repository method, so a fresh instance per request is lightweight.
+    """
+    return DuckDBCustomerRepository()
+
+
 @lru_cache(maxsize=1)
 def get_predict_churn_use_case() -> PredictChurnUseCase:
     """Build and cache the PredictChurnUseCase with real infrastructure.

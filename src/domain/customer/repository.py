@@ -31,6 +31,20 @@ class CustomerRepository(ABC):
         ...
 
     @abstractmethod
+    def get_sample(self, n: int) -> Sequence[Customer]:
+        """Return a random sample of n customers (any churn status).
+
+        Business Context:
+            Used by the demo list endpoint to seed load-test tooling and
+            the UI customer picker. Deterministic seed (REPEATABLE 42) ensures
+            the same customers are returned across requests for reproducibility.
+
+        Args:
+            n: Number of customers to sample (caller must clamp to safe max).
+        """
+        ...
+
+    @abstractmethod
     def save(self, customer: Customer) -> None:
         """Persist a new or updated Customer entity."""
         ...

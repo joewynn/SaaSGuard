@@ -44,6 +44,23 @@ class DuckDBCustomerRepository(CustomerRepository):
             ).fetchall()
         return [self._row_to_entity(row) for row in rows]
 
+    def get_sample(self, n: int) -> Sequence[Customer]:
+        """Return a random sample of n customers using DuckDB reservoir sampling.
+
+        DuckDB's SAMPLE clause does not support parameterized queries — only
+        literal integer constants are accepted. n is safe to interpolate because
+        callers must clamp it to ≤ 100 before passing it in.
+        """
+        with get_connection() as conn:
+            rows = conn.execute(
+                f"""
+                SELECT customer_id, industry, plan_tier, signup_date, mrr, churn_date
+                FROM raw.customers
+                USING SAMPLE reservoir({n} ROWS) REPEATABLE(42)
+                """
+            ).fetchall()
+        return [self._row_to_entity(row) for row in rows]
+
     def save(self, customer: Customer) -> None:
         """Upsert a customer record."""
         with get_connection(read_only=False) as conn:
