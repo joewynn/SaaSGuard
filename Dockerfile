@@ -2,8 +2,7 @@
 FROM python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_SYSTEM_PYTHON=1
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
@@ -30,30 +29,30 @@ RUN uv pip install --no-cache-dir dbt-duckdb==1.8.4 faker
 COPY src/ ./src/
 COPY dbt_project/ ./dbt_project/
 
-# DuckDB path for build stage; profiles.yml hardcodes /data/saasguard.duckdb
+# Activate the venv so bare `python` and `dbt` use the venv's packages directly,
+# bypassing uv run's lockfile enforcement which would evict manually installed deps.
+ENV PATH="/app/.venv/bin:$PATH"
 ENV DUCKDB_PATH=/app/data/saasguard.duckdb
+
 RUN mkdir -p /app/data /app/models /data
 
-# --no-sync prevents uv run from re-syncing to the lockfile and evicting
-# the manually installed build-time packages (faker, dbt-duckdb).
-
 # 1. Generate synthetic data → data/raw/*.csv
-RUN uv run --no-sync python -m src.infrastructure.data_generation.generate_synthetic_data
+RUN python -m src.infrastructure.data_generation.generate_synthetic_data
 
 # 2. Build DuckDB warehouse (raw schema) → /app/data/saasguard.duckdb
-RUN uv run --no-sync python -m src.infrastructure.db.build_warehouse
+RUN python -m src.infrastructure.db.build_warehouse
 
 # 3. Symlink so dbt finds /data/saasguard.duckdb (profiles.yml hardcoded path)
 RUN ln -sf ${DUCKDB_PATH} /data/saasguard.duckdb
 
 # 4. dbt build handles seeds + run + tests in one pass
-RUN uv run --no-sync dbt build --project-dir dbt_project --profiles-dir dbt_project --target prod
+RUN dbt build --project-dir dbt_project --profiles-dir dbt_project --target prod
 
 # 5. Train XGBoost churn model → models/churn_model.pkl + metadata JSON
-RUN uv run --no-sync python -m src.infrastructure.ml.train_churn_model
+RUN python -m src.infrastructure.ml.train_churn_model
 
 # 6. Export drift baseline → models/churn_training_baseline.json
-RUN uv run --no-sync python -m src.infrastructure.monitoring.drift_detector --export-baseline
+RUN python -m src.infrastructure.monitoring.drift_detector --export-baseline
 
 # ── Stage 4: development (includes dev extras, hot-reload) ─────────────────────
 FROM base AS dev
@@ -76,7 +75,8 @@ COPY gunicorn.conf.py ./
 COPY --from=data-gen /app/data/saasguard.duckdb ./data/saasguard.duckdb
 COPY --from=data-gen /app/models/ ./models/
 
-# Env vars so /ready probe passes immediately on startup
+# Activate the venv so gunicorn, python etc. resolve from it at runtime
+ENV PATH="/app/.venv/bin:$PATH"
 ENV DUCKDB_PATH=/app/data/saasguard.duckdb
 ENV MODELS_DIR=/app/models
 
