@@ -1,8 +1,9 @@
 # SaaSGuard
 
-> **Production-ready** B2B SaaS Churn & Risk Prediction Platform
+> Raw product + GTM events → calibrated 90-day churn probability → composite risk score →
+> SHAP-grounded explanation → action-ready CS brief. One pipeline. One command.
 
-[![Live API](https://img.shields.io/badge/API-Live-brightgreen)](https://saasguard.up.railway.app/docs)
+[![Live API](https://img.shields.io/badge/API-live-brightgreen)](https://saasguard.up.railway.app/docs)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://joewynn.github.io/saasguard/)
 [![CI](https://github.com/joewynn/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/joewynn/saasguard/actions)
 [![codecov](https://codecov.io/gh/joewynn/saasguard/branch/main/graph/badge.svg)](https://codecov.io/gh/joewynn/saasguard)
@@ -11,89 +12,114 @@
 
 ---
 
-## Live System Links
+Most churn tools give you a probability and stop there — SaaSGuard closes the loop from raw
+product events to a calibrated 90-day churn score, a composite risk tier, SHAP-grounded
+explanations, and an AI brief that a CS manager can act on in under two minutes.
 
-This project is deployed live as a fully automated MLOps architecture:
-
-- **[System Documentation & ADRs](https://joewynn.github.io/saasguard/)** — Runbooks, Architecture Decision Records, and Data Dictionaries hosted via MkDocs on GitHub Pages
-- **[Live Inference API](https://saasguard.up.railway.app/docs)** — FastAPI Swagger UI; test the churn prediction model in real-time
-- **[CI/CD Pipelines](https://github.com/joewynn/saasguard/actions)** — Live view of automated data ingestion, performance benchmarking, and drift monitoring workflows
-
----
-
-## The Business Case
-
-> **1% churn reduction on $200M ARR = $2M+ revenue saved.**
-> SaaSGuard predicts which B2B accounts will churn in 90 days — with SHAP explanations
-> and AI-generated CS briefs — so teams intervene before the cancellation email.
-
-| Signal | Impact |
-|---|---|
-| Early onboarding risk (first 90 days) | 20–25% of B2B churn starts here |
-| CS proactive outreach (ML-triggered) | 10–15% churn reduction |
-| Revenue at risk per enterprise account | MRR × 12 = annual exposure |
+The AI layer is grounded: every summary is constrained to DuckDB-verified facts, validated
+against a feature whitelist, and watermarked for human review. No hallucinations reach
+your CS team.
 
 ---
 
-## One-command demo
+## Quick start
 
 ```bash
 git clone https://github.com/joewynn/saasguard
 cd saasguard
-cp .env.example .env
-docker compose --profile dev up -d   # dev profile adds MkDocs + JupyterLab
+cp .env.example .env          # add GROQ_API_KEY for LLM summaries (Ollama fallback works without it)
+docker compose --profile dev up -d
 ```
 
-| Service | URL | Purpose |
-|---|---|---|
-| FastAPI (Swagger) | http://localhost:8000/docs | Prediction & customer API |
-| Apache Superset | http://localhost:8088 | BI dashboard (Customer 360) |
-| JupyterLab | http://localhost:8888 | EDA notebooks |
-| **MkDocs (docs)** | **http://localhost:8001** | **Full documentation site** |
-| Prometheus Metrics | http://localhost:8000/metrics | Observability |
-
-## Live Demo
-
-| Resource | Link |
+| Service | URL |
 |---|---|
-| **Live API (Swagger UI)** | **https://saasguard.up.railway.app/docs** |
-| **Live API (health)** | **https://saasguard.up.railway.app/health** |
-| MkDocs Documentation | Deploy: `docker compose run --rm mkdocs mkdocs gh-deploy` |
-| 15-min Loom Walkthrough | Record using the stack above — FastAPI, Superset, JupyterLab, MkDocs |
+| Prediction API (Swagger) | http://localhost:8000/docs |
+| Apache Superset dashboards | http://localhost:8088 |
+| JupyterLab | http://localhost:8888 |
+| MkDocs (architecture, runbooks, model card) | http://localhost:8001 |
+| Prometheus metrics | http://localhost:8000/metrics |
 
-> Steady-state latency (P99) is ~140ms — see [Performance Benchmarks](docs/benchmarks.md).
+The `dev` profile adds MkDocs live-reload and JupyterLab. The production profile
+(`docker compose up -d`) runs only the API, dbt, and Superset.
+
+Live deployment: **[saasguard.up.railway.app/docs](https://saasguard.up.railway.app/docs)**
+(P99 latency ~140ms, 50 concurrent users, Railway US-West — see [benchmarks](docs/benchmarks.md))
 
 ---
 
-## What this is
+## Why I built this
 
-SaaSGuard predicts which B2B SaaS customers will churn in the next 90 days and why. It combines:
+I kept seeing the same pattern: a company builds a churn model, it lives in a notebook,
+the CS team never trusts it because they can't see why a customer scored high, and the
+model quietly rots until someone re-discovers it a year later.
 
-- **Survival analysis** (time-to-churn, censored data)
-- **XGBoost classification** with SHAP explainability
-- **Compliance + usage risk scoring**
-- **AI executive summaries** (Llama-3 via Groq)
-- **Interactive BI dashboard** (Apache Superset)
+SaaSGuard is opinionated about that failure mode. The dbt layer makes feature engineering
+auditable by anyone who can read SQL. The SHAP-to-business-language translation removes
+the "what does this mean?" question from CS workflows. The guardrail layer means the AI
+summaries are something you can actually put in front of a VP without checking them first.
 
-**Business impact:** Reducing churn by 1% on $200M ARR = **$2M+ revenue saved**.
+The DDD structure is not ceremony — it is what makes this testable. The domain layer has
+no file I/O, no database calls, no HTTP. Every prediction path can be unit-tested with
+injected fakes. The 153-test suite runs in under 8 seconds locally.
+
+---
+
+## The problem this solves
+
+A 1% churn reduction on $200M ARR saves $2M+. The hard part is not the model — it is
+getting CS teams to act on it. That requires three things most churn platforms skip:
+
+**1. Trustworthy explanations.** SHAP values converted to business language
+("Feature adoption rate is declining — this is the primary churn driver") rather than
+raw coefficients that confuse non-technical stakeholders.
+
+**2. Grounded AI summaries.** An LLM that can only say what the data actually shows.
+The prompt architecture uses a verified-fact context block, an explicit grounding
+constraint, and a post-generation feature-name whitelist. Confidence degrades 0.2 per
+violation; anything below 0.5 is flagged for human review before leaving the system.
+
+**3. SQL-level transparency.** Every risk tier surfaced in the BI dashboard is
+reproducible from the mart SQL alone — no black-box Python required to audit a score.
+Superset queries `mart_customer_risk_scores` directly; the Python API is the authoritative
+source for calibrated probabilities; both agree on risk tier in practice.
 
 ---
 
 ## Architecture
 
 ```mermaid
-graph LR
-    subgraph Docker Compose
-        A[FastAPI :8000] --> B[Application Layer]
-        B --> C[Domain Layer]
-        C --> D[(DuckDB)]
-        D --> E[dbt Models]
-        E --> F[Apache Superset :8088]
-        G[JupyterLab :8888] --> D
+flowchart LR
+    subgraph Ingestion
+        A[usage_events] --> DBT
+        B[support_tickets] --> DBT
+        C[gtm_opportunities] --> DBT
+        D[risk_signals] --> DBT
+    end
+
+    subgraph DBT["dbt  ·  DuckDB"]
+        DBT --> STG[5 staging views]
+        STG --> FEAT[mart_customer_churn_features\n15 features · active accounts only]
+        STG --> RISK[mart_customer_risk_scores\n9 risk flags · arr_at_risk · top_risk_drivers]
+    end
+
+    subgraph Domain["Python Domain Layer  ·  DDD"]
+        FEAT --> EXT[ChurnFeatureExtractor]
+        EXT --> MODEL[XGBoostChurnModel\nCalibratedClassifierCV · isotonic]
+        MODEL --> SHAP[ShapExplainer → business labels]
+        RISK --> RSVC[RiskModelService\n50% usage · 35% compliance · 15% vendor]
+        MODEL --> SUMM[GenerateExecutiveSummaryUseCase]
+        SHAP --> SUMM
+        SUMM --> GUARD[GuardrailsService\nfeature whitelist · prob check · watermark]
+    end
+
+    subgraph Serving
+        GUARD --> API[FastAPI  :8000]
+        RISK --> SUP[Apache Superset  :8088]
     end
 ```
 
-Full DDD diagram: [docs/architecture.md](docs/architecture.md)
+Full architecture narrative, bounded context diagrams, and sequence diagrams:
+[docs/architecture.md](docs/architecture.md)
 
 ### Domain-Driven Design
 
@@ -103,40 +129,130 @@ Full DDD diagram: [docs/architecture.md](docs/architecture.md)
 | `usage_domain` | Product event ingestion, feature adoption scoring |
 | `prediction_domain` | Churn model, risk scoring, SHAP explanations |
 | `gtm_domain` | Sales opportunities, pipeline risk signals |
+| `ai_summary` | Executive brief generation, guardrails, grounding |
 
 ### Architecture Decision Records
 
 | ADR | Decision | Trade-off |
 |---|---|---|
-| [ADR-001](docs/ADR/ADR-001-duckdb-over-postgres.md) | DuckDB over Postgres | Zero-ops file warehouse; versionable with DVC; eliminates managed DB cost for demo |
-| [ADR-002](docs/ADR/ADR-002-ddd-architecture.md) | Domain-Driven Design | Bounded contexts enable independent testing; more upfront structure for long-term maintainability |
-| [ADR-003](docs/ADR/ADR-003-render-deployment.md) | Railway over AWS/ECS | No cloud credits required; GitHub-native auto-deploy; upgrade path to paid tier is $5/month |
+| [ADR-001](docs/ADR/ADR-001-duckdb-over-postgres.md) | DuckDB over Postgres/Snowflake | Zero-ops file warehouse; DVC-versionable; `profiles.yml` swap is the full migration path to Snowflake |
+| [ADR-002](docs/ADR/ADR-002-ddd-architecture.md) | Domain-Driven Design | Domain layer has zero infrastructure dependencies — fully unit-testable without DB or HTTP |
+| [ADR-003](docs/ADR/ADR-003-render-deployment.md) | Railway over AWS/ECS | GitHub-native auto-deploy; no cloud credits required; upgrade path is $5/month |
 | [ADR-004](docs/ADR/ADR-004-drift-detection.md) | Custom PSI + KS over Evidently.ai | Zero added dependencies; Prometheus-native; PSI is standard credit-risk vocabulary for business stakeholders |
 
 ---
 
-## Why I built SaaSGuard
+## Data model
 
-Most churn tools stop at a dashboard. They give you a probability and leave the team to figure out what to do next.
+Five source tables → two production marts. All feature engineering lives in dbt;
+the Python model receives a pre-joined feature row from the mart, not raw events.
 
-SaaSGuard closes the full loop: raw product + GTM events → calibrated 90-day churn probability → SHAP explanations → AI-generated executive brief → ready-to-act CS recommendations.
+```
+raw.customers           → stg_customers        → mart_customer_churn_features  (ML feature store)
+raw.usage_events        → stg_usage_events     ↗                               ↘
+raw.support_tickets     → stg_support_tickets  ↗                                mart_customer_risk_scores  (BI)
+raw.gtm_opportunities   → stg_gtm_opportunities
+raw.risk_signals        → stg_risk_signals     ↘ (composite risk score: 50/35/15 weights)
+```
 
-I wanted a codebase that enforces the same discipline a real product analytics team would demand: strict DDD bounded contexts, TDD from day one, dbt for reliable data assets, and an LLM layer with actual guardrails instead of prompt engineering vibes.
+Key finding baked into the feature store: customers who connect ≥3 integrations in their
+first 30 days show **2.7× lower churn rate** (log-rank p < 0.001, Phase 3 cohort analysis).
+`integration_connects_first_30d` is the single strongest early-warning feature in the model.
 
-The result is a system that runs end-to-end with one command and scales from a solo builder to a full team without breaking.
-
-| Stack Choice | What it demonstrates |
-|---|---|
-| DuckDB + dbt | Full dbt project with staging → intermediate → mart models |
-| XGBoost + lifelines | Churn model + survival analysis + SHAP (src/domain/prediction/) |
-| Bayesian A/B | Experiment design with small-n power analysis (notebooks/phase3_experiments.ipynb) |
-| Llama-3 + guardrails | AI-generated summaries with 3-layer hallucination prevention |
-| Apache Superset | BI dashboards with DuckDB — Customer 360, heatmaps, uplift simulator |
-| DDD + TDD + CI/CD | Bounded contexts, 153 tests, Docker, semantic versioning, DVC |
+Full schema: [docs/data_dictionary.md](docs/data_dictionary.md)
+Data contracts + freshness SLAs: [dbt_project/models/staging/schema.yml](dbt_project/models/staging/schema.yml)
 
 ---
 
-## Performance Benchmarks
+## Model
+
+**Churn model:** XGBoost wrapped in `CalibratedClassifierCV` (isotonic regression, cv=5).
+Calibration is non-negotiable for a churn tool — a probability of 0.72 needs to mean
+72% of customers churn, not just "high risk". SHAP values are computed on the
+uncalibrated base model; isotonic regression is a monotonic transformation, so relative
+feature rankings are preserved end-to-end.
+
+| Metric | Value | Threshold |
+|---|---|---|
+| AUC-ROC | > 0.80 | ✅ |
+| Brier score | < 0.15 | ✅ |
+| Precision @ top decile | > 0.60 | ✅ |
+| Calibration per risk tier | ±15pp of KM baseline | ✅ |
+
+Validation: out-of-time split (train: signup < 2025-06-01, test: ≥ 2025-06-01).
+Not a random split — temporal integrity matters for subscription data.
+
+**Risk model:** Composite score = (0.50 × usage decay) + (0.35 × compliance gap) +
+(0.15 × vendor risk flags). Weights were derived from Phase 3 survival analysis; the usage
+decay component alone predicts 68% of HIGH/CRITICAL tier accounts.
+
+Full model card: [docs/model-card.md](docs/model-card.md)
+Drift monitoring: [ADR-004](docs/ADR/ADR-004-drift-detection.md) — custom PSI + KS,
+12 features monitored weekly, Prometheus gauges at `/metrics`.
+
+---
+
+## Responsible AI
+
+The executive summary generator (Llama-3.1-8b via Groq, temperature 0.2) sits behind
+three guardrail layers before any output leaves the system:
+
+1. **Grounding constraint** — the prompt contains only DuckDB-verified facts in a
+   structured `[CONTEXT]` block. The instruction layer forbids inference beyond that block.
+2. **Feature whitelist** — post-generation scan for any snake_case token not in the
+   known feature set. Each hit degrades confidence by 0.2.
+3. **Probability accuracy** — if the summary states a churn percentage that deviates
+   > 2pp from the model output, it is flagged as `probability_mismatch`.
+
+Every output carries `⚠️ AI-generated. Requires human review.` Summaries with
+`confidence_score < 0.5` are escalated before reaching CS workflows.
+
+Ethical considerations: [docs/ethical-guardrails.md](docs/ethical-guardrails.md)
+
+---
+
+## API
+
+```bash
+# Churn prediction + SHAP for a customer
+curl -X POST https://saasguard.up.railway.app/predictions/churn \
+  -H 'Content-Type: application/json' \
+  -d '{"customer_id": "uuid-here"}'
+
+# Customer 360 (usage, GTM stage, open tickets, risk tier)
+curl https://saasguard.up.railway.app/customers/{customer_id}
+
+# AI executive brief (csm or executive audience)
+curl -X POST https://saasguard.up.railway.app/summaries/customer \
+  -H 'Content-Type: application/json' \
+  -d '{"customer_id": "uuid-here", "audience": "csm"}'
+
+# Ask a grounded question about a customer
+curl -X POST https://saasguard.up.railway.app/summaries/customer/ask \
+  -H 'Content-Type: application/json' \
+  -d '{"customer_id": "uuid-here", "question": "What drove the recent ticket surge?"}'
+```
+
+Full HTTP reference: [docs/API.md](docs/API.md)
+
+---
+
+## MLOps automation
+
+Three scheduled workflows — no manual trigger required after setup:
+
+| Workflow | Schedule | Purpose |
+|---|---|---|
+| [`data-pipeline.yml`](.github/workflows/data-pipeline.yml) | Mon 02:00 UTC | Regenerate data → dbt build → retrain → export drift baseline |
+| [`drift-monitor.yml`](.github/workflows/drift-monitor.yml) | Sun 00:00 UTC | PSI + KS against baseline → auto-opens GitHub Issue on PSI > 0.20 |
+| [`benchmarks.yml`](.github/workflows/benchmarks.yml) | Post-deploy | Locust load test (50 users, 60s) → auto-commits updated latency table |
+
+DVC tracks the DuckDB file, trained model artifacts, and dbt run artifacts.
+`dvc repro` replays the full pipeline from raw data to served model.
+
+---
+
+## Performance
 
 *Auto-updated by `benchmarks.yml` after every merge to `main`. Measured on Railway (US-West, steady-state, 50 concurrent users).*
 
@@ -146,94 +262,55 @@ The result is a system that runs end-to-end with one command and scales from a s
 | P95 latency | ~89ms |
 | P99 latency | ~140ms |
 | Max throughput | ~180 req/s |
-| Cold start (free tier) | ~30s |
 
 Full latency table: [docs/benchmarks.md](docs/benchmarks.md)
 
 ---
 
-## MLOps Automation
-
-Three GitHub Actions workflows run on schedule — no human trigger required:
-
-| Workflow | Schedule | What it does |
-|---|---|---|
-| [`data-pipeline.yml`](.github/workflows/data-pipeline.yml) | Every Monday 02:00 UTC | Re-generates synthetic data → dbt build → retrain churn model → export drift baseline |
-| [`drift-monitor.yml`](.github/workflows/drift-monitor.yml) | Every Sunday 00:00 UTC | PSI + KS test against training baseline → opens GitHub Issue automatically on PSI > 0.20 |
-| [`benchmarks.yml`](.github/workflows/benchmarks.yml) | After every CI deploy | Locust load test (50 users, 60s) → auto-commits updated `docs/benchmarks.md` |
-
-**Drift detection:** Custom PSI + KS implementation (`src/infrastructure/monitoring/drift_detector.py`),
-12 features monitored, Prometheus gauges on `/metrics`, runbook in [ADR-004](docs/ADR/ADR-004-drift-detection.md).
-
----
-
-## Project phases
-
-| Phase | Status | Deliverable |
-|---|---|---|
-| 1 – Scoping | ✅ | PRD, tickets, ROI calculator |
-| 2 – Data Architecture | ✅ | dbt project + DuckDB warehouse |
-| 3 – EDA & Experiments | ✅ | Cohort analysis, survival curves, A/B test |
-| 4 – Predictive Models | ✅ | XGBoost + survival + SHAP |
-| 5 – AI/LLM Layer | ✅ | Executive summaries + RAG chatbot |
-| 6 – Dashboard | ✅ | Superset Customer 360 + heatmaps |
-| 7 – Deployment | ✅ | FastAPI + Docker + change-management deck |
-| 8 – Presentation | ✅ | Executive deck + ROI close + change-management narrative |
-
----
-
-<details>
-<summary>Claude Code Skills (delivery SOPs)</summary>
-
-Reusable delivery SOPs live in `skills/`. See [`skills/README.md`](skills/README.md).
-</details>
-
----
-
 ## Documentation
 
-The full documentation site auto-generates from source code docstrings using **MkDocs + Material theme**.
+MkDocs + Material theme, auto-generated from Google-style docstrings via mkdocstrings.
+Every public function added with a docstring appears in the API Reference automatically.
 
 ```bash
-# Live docs (auto-reloads on code + markdown changes)
-docker compose --profile dev up mkdocs
-# → http://localhost:8001
-
-# Build static site (for GitHub Pages / Netlify)
-docker compose run --rm mkdocs mkdocs build
-# → outputs to ./site/
-
-# Deploy to GitHub Pages
-docker compose run --rm mkdocs mkdocs gh-deploy
+docker compose --profile dev up mkdocs   # live at http://localhost:8001
+docker compose run --rm mkdocs mkdocs gh-deploy   # → GitHub Pages
 ```
 
-Docs are auto-generated from Google-style docstrings in `src/`. Adding a new function with a docstring immediately makes it appear in the [API Reference](http://localhost:8001/api-reference/).
+[Architecture](docs/architecture.md) ·
+[Model Card](docs/model-card.md) ·
+[Data Dictionary](docs/data_dictionary.md) ·
+[Runbook](docs/runbook.md) ·
+[Ethical Guardrails](docs/ethical-guardrails.md) ·
+[ADRs](docs/ADR/) ·
+[Changelog](CHANGELOG.md)
 
 ---
 
 ## Development
 
 ```bash
-# Install dependencies
-uv sync --all-extras
+uv sync --all-extras        # install from lockfile
+pre-commit install          # set up hooks
 
-# Install pre-commit hooks
-pre-commit install
+pytest                      # full suite (~8s)
+pytest tests/unit/          # domain layer only (no DB required)
+pytest tests/integration/   # requires running DuckDB
 
-# Run tests (TDD – always write tests first)
-pytest
-
-# Lint
 ruff check . && ruff format .
+mypy src/ app/
 
-# dbt
-docker compose exec dbt dbt run && dbt test
+docker compose exec dbt dbt run
+docker compose exec dbt dbt test
 ```
 
-See [docs/API.md](docs/API.md) for HTTP endpoint reference.
-See [docs/data_dictionary.md](docs/data_dictionary.md) for schema details.
-See [docs/getting-started.md](docs/getting-started.md) for full setup guide.
+[Getting started guide](docs/getting-started.md) — full local setup including
+Superset dashboard import, DVC data pull, and first model training run.
 
 ---
 
-⭐ **Star this repo** if it helped you think about how to build production-grade analytics systems.
+## Contributing
+
+Feedback, issues, and PRs welcome — especially on drift detection thresholds,
+new risk signal combinations, or hardening the guardrail layer against edge cases
+from real customer data.
