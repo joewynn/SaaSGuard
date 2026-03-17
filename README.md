@@ -15,9 +15,9 @@
 
 This project is deployed live as a fully automated MLOps architecture:
 
-- **[System Documentation & ADRs](https://josephwam.github.io/saasguard/)** — Runbooks, Architecture Decision Records, and Data Dictionaries hosted via MkDocs on GitHub Pages
+- **[System Documentation & ADRs](https://joewynn.github.io/saasguard/)** — Runbooks, Architecture Decision Records, and Data Dictionaries hosted via MkDocs on GitHub Pages
 - **[Live Inference API](https://saasguard.up.railway.app/docs)** — FastAPI Swagger UI; test the churn prediction model in real-time
-- **[CI/CD Pipelines](https://github.com/josephwam/saasguard/actions)** — Live view of automated data ingestion, performance benchmarking, and drift monitoring workflows
+- **[CI/CD Pipelines](https://github.com/joewynn/saasguard/actions)** — Live view of automated data ingestion, performance benchmarking, and drift monitoring workflows
 
 ---
 
