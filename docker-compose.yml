@@ -27,12 +27,14 @@ services:
 
   # ── dbt – one-shot transformation run ────────────────────────────────────────
   dbt:
-    image: ghcr.io/dbt-labs/dbt-duckdb:1.8.latest
+    build:
+      context: .
+      dockerfile: Dockerfile.dbt
     volumes:
       - ./dbt_project:/usr/app/dbt
       - ./data:/data
     working_dir: /usr/app/dbt
-    command: ["dbt", "run", "--profiles-dir", "."]
+    command: ["run", "--profiles-dir", "."]
     restart: "no"
 
   # ── MkDocs – live documentation site ────────────────────────────────────────

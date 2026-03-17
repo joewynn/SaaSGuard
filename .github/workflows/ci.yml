@@ -71,11 +71,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run dbt (DuckDB adapter)
-        uses: docker://ghcr.io/dbt-labs/dbt-duckdb:1.8.latest
+      - uses: astral-sh/setup-uv@v3
         with:
-          entrypoint: dbt
-          args: build --project-dir dbt_project --profiles-dir dbt_project
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dbt-duckdb
+        run: uv pip install --system dbt-duckdb==1.9.6
+
+      - name: Run dbt build & test
+        run: dbt build --project-dir dbt_project --profiles-dir dbt_project
 
   # ── Docker Build ──────────────────────────────────────────────────────────────
   docker:
