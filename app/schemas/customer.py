@@ -5,6 +5,16 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 
+class CustomerSummary(BaseModel):
+    """Lightweight customer record returned by GET /customers (demo list)."""
+
+    customer_id: str
+    plan_tier: str
+    industry: str
+    mrr: float
+    is_churned: bool
+
+
 class ShapFeatureSummary(BaseModel):
     """A single SHAP feature contribution surfaced in the API response."""
 

@@ -6,15 +6,49 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies import get_customer_360_use_case
-from app.schemas.customer import Customer360Response, ShapFeatureSummary
+from app.schemas.customer import Customer360Response, CustomerSummary, ShapFeatureSummary
 from src.application.use_cases.get_customer_360 import (
     GetCustomer360Request,
     GetCustomer360UseCase,
 )
+from src.infrastructure.db.duckdb_adapter import get_connection
 
 logger = structlog.get_logger(__name__)
 
 router = APIRouter()
+
+
+@router.get("", response_model=list[CustomerSummary])
+async def list_customers(limit: int = 20) -> list[CustomerSummary]:
+    """Return a random sample of customers for demo and load-test seeding.
+
+    Args:
+        limit: Number of customers to return (default 20, max 100).
+
+    Returns:
+        List of lightweight CustomerSummary records.
+    """
+    n = min(limit, 100)
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT customer_id, plan_tier, industry, mrr,
+                   churn_date IS NOT NULL AS is_churned
+            FROM raw.customers
+            USING SAMPLE reservoir(? ROWS) REPEATABLE(42)
+            """,
+            [n],
+        ).fetchall()
+    return [
+        CustomerSummary(
+            customer_id=str(r[0]),
+            plan_tier=str(r[1]),
+            industry=str(r[2]),
+            mrr=float(r[3]),
+            is_churned=bool(r[4]),
+        )
+        for r in rows
+    ]
 
 
 @router.get("/{customer_id}", response_model=Customer360Response)
