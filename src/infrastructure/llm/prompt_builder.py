@@ -58,7 +58,8 @@ class PromptBuilder:
         if audience == "csm":
             instruction = (
                 "Write a 3-5 sentence briefing for a Customer Success Manager. "
-                "Refer to the customer by their industry and plan (e.g. 'this EdTech Growth customer') — never use their ID or UUID. "
+                "Refer to the customer by their industry and plan "
+                "(e.g. 'this EdTech Growth customer') — never use their ID or UUID. "
                 "Lead with the single most important churn driver in plain business language "
                 "(e.g. 'declining product activity' or 'rising support load'). "
                 "If the top signals are all healthy, say so and note what to watch. "
