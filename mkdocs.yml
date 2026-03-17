@@ -44,7 +44,7 @@ plugins:
       default_handler: python
       handlers:
         python:
-          paths: [src]
+          paths: [.]
           options:
             docstring_style: google
             show_source: true
@@ -57,6 +57,10 @@ plugins:
   - git-revision-date-localized:
       enable_creation_date: true
       type: timeago
+
+exclude_docs: |
+  project-local.md
+  presentation/
 
 watch:
   - src
@@ -134,6 +138,7 @@ nav:
     - ADR-003 Railway: ADR/ADR-003-render-deployment.md
     - ADR-004 Drift Detection: ADR/ADR-004-drift-detection.md
   - Changelog: CHANGELOG.md
+  - Benchmarks: benchmarks.md
 
 extra:
   social:

@@ -123,7 +123,7 @@ docker compose run --rm mkdocs mkdocs gh-deploy
 
 ## Environment Variables
 
-See [`.env.example`](../.env.example) for all variables. Key ones:
+See [`.env.example`](https://github.com/joewynn/SaaSGuard/blob/main/.env.example) for all variables. Key ones:
 
 | Variable | Default | Description |
 |---|---|---|

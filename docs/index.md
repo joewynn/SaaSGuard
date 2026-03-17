@@ -2,9 +2,9 @@
 
 > **Production-grade** B2B SaaS churn and compliance risk prediction platform.
 
-[![CI](https://github.com/josephwam/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/josephwam/saasguard/actions)
+[![CI](https://github.com/joewynn/SaaSGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/joewynn/SaaSGuard/actions)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/joewynn/SaaSGuard/blob/main/LICENSE)
 
 ---
 
