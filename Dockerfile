@@ -57,7 +57,7 @@ RUN python -m src.infrastructure.monitoring.drift_detector --export-baseline
 # ── Stage 4: development (includes dev extras, hot-reload) ─────────────────────
 FROM base AS dev
 
-COPY pyproject.toml uv.lock* ./
+COPY pyproject.toml uv.lock* README.md ./
 RUN uv sync --frozen --all-extras
 
 COPY . .
