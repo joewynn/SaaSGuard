@@ -62,6 +62,8 @@ RUN uv sync --frozen --all-extras
 
 COPY . .
 
+ENV PATH="/app/.venv/bin:$PATH"
+
 EXPOSE 8000 8888
 
 # ── Stage 5: production ────────────────────────────────────────────────────────
