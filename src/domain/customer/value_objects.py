@@ -33,6 +33,10 @@ class Industry(StrEnum):
     HEALTHTECH = "HealthTech"
     LEGALTECH = "LegalTech"
     HR_TECH = "HR Tech"
+    EDTECH = "EdTech"
+    INSURTECH = "InsurTech"
+    PROPTECH = "PropTech"
+    RETAILTECH = "RetailTech"
     OTHER = "Other"
 
 

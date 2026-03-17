@@ -103,3 +103,24 @@ class TestCustomerEntity:
     ) -> None:
         with pytest.raises(ValueError, match="cannot precede signup_date"):
             active_starter_customer.mark_churned(date(2020, 1, 1))
+
+
+# ── Industry Enum Regression ──────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "FinTech",
+        "HealthTech",
+        "LegalTech",
+        "HR Tech",
+        "EdTech",
+        "InsurTech",
+        "PropTech",
+        "RetailTech",
+    ],
+)
+def test_industry_accepts_all_generated_values(value: str) -> None:
+    """Industry enum must accept every value generate_synthetic_data.py produces."""
+    assert Industry(value).value == value
