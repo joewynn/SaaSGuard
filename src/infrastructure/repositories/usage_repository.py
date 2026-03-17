@@ -26,7 +26,7 @@ class DuckDBUsageRepository(UsageRepository):
             rows = conn.execute(
                 f"""
                 SELECT event_id, customer_id, timestamp, event_type, feature_adoption_score
-                FROM usage_events
+                FROM raw.usage_events
                 WHERE customer_id = ? {since_clause}
                 ORDER BY timestamp DESC
                 """,
@@ -39,7 +39,7 @@ class DuckDBUsageRepository(UsageRepository):
         with get_connection() as conn:
             result = conn.execute(
                 """
-                SELECT COUNT(*) FROM usage_events
+                SELECT COUNT(*) FROM raw.usage_events
                 WHERE customer_id = ?
                   AND timestamp >= CURRENT_TIMESTAMP - INTERVAL (?) DAY
                 """,
