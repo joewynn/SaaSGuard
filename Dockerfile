@@ -23,6 +23,10 @@ RUN uv sync --frozen --no-dev --no-editable
 # ── Stage 3: data-gen (generates demo data + trains model at build time) ──────
 FROM deps AS data-gen
 
+# Activate the venv created by uv sync in the deps stage so that
+# bare `python` and `pip` resolve to the venv, not the system Python.
+ENV PATH="/app/.venv/bin:$PATH"
+
 # Install dbt-duckdb as a build-time tool (not in prod runtime)
 RUN pip install --no-cache-dir dbt-duckdb==1.8.4
 
