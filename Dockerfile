@@ -23,9 +23,9 @@ RUN uv sync --frozen --no-dev --no-editable
 # ── Stage 3: data-gen (generates demo data + trains model at build time) ──────
 FROM deps AS data-gen
 
-# Install dbt-duckdb into the same environment uv manages.
-# uv pip install resolves the active project environment automatically.
-RUN uv pip install --no-cache-dir dbt-duckdb==1.8.4
+# Install build-time-only tools: dbt-duckdb for transforms, faker for synthetic data.
+# These are dev/build deps not present in the prod image.
+RUN uv pip install --no-cache-dir dbt-duckdb==1.8.4 faker
 
 COPY src/ ./src/
 COPY dbt_project/ ./dbt_project/
