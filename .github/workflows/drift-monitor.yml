@@ -1,0 +1,65 @@
+name: Weekly Drift Monitor
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'    # Every Sunday 00:00 UTC
+  workflow_dispatch:          # Manual trigger for demos
+
+jobs:
+  check-drift:
+    name: PSI + KS Drift Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.11"
+
+      - name: Install runtime dependencies (no dev extras)
+        run: uv sync --frozen --no-dev
+
+      - name: Generate fresh data snapshot
+        run: |
+          uv run python -m src.infrastructure.data_generation.generate_synthetic_data
+          uv run python -m src.infrastructure.db.build_warehouse
+
+      - name: Run drift detector
+        id: drift
+        run: |
+          uv run python -m src.infrastructure.monitoring.drift_detector --check \
+            --threshold-psi 0.20 \
+            --threshold-ks-pvalue 0.05 \
+            --output drift_report.json
+        # Exit code 1 → thresholds exceeded → next step opens a GitHub Issue
+
+      - name: Upload drift report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report-${{ github.run_id }}
+          path: drift_report.json
+          retention-days: 30
+
+      - name: Open GitHub Issue on drift detected
+        if: failure() && steps.drift.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '## 🚨 Model Drift Detected\n\n';
+            body += 'Weekly drift monitor found significant feature distribution shift.\n\n';
+            body += '**Action required:** Review `drift_report.json` in the workflow artifact, ';
+            body += 'then retrain or investigate the data pipeline.\n\n';
+            body += '**Thresholds exceeded:** PSI > 0.20 or KS p-value < 0.05\n\n';
+            body += '**Runbook:** See `docs/ADR/ADR-004-drift-detection.md` for investigation steps.\n\n';
+            body += `**Workflow run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Model Drift Detected — PSI or KS threshold exceeded',
+              body: body,
+              labels: ['model-health', 'priority-high'],
+            });

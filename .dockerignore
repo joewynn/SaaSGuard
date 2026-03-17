@@ -1,0 +1,59 @@
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.egg-info
+dist/
+build/
+.venv/
+venv/
+
+# Development
+.env
+.env.*
+!.env.example
+notebooks/
+*.ipynb
+*.ipynb_checkpoints
+
+# Data and models (baked in data-gen stage; exclude raw CSVs from prod layer)
+data/raw/
+data/*.dvc
+models/*.dvc
+
+# DVC
+.dvc/
+DVC/
+
+# Documentation build artifacts
+site/
+docs/
+
+# CI/CD config (not needed at runtime)
+.github/
+
+# Superset (separate service, not part of API image)
+superset/
+
+# Testing
+tests/
+htmlcov/
+.coverage
+coverage.xml
+
+# Skills / project admin
+skills/
+presentation/
+*.md
+!README.md
+
+# OS
+.DS_Store
+Thumbs.db

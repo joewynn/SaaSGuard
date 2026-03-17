@@ -1,0 +1,80 @@
+name: Performance Benchmarks
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:          # Manual trigger for demos
+
+jobs:
+  locust:
+    name: Locust Load Test (50 users, 60s)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras
+
+      - name: Install Locust
+        run: pip install locust
+
+      - name: Pull production image
+        run: docker pull ghcr.io/${{ github.repository }}:main
+
+      - name: Start API container
+        run: |
+          docker run -d -p 8000:8000 --name sg-bench \
+            -e DUCKDB_PATH=/app/data/saasguard.duckdb \
+            -e MODELS_DIR=/app/models \
+            -e ALLOWED_ORIGINS=http://localhost:3000 \
+            ghcr.io/${{ github.repository }}:main
+          # Wait for the API to be ready (models baked in — should be fast)
+          for i in $(seq 1 12); do
+            curl -sf http://localhost:8000/ready && break
+            echo "Waiting for API... attempt $i"
+            sleep 5
+          done
+          curl -f http://localhost:8000/ready
+
+      - name: Extract customer IDs from container
+        run: |
+          docker exec sg-bench python -c "
+          import duckdb, json
+          conn = duckdb.connect('/app/data/saasguard.duckdb', read_only=True)
+          ids = conn.execute('SELECT customer_id FROM raw.customers LIMIT 50').df()['customer_id'].tolist()
+          conn.close()
+          print(json.dumps(ids))
+          " > tests/performance/customer_ids.json
+          echo "Extracted $(cat tests/performance/customer_ids.json | python -c 'import json,sys; print(len(json.load(sys.stdin)))') customer IDs"
+
+      - name: Run Locust headless (60s, 50 users, spawn rate 5)
+        run: |
+          locust -f tests/performance/locustfile.py \
+            --host http://localhost:8000 \
+            --headless -u 50 -r 5 -t 60s \
+            --csv=benchmarks --only-summary
+
+      - name: Write benchmarks.md
+        run: |
+          uv run python scripts/generate_benchmarks_md.py benchmarks_stats.csv > docs/benchmarks.md
+
+      - name: Stop container
+        if: always()
+        run: docker stop sg-bench || true
+
+      - name: Commit benchmarks.md
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add docs/benchmarks.md
+          git diff --staged --quiet || (git commit -m "docs(benchmarks): auto-update latency table [skip ci]" && git push)

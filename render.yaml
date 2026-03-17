@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: saasguard-api
+    runtime: docker
+    image:
+      url: ghcr.io/${GITHUB_REPOSITORY_LOWER}:main
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: DUCKDB_PATH
+        value: /app/data/saasguard.duckdb
+      - key: MODELS_DIR
+        value: /app/models
+      - key: APP_ENV
+        value: production
+      - key: LLM_PROVIDER
+        value: groq
+      - key: GROQ_API_KEY
+        sync: false          # Set in Render dashboard — never commit API keys
+      - key: ALLOWED_ORIGINS
+        value: https://saasguard.onrender.com

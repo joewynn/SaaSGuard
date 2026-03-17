@@ -1,0 +1,49 @@
+name: Scheduled Data Pipeline
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'    # Every Monday 02:00 UTC
+  workflow_dispatch:          # Manual trigger for demos
+
+jobs:
+  refresh:
+    name: Weekly Data Refresh
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras
+
+      - name: Generate synthetic data
+        run: uv run python -m src.infrastructure.data_generation.generate_synthetic_data
+
+      - name: Build DuckDB warehouse
+        run: uv run python -m src.infrastructure.db.build_warehouse
+
+      - name: dbt build (seeds + run + tests)
+        uses: docker://ghcr.io/dbt-labs/dbt-duckdb:1.8.latest
+        with:
+          entrypoint: dbt
+          args: build --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: Retrain churn model
+        run: uv run python -m src.infrastructure.ml.train_churn_model
+
+      - name: Export drift baseline (co-versioned with model)
+        run: uv run python -m src.infrastructure.monitoring.drift_detector --export-baseline
+
+      - name: Commit refreshed artifacts
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add models/churn_training_baseline.json models/churn_model_metadata.json
+          git diff --staged --quiet || git commit -m "chore(data): weekly data refresh [skip ci]"
+          git push

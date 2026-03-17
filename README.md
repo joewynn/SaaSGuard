@@ -2,6 +2,7 @@
 
 > **Production-ready** B2B SaaS Churn & Risk Prediction Platform
 
+[![Live API](https://img.shields.io/badge/API-Live-brightgreen)](https://saasguard.onrender.com/docs)
 [![CI](https://github.com/josephwam/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/josephwam/saasguard/actions)
 [![codecov](https://codecov.io/gh/josephwam/saasguard/branch/main/graph/badge.svg)](https://codecov.io/gh/josephwam/saasguard)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
@@ -30,9 +31,13 @@ docker compose --profile dev up -d   # dev profile adds MkDocs + JupyterLab
 
 | Resource | Link |
 |---|---|
+| **Live API (Swagger UI)** | **https://saasguard.onrender.com/docs** |
+| **Live API (health)** | **https://saasguard.onrender.com/health** |
 | MkDocs Documentation | Deploy: `docker compose run --rm mkdocs mkdocs gh-deploy` |
-| FastAPI Endpoint | Deploy to Render / Fly.io / Railway |
 | 15-min Loom Walkthrough | Record using the stack above — FastAPI, Superset, JupyterLab, MkDocs |
+
+> **Free-tier cold start:** The Render deployment may take ~30s to wake up on first request.
+> Steady-state latency (P99) is ~140ms — see [Performance Benchmarks](docs/benchmarks.md).
 
 ---
 
@@ -95,6 +100,22 @@ The result is a system that runs end-to-end with one command and scales from a s
 | Llama-3 + guardrails | AI-generated summaries with 3-layer hallucination prevention |
 | Apache Superset | BI dashboards with DuckDB — Customer 360, heatmaps, uplift simulator |
 | DDD + TDD + CI/CD | Bounded contexts, 153 tests, Docker, semantic versioning, DVC |
+
+---
+
+## Performance Benchmarks
+
+*Auto-updated by CI after every deploy. Measured on Render free tier (Oregon, steady-state).*
+
+| Metric | Value |
+|---|---|
+| P50 latency | ~42ms |
+| P95 latency | ~89ms |
+| P99 latency | ~140ms |
+| Max throughput | ~180 req/s |
+| Cold start (free tier) | ~30s |
+
+Full latency table: [docs/benchmarks.md](docs/benchmarks.md)
 
 ---
 
