@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir uv
 # ── Stage 2: dependencies ──────────────────────────────────────────────────────
 FROM base AS deps
 
-COPY pyproject.toml uv.lock* ./
+COPY pyproject.toml uv.lock* README.md ./
 RUN uv sync --frozen --no-dev --no-editable
 
 # ── Stage 3: data-gen (generates demo data + trains model at build time) ──────

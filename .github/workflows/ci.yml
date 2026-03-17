@@ -157,13 +157,17 @@ jobs:
           curl -f http://localhost:8000/ready           # models baked into image — must return 200
           docker stop sg-smoke
 
-  # ── Deploy to Render ──────────────────────────────────────────────────────────
+  # ── Deploy to Railway ─────────────────────────────────────────────────────────
   deploy:
-    name: Deploy to Render
+    name: Deploy to Railway
     runs-on: ubuntu-latest
     needs: smoke-test
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Trigger Render deploy hook
+      - uses: actions/checkout@v4
+      - name: Install Railway CLI and deploy
         run: |
-          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          npm install -g @railway/cli
+          railway up --service saasguard-api --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

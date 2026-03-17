@@ -2,7 +2,7 @@
 
 > **Production-ready** B2B SaaS Churn & Risk Prediction Platform
 
-[![Live API](https://img.shields.io/badge/API-Live-brightgreen)](https://saasguard.onrender.com/docs)
+[![Live API](https://img.shields.io/badge/API-Live-brightgreen)](https://saasguard.up.railway.app/docs)
 [![CI](https://github.com/josephwam/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/josephwam/saasguard/actions)
 [![codecov](https://codecov.io/gh/josephwam/saasguard/branch/main/graph/badge.svg)](https://codecov.io/gh/josephwam/saasguard)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
@@ -31,12 +31,11 @@ docker compose --profile dev up -d   # dev profile adds MkDocs + JupyterLab
 
 | Resource | Link |
 |---|---|
-| **Live API (Swagger UI)** | **https://saasguard.onrender.com/docs** |
-| **Live API (health)** | **https://saasguard.onrender.com/health** |
+| **Live API (Swagger UI)** | **https://saasguard.up.railway.app/docs** |
+| **Live API (health)** | **https://saasguard.up.railway.app/health** |
 | MkDocs Documentation | Deploy: `docker compose run --rm mkdocs mkdocs gh-deploy` |
 | 15-min Loom Walkthrough | Record using the stack above — FastAPI, Superset, JupyterLab, MkDocs |
 
-> **Free-tier cold start:** The Render deployment may take ~30s to wake up on first request.
 > Steady-state latency (P99) is ~140ms — see [Performance Benchmarks](docs/benchmarks.md).
 
 ---
