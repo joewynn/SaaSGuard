@@ -9,6 +9,26 @@ from __future__ import annotations
 
 from src.domain.ai_summary.entities import SummaryContext
 
+# Maps ML feature names → plain-English business labels shown to the LLM.
+# The LLM uses these labels in its output instead of raw column names.
+_FEATURE_LABELS: dict[str, str] = {
+    "mrr": "Monthly revenue",
+    "tenure_days": "Account age",
+    "total_events": "Total product events (all time)",
+    "events_last_30d": "Product activity in the last 30 days",
+    "events_last_7d": "Product activity in the last 7 days",
+    "avg_adoption_score": "Feature adoption rate",
+    "days_since_last_event": "Days since last login",
+    "retention_signal_count": "High-value actions (integrations, API calls, monitoring runs)",
+    "integration_connects_first_30d": "Integrations connected in first 30 days",
+    "tickets_last_30d": "Support tickets raised in the last 30 days",
+    "high_priority_tickets": "High/critical priority tickets (all time)",
+    "avg_resolution_hours": "Average support ticket resolution time",
+    "plan_tier": "Commercial plan tier",
+    "industry": "Industry vertical",
+    "is_early_stage": "In onboarding window (first 90 days)",
+}
+
 
 class PromptBuilder:
     """Builds grounded prompts for the LLM from structured SummaryContext data.
@@ -38,16 +58,19 @@ class PromptBuilder:
         if audience == "csm":
             instruction = (
                 "Write a 3-5 sentence briefing for a Customer Success Manager. "
-                "Lead with the top churn driver from the SHAP features. "
-                "Include 2 specific recommended actions based on the data. "
-                "Mention any open high-priority support tickets if present. "
+                "Lead with the single most important churn driver in plain business language "
+                "(e.g. 'declining product activity' or 'high support load') — never use "
+                "ML terms like 'SHAP', 'feature', 'shap_impact', or column names. "
+                "Include 2 specific recommended actions grounded in the data. "
+                "Mention any recent support tickets if present. "
                 "Tone: practical, direct, urgent if risk tier is HIGH or CRITICAL."
             )
         else:  # executive
             instruction = (
                 "Write a 3-sentence executive summary for a VP of Customer Success. "
                 "Lead with annual revenue at risk (MRR × 12). "
-                "State the single most important risk factor from the SHAP features. "
+                "State the single most important risk factor in plain business language — "
+                "no ML jargon, no column names. "
                 "Close with the estimated ROI of CS intervention (assume 10-15% churn reduction). "
                 "Tone: concise, quantified, boardroom-ready."
             )
@@ -98,18 +121,36 @@ class PromptBuilder:
         p = context.prediction
 
         shap_lines = "\n".join(
-            f"  - {f.feature_name}: value={f.feature_value:.4g}, shap_impact={f.shap_impact:+.4g}"
+            "  - {label}: {direction} churn risk  "
+            "(value: {value})".format(
+                label=_FEATURE_LABELS.get(f.feature_name, f.feature_name),
+                direction="increases" if f.shap_impact > 0 else "reduces",
+                value=(
+                    f"{f.feature_value:.0f}"
+                    if f.feature_name in (
+                        "events_last_30d", "events_last_7d", "total_events",
+                        "tenure_days", "days_since_last_event",
+                        "retention_signal_count", "integration_connects_first_30d",
+                        "tickets_last_30d", "high_priority_tickets",
+                    )
+                    else f"{f.feature_value:.2f}"
+                ),
+            )
             for f in p.top_shap_features[:5]
         )
 
         ticket_lines = (
             "\n".join(
-                f"  - priority={t.get('priority')}, topic={t.get('topic')}, "
-                f"age_days={t.get('age_days')}"
+                "  - [{status}] {topic} | priority: {priority} | {age} days ago".format(
+                    status=str(t.get("status", "open")).upper(),
+                    topic=t.get("topic", "—"),
+                    priority=t.get("priority", "—"),
+                    age=t.get("age_days", "?"),
+                )
                 for t in context.open_tickets
             )
             if context.open_tickets
-            else "  (none)"
+            else "  (none on record)"
         )
 
         event_lines = (
@@ -149,7 +190,7 @@ class PromptBuilder:
             f"Usage Events (last 30 days by type):\n"
             f"{event_lines}\n"
             f"\n"
-            f"Open Support Tickets:\n"
+            f"Recent Support Tickets (last 90 days, newest first):\n"
             f"{ticket_lines}\n"
             f"\n"
             f"GTM Opportunity:\n"

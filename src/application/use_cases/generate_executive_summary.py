@@ -178,10 +178,11 @@ class GenerateExecutiveSummaryUseCase:
         )
 
     def _fetch_open_tickets(self, customer_id: str) -> list[dict[str, object]]:
-        """Query DuckDB for open support tickets for this customer.
+        """Query DuckDB for the 5 most recent support tickets (open or resolved).
 
-        Falls back to empty list if the infrastructure is unavailable
-        (e.g. unit tests without a real DuckDB).
+        Includes resolved tickets from the last 90 days so the LLM can answer
+        questions like "what was the customer's last inquiry?" — not just open items.
+        Falls back to empty list if DuckDB is unavailable.
         """
         try:
             from src.infrastructure.db.duckdb_adapter import get_connection
@@ -190,23 +191,22 @@ class GenerateExecutiveSummaryUseCase:
                 rows = conn.execute(
                     """
                     SELECT priority, topic,
-                           DATEDIFF('day', created_date, CURRENT_DATE) AS age_days
+                           DATEDIFF('day', created_date, CURRENT_DATE) AS age_days,
+                           CASE WHEN resolution_time IS NULL THEN 'open' ELSE 'resolved' END AS status
                     FROM raw.support_tickets
                     WHERE customer_id = ?
-                      AND resolution_time IS NULL
-                    ORDER BY
-                        CASE priority
-                            WHEN 'critical' THEN 0
-                            WHEN 'high' THEN 1
-                            WHEN 'medium' THEN 2
-                            ELSE 3
-                        END
+                      AND (
+                          resolution_time IS NULL
+                          OR CAST(created_date AS DATE) >= CURRENT_DATE - INTERVAL '90 days'
+                      )
+                    ORDER BY created_date DESC
                     LIMIT 5
                     """,
                     [customer_id],
                 ).fetchall()
             return [
-                {"priority": r[0], "topic": r[1], "age_days": r[2]} for r in rows
+                {"priority": r[0], "topic": r[1], "age_days": r[2], "status": r[3]}
+                for r in rows
             ]
         except Exception:
             return []
