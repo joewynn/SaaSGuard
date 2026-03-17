@@ -58,21 +58,25 @@ class PromptBuilder:
         if audience == "csm":
             instruction = (
                 "Write a 3-5 sentence briefing for a Customer Success Manager. "
+                "Refer to the customer by their industry and plan (e.g. 'this EdTech Growth customer') — never use their ID or UUID. "
                 "Lead with the single most important churn driver in plain business language "
-                "(e.g. 'declining product activity' or 'high support load') — never use "
-                "ML terms like 'SHAP', 'feature', 'shap_impact', or column names. "
+                "(e.g. 'declining product activity' or 'rising support load'). "
+                "If the top signals are all healthy, say so and note what to watch. "
                 "Include 2 specific recommended actions grounded in the data. "
                 "Mention any recent support tickets if present. "
-                "Tone: practical, direct, urgent if risk tier is HIGH or CRITICAL."
+                "Tone: practical, direct, urgent if risk tier is HIGH or CRITICAL. "
+                "Never use the words SHAP, shap_impact, feature_name, or any column names."
             )
         else:  # executive
             instruction = (
                 "Write a 3-sentence executive summary for a VP of Customer Success. "
-                "Lead with annual revenue at risk (MRR × 12). "
-                "State the single most important risk factor in plain business language — "
-                "no ML jargon, no column names. "
-                "Close with the estimated ROI of CS intervention (assume 10-15% churn reduction). "
-                "Tone: concise, quantified, boardroom-ready."
+                "Refer to the customer by their industry and plan — never their ID. "
+                "Sentence 1: state the ARR at risk and the current churn outlook (risk tier + probability). "
+                "Sentence 2: name the single most concerning business signal IF any signal increases churn risk — "
+                "if all signals are healthy, explain what is keeping the customer retained. "
+                "Sentence 3: state the estimated ROI of CS intervention (10-15% churn reduction on the ARR). "
+                "Tone: concise, quantified, boardroom-ready. "
+                "Never use the words SHAP, shap_impact, feature_name, column names, or the customer UUID."
             )
 
         return (
@@ -80,8 +84,9 @@ class PromptBuilder:
             f"[INSTRUCTION]\n{instruction}\n\n"
             f"[CONSTRAINT]\n"
             f"You may ONLY reference facts listed in [CONTEXT]. "
-            f"Do not infer, extrapolate, or add any information not explicitly stated above. "
-            f"Do not use phrases like 'I think', 'probably', or 'might be'."
+            f"Do not infer, extrapolate, or add information not explicitly stated. "
+            f"Do not use phrases like 'I think', 'probably', or 'might be'. "
+            f"Do not repeat metric names, column names, or the customer's UUID in your output."
         )
 
     def build_question_prompt(self, context: SummaryContext, question: str) -> str:
@@ -169,25 +174,31 @@ class PromptBuilder:
             else "  (none)"
         )
 
+        early_stage_note = "Yes — in critical onboarding window (first 90 days)" if c.is_early_stage else "No"
+        tenure_years = c.tenure_days // 365
+        tenure_months = (c.tenure_days % 365) // 30
+        tenure_str = (
+            f"{tenure_years}y {tenure_months}mo" if tenure_years else f"{tenure_months}mo"
+        ) or f"{c.tenure_days}d"
+
         return (
             f"Customer Profile:\n"
-            f"  customer_id: {c.customer_id}\n"
-            f"  industry: {c.industry}\n"
-            f"  plan_tier: {c.plan_tier}\n"
-            f"  mrr: ${c.mrr.amount:,.2f}/mo  (ARR: ${c.mrr.amount * 12:,.2f})\n"
-            f"  tenure_days: {c.tenure_days}\n"
-            f"  is_early_stage: {c.is_early_stage}\n"
+            f"  Segment: {c.industry} | {c.plan_tier} plan\n"
+            f"  MRR: ${c.mrr.amount:,.2f}/mo  |  ARR: ${c.mrr.amount * 12:,.2f}\n"
+            f"  Account tenure: {tenure_str}\n"
+            f"  Early onboarding stage: {early_stage_note}\n"
             f"\n"
-            f"Churn Prediction:\n"
-            f"  churn_probability: {p.churn_probability.value:.1%}\n"
-            f"  risk_tier: {p.churn_probability.risk_tier}\n"
-            f"  risk_score: {p.risk_score.value:.1%}\n"
-            f"  recommended_action: {p.recommended_action}\n"
+            f"Churn Risk Assessment:\n"
+            f"  90-day churn probability: {p.churn_probability.value:.1%}\n"
+            f"  Risk tier: {p.churn_probability.risk_tier.upper()}\n"
+            f"  Compliance & usage risk: {p.risk_score.value:.1%}\n"
+            f"  Recommended action: {p.recommended_action}\n"
+            f"  Cohort churn rate (same segment): {context.cohort_churn_rate:.1%}\n"
             f"\n"
-            f"Top SHAP Feature Drivers (positive shap_impact = increases churn risk):\n"
+            f"Key Business Signals (what is driving this churn outlook):\n"
             f"{shap_lines}\n"
             f"\n"
-            f"Usage Events (last 30 days by type):\n"
+            f"Product Usage (last 30 days by activity type):\n"
             f"{event_lines}\n"
             f"\n"
             f"Recent Support Tickets (last 90 days, newest first):\n"
@@ -195,7 +206,4 @@ class PromptBuilder:
             f"\n"
             f"GTM Opportunity:\n"
             f"{gtm_block}\n"
-            f"\n"
-            f"Cohort Context:\n"
-            f"  cohort_churn_rate (same tier + industry): {context.cohort_churn_rate:.1%}"
         )
