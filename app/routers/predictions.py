@@ -28,8 +28,11 @@ async def predict_churn(
         result = use_case.execute(PredictChurnRequest(customer_id=body.customer_id))
     except ValueError as exc:
         detail = str(exc)
-        status = 404 if "not found" in detail else 422
+        status = 404 if "not found" in detail.lower() else 422
         raise HTTPException(status_code=status, detail=detail) from exc
+    except Exception as exc:
+        logger.error("predict_churn.error", customer_id=body.customer_id, error=str(exc))
+        raise HTTPException(status_code=503, detail=f"Prediction service error: {exc}") from exc
 
     return ChurnPredictionResponse(
         customer_id=result.customer_id,

@@ -57,15 +57,23 @@ class GroqSummaryService(SummaryPort):
             Raw LLM text string (no watermark; guardrails applied by caller).
         """
         prompt = self._prompt_builder.build_summary_prompt(context, audience)
-        response = self._client.chat.completions.create(
-            model=self._model,
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=400,
-            temperature=0.2,
-        )
+        try:
+            response = self._client.chat.completions.create(
+                model=self._model,
+                messages=[
+                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=400,
+                temperature=0.2,
+            )
+        except groq_sdk.AuthenticationError as exc:
+            raise RuntimeError(
+                "Groq API key is missing or invalid. "
+                "Set GROQ_API_KEY in your environment (Railway Variables or .env)."
+            ) from exc
+        except groq_sdk.APIError as exc:
+            raise RuntimeError(f"Groq API error: {exc}") from exc
         return response.choices[0].message.content or ""
 
     def answer_question(self, context: SummaryContext, question: str) -> str:
@@ -83,15 +91,23 @@ class GroqSummaryService(SummaryPort):
             LLM answer string, or the scope-exceeded sentinel phrase.
         """
         prompt = self._prompt_builder.build_question_prompt(context, question)
-        response = self._client.chat.completions.create(
-            model=self._model,
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=300,
-            temperature=0.1,
-        )
+        try:
+            response = self._client.chat.completions.create(
+                model=self._model,
+                messages=[
+                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=300,
+                temperature=0.1,
+            )
+        except groq_sdk.AuthenticationError as exc:
+            raise RuntimeError(
+                "Groq API key is missing or invalid. "
+                "Set GROQ_API_KEY in your environment (Railway Variables or .env)."
+            ) from exc
+        except groq_sdk.APIError as exc:
+            raise RuntimeError(f"Groq API error: {exc}") from exc
         return response.choices[0].message.content or ""
 
     @property

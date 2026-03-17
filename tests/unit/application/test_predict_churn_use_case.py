@@ -32,6 +32,9 @@ class FakeCustomerRepository(CustomerRepository):
     def get_all_active(self) -> Sequence[Customer]:
         return [c for c in self._store.values() if c.is_active]
 
+    def get_sample(self, n: int) -> Sequence[Customer]:
+        return list(self._store.values())[:n]
+
     def save(self, customer: Customer) -> None:
         self._store[customer.customer_id] = customer
 

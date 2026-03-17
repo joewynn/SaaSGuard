@@ -66,6 +66,9 @@ async def generate_customer_summary(
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.error("generate_summary.error", customer_id=request.customer_id, error=str(exc))
+        raise HTTPException(status_code=503, detail=f"Summary service error: {exc}") from exc
 
     # Extract prediction details stored on the summary entity
     churn_prob = 0.0
@@ -128,6 +131,9 @@ async def ask_about_customer(
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.error("ask_customer.error", customer_id=request.customer_id, error=str(exc))
+        raise HTTPException(status_code=503, detail=f"Summary service error: {exc}") from exc
 
     return AskCustomerResponse(
         customer_id=response.customer_id,

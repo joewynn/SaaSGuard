@@ -3,10 +3,35 @@
 > **Production-ready** B2B SaaS Churn & Risk Prediction Platform
 
 [![Live API](https://img.shields.io/badge/API-Live-brightgreen)](https://saasguard.up.railway.app/docs)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://josephwam.github.io/saasguard/)
 [![CI](https://github.com/josephwam/saasguard/actions/workflows/ci.yml/badge.svg)](https://github.com/josephwam/saasguard/actions)
 [![codecov](https://codecov.io/gh/josephwam/saasguard/branch/main/graph/badge.svg)](https://codecov.io/gh/josephwam/saasguard)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
+
+## Live System Links
+
+This project is deployed live as a fully automated MLOps architecture:
+
+- **[System Documentation & ADRs](https://josephwam.github.io/saasguard/)** — Runbooks, Architecture Decision Records, and Data Dictionaries hosted via MkDocs on GitHub Pages
+- **[Live Inference API](https://saasguard.up.railway.app/docs)** — FastAPI Swagger UI; test the churn prediction model in real-time
+- **[CI/CD Pipelines](https://github.com/josephwam/saasguard/actions)** — Live view of automated data ingestion, performance benchmarking, and drift monitoring workflows
+
+---
+
+## The Business Case
+
+> **1% churn reduction on $200M ARR = $2M+ revenue saved.**
+> SaaSGuard predicts which B2B accounts will churn in 90 days — with SHAP explanations
+> and AI-generated CS briefs — so teams intervene before the cancellation email.
+
+| Signal | Impact |
+|---|---|
+| Early onboarding risk (first 90 days) | 20–25% of B2B churn starts here |
+| CS proactive outreach (ML-triggered) | 10–15% churn reduction |
+| Revenue at risk per enterprise account | MRR × 12 = annual exposure |
 
 ---
 
@@ -79,6 +104,15 @@ Full DDD diagram: [docs/architecture.md](docs/architecture.md)
 | `prediction_domain` | Churn model, risk scoring, SHAP explanations |
 | `gtm_domain` | Sales opportunities, pipeline risk signals |
 
+### Architecture Decision Records
+
+| ADR | Decision | Trade-off |
+|---|---|---|
+| [ADR-001](docs/ADR/ADR-001-duckdb-over-postgres.md) | DuckDB over Postgres | Zero-ops file warehouse; versionable with DVC; eliminates managed DB cost for demo |
+| [ADR-002](docs/ADR/ADR-002-ddd-architecture.md) | Domain-Driven Design | Bounded contexts enable independent testing; more upfront structure for long-term maintainability |
+| [ADR-003](docs/ADR/ADR-003-render-deployment.md) | Railway over AWS/ECS | No cloud credits required; GitHub-native auto-deploy; upgrade path to paid tier is $5/month |
+| [ADR-004](docs/ADR/ADR-004-drift-detection.md) | Custom PSI + KS over Evidently.ai | Zero added dependencies; Prometheus-native; PSI is standard credit-risk vocabulary for business stakeholders |
+
 ---
 
 ## Why I built SaaSGuard
@@ -104,7 +138,7 @@ The result is a system that runs end-to-end with one command and scales from a s
 
 ## Performance Benchmarks
 
-*Auto-updated by CI after every deploy. Measured on Render free tier (Oregon, steady-state).*
+*Auto-updated by `benchmarks.yml` after every merge to `main`. Measured on Railway (US-West, steady-state, 50 concurrent users).*
 
 | Metric | Value |
 |---|---|
@@ -115,6 +149,21 @@ The result is a system that runs end-to-end with one command and scales from a s
 | Cold start (free tier) | ~30s |
 
 Full latency table: [docs/benchmarks.md](docs/benchmarks.md)
+
+---
+
+## MLOps Automation
+
+Three GitHub Actions workflows run on schedule — no human trigger required:
+
+| Workflow | Schedule | What it does |
+|---|---|---|
+| [`data-pipeline.yml`](.github/workflows/data-pipeline.yml) | Every Monday 02:00 UTC | Re-generates synthetic data → dbt build → retrain churn model → export drift baseline |
+| [`drift-monitor.yml`](.github/workflows/drift-monitor.yml) | Every Sunday 00:00 UTC | PSI + KS test against training baseline → opens GitHub Issue automatically on PSI > 0.20 |
+| [`benchmarks.yml`](.github/workflows/benchmarks.yml) | After every CI deploy | Locust load test (50 users, 60s) → auto-commits updated `docs/benchmarks.md` |
+
+**Drift detection:** Custom PSI + KS implementation (`src/infrastructure/monitoring/drift_detector.py`),
+12 features monitored, Prometheus gauges on `/metrics`, runbook in [ADR-004](docs/ADR/ADR-004-drift-detection.md).
 
 ---
 
@@ -133,24 +182,11 @@ Full latency table: [docs/benchmarks.md](docs/benchmarks.md)
 
 ---
 
-## Claude Skills — Delivery Superpowers
+<details>
+<summary>Claude Code Skills (delivery SOPs)</summary>
 
-SaaSGuard uses **Claude Skills** (`skills/` folder) — reusable SOPs that enforce consistent DDD, TDD, documentation, and executive storytelling on every output.
-
-| Skill | Invoke | Purpose |
-|---|---|---|
-| `tdd-cycle` | `/tdd-cycle` | Red-Green-Refactor for any new code |
-| `ddd-entity` | `/ddd-entity` | Bounded-context entities + repos |
-| `phase-advance` | `/phase-advance` | Complete a full project phase |
-| `mkdocs-autoupdate` | `/mkdocs-autoupdate` | Sync docs after code changes |
-| `docker-harden` | `/docker-harden` | Production Docker audit |
-| `dvc-version` | `/dvc-version` | Version data + model artifacts |
-| `exec-story` | `/exec-story` | C-level slides + ROI narrative |
-| `self-critique` | `/self-critique` | Quality gate before every handoff |
-| `data-contract` | `/data-contract` | Schema tests + Pydantic validation + freshness SLAs |
-| `commit-and-close` | `/commit-and-close` | Verify tests, commit, push, close GitHub issues |
-
-See [`skills/README.md`](skills/README.md) for full documentation.
+Reusable delivery SOPs live in `skills/`. See [`skills/README.md`](skills/README.md).
+</details>
 
 ---
 

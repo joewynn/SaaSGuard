@@ -1,0 +1,33 @@
+name: Docs
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write  # needed for gh-deploy to push to gh-pages branch
+
+jobs:
+  deploy-docs:
+    name: Build & Deploy MkDocs → GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required by git-revision-date-localized plugin
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install MkDocs dependencies
+        run: |
+          pip install \
+            mkdocs-material \
+            mkdocstrings[python] \
+            mkdocs-git-revision-date-localized-plugin \
+            mkdocs-gen-files
+
+      - name: Deploy to GitHub Pages
+        run: mkdocs gh-deploy --force

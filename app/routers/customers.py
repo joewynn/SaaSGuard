@@ -32,7 +32,11 @@ async def list_customers(
         List of lightweight CustomerSummary records.
     """
     n = min(limit, 100)
-    customers = repo.get_sample(n)
+    try:
+        customers = repo.get_sample(n)
+    except Exception as exc:
+        logger.error("list_customers.error", error=str(exc))
+        raise HTTPException(status_code=503, detail=f"Database error: {exc}") from exc
     return [
         CustomerSummary(
             customer_id=c.customer_id,
@@ -69,6 +73,9 @@ async def get_customer_360(
     except ValueError as exc:
         logger.warning("customer_360.not_found", customer_id=customer_id)
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.error("customer_360.error", customer_id=customer_id, error=str(exc))
+        raise HTTPException(status_code=503, detail=f"Service error: {exc}") from exc
 
     return Customer360Response(
         customer_id=profile.customer_id,

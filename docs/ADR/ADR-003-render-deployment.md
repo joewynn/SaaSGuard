@@ -1,4 +1,4 @@
-# ADR-003: Cloud Deployment Platform — Render.com
+# ADR-003: Cloud Deployment Platform — Railway
 
 **Status:** Accepted
 **Date:** 2026-03-16
@@ -24,7 +24,7 @@ The deployment target needed to:
 
 ## Decision
 
-**Render.com** with a Docker-based web service on the free tier.
+**Railway** with a Docker-based web service on the free tier.
 
 ---
 
@@ -32,8 +32,8 @@ The deployment target needed to:
 
 | Platform | Pros | Cons | Decision |
 |---|---|---|---|
-| **Render.com** | Docker-native, GitHub auto-deploy, free HTTPS, no cloud credits | Free tier cold-start ~30s, 512MB RAM limit | ✅ **Selected** |
-| Railway | Similar to Render, generous free tier | Less portfolio recognition, fewer docs | ❌ Rejected |
+| **Railway** | Docker-native, GitHub auto-deploy, free HTTPS, no cold-start on Starter plan, generous free tier | Slightly less portfolio name-recognition than legacy platforms | ✅ **Selected** |
+| Render.com | Similar Docker-native setup, free HTTPS | Free tier cold-start ~30s, 512MB RAM limit, less generous free tier | ❌ Rejected — cold-start degrades live demo experience |
 | AWS ECS + ECR | Full enterprise stack, autoscaling, no cold-start | Requires AWS account, free-tier expires, complex IAM setup | ❌ Rejected — overkill for portfolio demo |
 | Fly.io | Good free tier, global regions | Requires `flyctl` CLI, less familiar to reviewers | ❌ Rejected |
 | Heroku | Industry recognition | Paid-only since Nov 2022, no Docker-native web dyno | ❌ Rejected |
@@ -44,16 +44,16 @@ The deployment target needed to:
 
 ### Positive
 
-- **Single live URL** for CV/LinkedIn: `https://saasguard.onrender.com/docs`
-- **Zero additional infrastructure** — Render reads from `ghcr.io` directly
+- **Single live URL** for CV/LinkedIn: `https://saasguard.up.railway.app/docs`
+- **Zero additional infrastructure** — Railway reads from `ghcr.io` directly
 - **CI closes the loop**: `push → lint → test → build → push image → deploy` is a single
-  pipeline — the `deploy` job in `ci.yml` fires the Render deploy hook after smoke tests pass
-- **render.yaml** as infrastructure-as-code documents the service config in git
+  pipeline — the `deploy` job in `ci.yml` fires the Railway deploy hook after smoke tests pass
+- **`railway.toml`** as infrastructure-as-code documents the service config in git
 
 ### Negative / Trade-offs
 
-- **Free tier cold-start ~30s** after 15 minutes of inactivity. Documented in
-  `docs/benchmarks.md`. Upgrade path: Render Starter plan ($7/month) for always-on
+- **Free tier resource limits** — sufficient for demo traffic but limits concurrent users
+  to ~50 before resource pressure. Documented in `docs/benchmarks.md`
 - **512MB RAM** on free tier — sufficient for the DuckDB + XGBoost model but limits
   concurrent users to ~50 before OOM risk. Documented in ADR
 
@@ -61,26 +61,26 @@ The deployment target needed to:
 
 Demo data (DuckDB + model artifacts) is baked into the Docker image at build time via
 the `data-gen` multi-stage build stage. This eliminates cold-start generation time on
-Render and makes the image self-contained. See ADR implications:
+Railway and makes the image self-contained. See ADR implications:
 
 - Image size target: ~350–450 MB (Python runtime + data + model artifacts)
 - No external storage dependency for the free tier deployment
-- On retrain, a new image push triggers a fresh Render deploy via the deploy hook
+- On retrain, a new image push triggers a fresh Railway deploy via the deploy hook
 
 ### Secret management
 
-`GROQ_API_KEY` is set directly in the Render dashboard (never committed). All other
-env vars are in `render.yaml` and safe to commit.
+`GROQ_API_KEY` is set directly in the Railway dashboard (never committed). All other
+env vars are in `railway.toml` and safe to commit.
 
 ### Upgrade path
 
-Render Starter ($7/month) removes the cold-start restriction and increases RAM to 2GB,
+Railway Starter ($5/month) removes resource restrictions and increases RAM to 2GB,
 which is sufficient for production CS team usage (~200 DAU).
 
 ---
 
 ## References
 
-- Render documentation: https://render.com/docs/deploy-a-docker-image
+- Railway documentation: https://docs.railway.app/deploy/dockerfiles
 - `.github/workflows/ci.yml` — `deploy` job
-- `render.yaml` — service definition
+- `railway.toml` — service definition

@@ -1,4 +1,5 @@
 site_name: SaaSGuard – Churn & Risk Prediction Platform
+site_url: https://josephwam.github.io/saasguard/
 site_description: >
   Production-grade B2B SaaS churn and compliance risk prediction platform.
   Built with DDD, TDD, FastAPI, DuckDB, and Apache Superset.
@@ -130,6 +131,8 @@ nav:
   - ADRs:
     - ADR-001 DuckDB: ADR/ADR-001-duckdb-over-postgres.md
     - ADR-002 DDD: ADR/ADR-002-ddd-architecture.md
+    - ADR-003 Railway: ADR/ADR-003-render-deployment.md
+    - ADR-004 Drift Detection: ADR/ADR-004-drift-detection.md
   - Changelog: CHANGELOG.md
 
 extra:

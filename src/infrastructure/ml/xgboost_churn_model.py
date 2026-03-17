@@ -6,7 +6,7 @@ serves calibrated churn predictions + SHAP explanations.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
@@ -71,7 +71,7 @@ class XGBoostChurnModel(ChurnModelPort):
             n_features=len(_FEATURE_ORDER),
         )
 
-    def predict_proba(self, features: dict[str, float]) -> float:
+    def predict_proba(self, features: dict[str, Union[float, str]]) -> float:
         """Return calibrated P(churn in 90 days) ∈ [0, 1].
 
         Uses the full CalibratedClassifierCV pipeline so that the returned
@@ -88,7 +88,7 @@ class XGBoostChurnModel(ChurnModelPort):
         logger.debug("predict_proba", probability=round(prob, 4))
         return prob
 
-    def explain(self, features: dict[str, float]) -> list[ShapFeature]:
+    def explain(self, features: dict[str, Union[float, str]]) -> list[ShapFeature]:
         """Return SHAP feature contributions for one customer.
 
         Uses TreeExplainer on the uncalibrated XGBoost base model.
@@ -113,7 +113,7 @@ class XGBoostChurnModel(ChurnModelPort):
         return [
             ShapFeature(
                 feature_name=feat,
-                feature_value=float(features.get(feat, 0.0)),
+                feature_value=self._to_display_float(features.get(feat, 0.0)),
                 shap_impact=float(sv[i]),
             )
             for i, feat in enumerate(_FEATURE_ORDER)
@@ -126,7 +126,20 @@ class XGBoostChurnModel(ChurnModelPort):
 
     # ── Private helpers ───────────────────────────────────────────────────────
 
-    def _to_dataframe(self, features: dict[str, float]) -> pd.DataFrame:
+    @staticmethod
+    def _to_display_float(value: Union[float, str, None]) -> float:
+        """Convert any feature value to float for SHAP display.
+
+        Categorical string features (plan_tier, industry) are passed through
+        the OrdinalEncoder at prediction time; for SHAP display purposes we
+        just return 0.0 rather than crashing on a string-to-float conversion.
+        """
+        try:
+            return float(value)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return 0.0
+
+    def _to_dataframe(self, features: dict[str, Union[float, str]]) -> pd.DataFrame:
         """Convert feature dict to a single-row DataFrame in the correct column order.
 
         Args:

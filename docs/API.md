@@ -6,7 +6,7 @@ Full OpenAPI spec is auto-generated at runtime: `http://localhost:8000/docs` (Sw
 
 ```
 Development:  http://localhost:8000
-Production:   https://<your-render-url>.onrender.com
+Production:   https://saasguard.up.railway.app
 ```
 
 ## Authentication
