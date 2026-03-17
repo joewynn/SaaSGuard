@@ -92,7 +92,7 @@ def generate(csv_path: Path) -> str:
             f"| Max throughput | {rps} req/s |",
             f"| Total requests | {total_req} |",
             f"| Total failures | {fail_count} |",
-            f"| Cold start (free tier) | ~30s |",
+            "| Cold start (free tier) | ~30s |",
         ]
 
     lines += [

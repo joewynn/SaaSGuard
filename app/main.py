@@ -6,9 +6,9 @@ This is a thin delivery layer. Business logic lives in src/application/ and src/
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
 
 import structlog
 from fastapi import FastAPI, HTTPException
