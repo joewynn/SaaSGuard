@@ -38,7 +38,7 @@
 
 ## Features
 
-| Feature | Type | Source | Phase 3 Signal |
+| Feature | Type | Source | EDA Signal |
 |---|---|---|---|
 | `mrr` | Numerical | `raw.customers` | Revenue-at-risk weighting |
 | `tenure_days` | Numerical | Derived: `signup_date → reference_date` | Time-in-product proxy |
@@ -97,7 +97,7 @@ Every prediction returns `top_shap_features` — the 5 features with largest |SH
 | High `high_priority_tickets` | ↑ risk | Escalate to senior CSM |
 | Low `integration_connects_first_30d` | ↓ risk when high | Integration health check call |
 
-Full global importance rankings and individual waterfall charts: `notebooks/phase4_01_model_training.ipynb` § SHAP Analysis.
+Full global importance rankings and individual waterfall charts: `notebooks/churn_model_training_and_calibration.ipynb` § SHAP Analysis.
 
 ---
 
@@ -116,7 +116,7 @@ Full global importance rankings and individual waterfall charts: `notebooks/phas
 
 - **Synthetic data:** The model is trained on Faker-generated data with baked-in correlations. Real-world performance should be validated on production data before acting on predictions for live customers.
 - **Industry imbalance:** FinTech and HealthTech customers dominate the training set. Industries with fewer examples (PropTech, LegalTech) have wider prediction uncertainty.
-- **No temporal drift detection:** Model training cutoff is 2025-06-01. After 90 days from any deployment date, a data drift check should be triggered. Phase 7 scope.
+- **No temporal drift detection:** Model training cutoff is 2025-06-01. After 90 days from any deployment date, a data drift check should be triggered. See [ADR-004](ADR/ADR-004-drift-detection.md) for the drift monitoring implementation.
 - **Label definition:** The model distinguishes churned from active customers — it does not predict future churn probability for customers who have never churned. Calibration per tier addresses this but does not eliminate uncertainty.
 - **Human-in-the-loop required:** Model output must be reviewed by a CS manager before automated outreach or contract actions. `recommended_action` is advisory only.
 

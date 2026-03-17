@@ -1,6 +1,6 @@
 # AI Summary Domain
 
-Phase 5 AI/LLM layer — executive summaries and RAG Q&A grounded in DuckDB customer data.
+AI/LLM layer — executive summaries and RAG Q&A grounded in DuckDB customer data.
 
 ## Domain Entities
 

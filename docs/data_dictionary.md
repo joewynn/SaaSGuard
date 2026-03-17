@@ -67,9 +67,9 @@ Customer support interactions.
 
 ---
 
-## Derived Features — Phase 3 Analysis
+## Derived Features — EDA Analysis
 
-Computed on-the-fly in Phase 3 notebooks and pre-modelling signal tests. These features
+Computed in EDA notebooks and pre-modelling signal tests. These features
 are computed for **all customers** (churned + active) using direct queries against the
 `raw` schema. They extend `mart_customer_churn_features` (which covers active customers
 only) to support survival analysis and EDA.
@@ -95,7 +95,7 @@ only) to support survival analysis and EDA.
 
 ---
 
-## mart_customer_churn_features (dbt mart — Phase 4)
+## mart_customer_churn_features (dbt mart)
 
 Pre-aggregated feature mart built by dbt. One row per **active** customer (WHERE `is_active = TRUE`). Queried at inference time by `ChurnFeatureExtractor` (~1ms per request). All 15 model features sourced here.
 

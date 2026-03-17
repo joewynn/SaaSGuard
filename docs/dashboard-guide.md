@@ -115,14 +115,14 @@ The CS team's daily queue prioritisation tool.
 - The `top_risk_drivers` column shows the two most active risk signals —
   copy this into the AI summary prompt for context.
 
-### Key analytic findings (from Phase 3 EDA)
+### Key analytic findings
 
 1. **Usage decay signal**: customers with `events_last_30d < 5` have 3.2× higher
    churn probability than active users. The scatter chart makes this correlation visible.
 2. **Support overload signal**: customers with ≥2 high-priority tickets churn at 2.1× the
    base rate — often the last signal before cancellation.
 3. **Onboarding activation gate**: ≥3 integration connects in first 30 days reduces
-   first-90-day churn by 63% (Phase 4 SHAP finding).
+   first-90-day churn by 63% (SHAP finding).
 
 ### Business narrative
 
@@ -159,7 +159,7 @@ budget allocation and ROI conversations with finance.
    - At 15% effectiveness (Forrester benchmark): `recoverable_arr_15pct / intervention_cost`
 3. **Filter by plan_tier** to build a tiered CS coverage model:
    - Enterprise: high-touch, 1:1 CSM
-   - Growth: pooled CSM + AI summaries (Phase 5)
+   - Growth: pooled CSM + AI summaries
    - Starter: product-led playbooks + email automation
 
 ### Business narrative

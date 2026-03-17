@@ -156,7 +156,7 @@ raw.risk_signals        → stg_risk_signals     ↘ (composite risk score: 50/3
 ```
 
 Key finding baked into the feature store: customers who connect ≥3 integrations in their
-first 30 days show **2.7× lower churn rate** (log-rank p < 0.001, Phase 3 cohort analysis).
+first 30 days show **2.7× lower churn rate** (log-rank p < 0.001, cohort analysis).
 `integration_connects_first_30d` is the single strongest early-warning feature in the model.
 
 Full schema: [docs/data_dictionary.md](docs/data_dictionary.md)
@@ -183,7 +183,7 @@ Validation: out-of-time split (train: signup < 2025-06-01, test: ≥ 2025-06-01)
 Not a random split — temporal integrity matters for subscription data.
 
 **Risk model:** Composite score = (0.50 × usage decay) + (0.35 × compliance gap) +
-(0.15 × vendor risk flags). Weights were derived from Phase 3 survival analysis; the usage
+(0.15 × vendor risk flags). Weights were derived from survival analysis; the usage
 decay component alone predicts 68% of HIGH/CRITICAL tier accounts.
 
 Full model card: [docs/model-card.md](docs/model-card.md)

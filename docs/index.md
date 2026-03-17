@@ -36,8 +36,8 @@ SaaSGuard attacks each of these by surfacing the right signal early enough to ac
 ## Quick Demo
 
 ```bash
-git clone https://github.com/josephwam/saasguard
-cd saasguard
+git clone https://github.com/joewynn/SaaSGuard
+cd SaaSGuard
 cp .env.example .env
 docker compose --profile dev up -d
 ```
@@ -90,30 +90,17 @@ Full DDD diagram with request flow → [Architecture](architecture.md).
 
 ---
 
-## How This Maps to Senior DS / Product Analytics JDs
+## Why I built this
 
-| Requirement | SaaSGuard |
-|---|---|
-| SQL + dbt | Staging → intermediate → mart models over DuckDB |
-| Python / ML | XGBoost + survival analysis + SHAP in `src/domain/prediction/` |
-| Experiment design | Bayesian A/B test simulation in `notebooks/` |
-| Executive storytelling | AI Llama-3 summaries + 10-slide C-level deck |
-| BI tooling | Apache Superset with Customer 360 + churn heatmaps |
-| Responsible AI | Ethical guardrails doc, bias checks, human-in-loop annotation |
-| Software engineering | DDD, TDD (>80% coverage), CI/CD, Docker, DVC, semver |
-| Change management | 5-page rollout deck in `docs/` |
+Most churn tools give you a score and stop there. SaaSGuard closes the loop: raw product
+events → calibrated 90-day probability → SHAP-grounded explanation → AI brief a CS manager
+can act on in under two minutes.
 
----
+The dbt layer makes feature engineering auditable by anyone who can read SQL. The
+SHAP-to-business-language translation removes the "what does this mean?" question from CS
+workflows. The guardrail layer means AI summaries are something you can put in front of a VP
+without checking them first.
 
-## Project Phases
-
-| Phase | Deliverable |
-|---|---|
-| 1 – Scoping | PRD, Jira tickets, ROI calculator |
-| 2 – Data Architecture | dbt project + DuckDB warehouse |
-| 3 – EDA & Experiments | Cohort analysis, survival curves, A/B test |
-| 4 – Predictive Models | XGBoost + survival + SHAP |
-| 5 – AI/LLM Layer | Executive summaries + RAG chatbot |
-| 6 – Dashboard | Superset Customer 360 + heatmaps |
-| 7 – Deployment | FastAPI + Docker + change-management deck |
-| 8 – Presentation | 10-slide deck + recorded walkthrough |
+The DDD structure is not ceremony — it is what makes this testable end-to-end. The domain
+layer has no file I/O, no database calls, no HTTP. Every prediction path is unit-tested with
+injected fakes. The 153-test suite runs in under 8 seconds locally.

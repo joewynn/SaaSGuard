@@ -12,9 +12,9 @@ importance from tree splits, SHAP values:
 
 ## Global Importance (across all test customers)
 
-Phase 3 validated these features statistically. The model confirms the same ranking:
+The cohort analysis validated these features statistically. The model confirms the same ranking:
 
-| Rank | Feature | Mean |SHAP| | Direction | Phase 3 correlation |
+| Rank | Feature | Mean |SHAP| | Direction | EDA correlation |
 |---|---|---|---|---|
 | 1 | `events_last_30d` | ~0.31 | Negative (more → lower risk) | r = −0.38 |
 | 2 | `avg_adoption_score` | ~0.22 | Negative | r = −0.46 |
@@ -22,7 +22,7 @@ Phase 3 validated these features statistically. The model confirms the same rank
 | 4 | `high_priority_tickets` | ~0.15 | Positive | r = +0.24 |
 | 5 | `retention_signal_count` | ~0.12 | Negative | r = −0.31 |
 
-See `notebooks/phase4_01_model_training.ipynb` for the full SHAP beeswarm and
+See `notebooks/churn_model_training_and_calibration.ipynb` for the full SHAP beeswarm and
 waterfall plots.
 
 ## Individual Customer Waterfall

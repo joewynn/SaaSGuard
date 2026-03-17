@@ -101,7 +101,7 @@ SaaSGuard is a churn and risk prediction layer that sits on top of existing prod
 
 | Risk | Likelihood | Mitigation |
 |---|---|---|
-| Model bias by industry or plan tier | Medium | Fairness audit by cohort in Phase 4 |
+| Model bias by industry or plan tier | Medium | Fairness audit by cohort |
 | Alert fatigue (too many CS outreaches) | Medium | Precision threshold tuning; ≥40% conversion gate |
 | LLM hallucination in summaries | Low-Medium | Human-in-loop gate + confidence disclaimer |
 | Data staleness reducing prediction quality | Low | DVC pipeline + freshness SLA checks in dbt |

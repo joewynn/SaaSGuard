@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-03-16
 **Deciders:** Joseph Wam
-**Context:** Phase 7 — Production Deployment
+**Context:** Production Deployment
 
 ---
 

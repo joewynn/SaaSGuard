@@ -11,7 +11,7 @@ Production:   https://saasguard.up.railway.app
 
 ## Authentication
 
-_Phase 7 addition — JWT bearer token via `Authorization: Bearer <token>` header._
+_JWT bearer token via `Authorization: Bearer <token>` header._
 
 ---
 

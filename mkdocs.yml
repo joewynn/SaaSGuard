@@ -96,31 +96,30 @@ nav:
   - Getting Started: getting-started.md
   - Demo: demo.md
   - Architecture: architecture.md
-  - Phase 1 – Scoping:
+  - Product & Planning:
     - PRD: prd.md
     - Tickets: tickets.md
     - ROI Calculator: roi-calculator.md
     - Growth Framework: growth-framework.md
     - Stakeholder Research (VoC): stakeholder-notes.md
-  - Phase 2 – Data Architecture:
+  - Data:
     - Data Dictionary: data_dictionary.md
     - Data Generation Methodology: data-generation.md
-  - Phase 3 – EDA & Experiments:
+  - Analysis & Experiments:
     - EDA Findings: eda-findings.md
     - Experiment Design (CS Intervention): experiment-design.md
-  - Phase 4 – Predictive Models:
+  - Models & Explainability:
     - Model Card: model-card.md
     - Model Design & Accuracy: model-design.md
     - SHAP Feature Importance: shap-analysis.md
-  - Phase 5 – AI/LLM Layer:
+  - AI Layer:
     - Ethical Guardrails: ethical-guardrails.md
     - LLM Time Saved (ROI): llm-time-saved.md
-  - Phase 6 – Dashboard:
+  - Dashboard:
     - Dashboard Guide: dashboard-guide.md
-  - Phase 7 – Deployment:
+  - Operations:
     - Change Management: change-management.md
     - Runbook: runbook.md
-  - Phase 8 – Presentation:
     - One-Pager: one-pager.md
   - API Reference:
     - Overview: api-reference/index.md

@@ -18,7 +18,7 @@ SaaSGuard applies a three-layer guardrail to every LLM output before it reaches 
 
 The `PromptBuilder` assembles a `[CONTEXT]` block containing only verified DuckDB facts:
 - Customer profile (tier, MRR, tenure, industry)
-- Calibrated churn probability + risk tier (from Phase 4 XGBoost model)
+- Calibrated churn probability + risk tier (from XGBoost model)
 - Top-5 SHAP feature drivers with values and impact directions
 - Usage events (last 30 days, by type)
 - Open support tickets (priority, topic, age)
@@ -89,9 +89,9 @@ LLMs trained on general-purpose corpora may have implicit biases:
 
 ---
 
-## Human-in-Loop Annotation (Phase 7 Scope)
+## Human-in-Loop Annotation
 
-The following feedback loop is planned for Phase 7:
+The following feedback loop is planned:
 
 1. CS teams can flag summaries as "incorrect" or "helpful" via the Superset dashboard
 2. Flagged summaries are logged with the original context for analysis

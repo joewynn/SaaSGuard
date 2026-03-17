@@ -99,7 +99,7 @@ into the experiment.
 
 ### Prior belief
 
-From Phase 3 survival analysis:
+From survival analysis:
 
 - Starter tier 90-day churn rate (baseline): **~33%** (KM estimate at day 90)
 - Growth tier 90-day churn rate (baseline): **~15%**
@@ -140,7 +140,7 @@ a prior belief that baseline churn ≈ 20%):
 **Recommended minimum:** **n = 60 per arm** to achieve ≥ 88% confidence that a real
 5pp effect is detected. This is achievable in 1–2 quarters for starter tier.
 
-See `notebooks/phase3_03_ab_test_simulation.ipynb` for the full simulation.
+See `notebooks/bayesian_ab_test_simulation.ipynb` for the full simulation.
 
 ---
 
@@ -150,7 +150,7 @@ See `notebooks/phase3_03_ab_test_simulation.ipynb` for the full simulation.
 
 `Beta(α=2, β=8)` — informative prior encoding the belief that baseline churn ≈ 20%.
 
-**Defensibility:** The prior is based on the Phase 2 synthetic data (enterprise + growth
+**Defensibility:** The prior is based on the synthetic data (enterprise + growth
 blended rate) and is intentionally conservative (slightly lower than the starter-specific
 baseline) to avoid over-claiming intervention benefit.
 
@@ -248,4 +248,4 @@ At the end of the experiment, the report must include:
 ---
 
 *For the simulation validating this design, see:*
-*`notebooks/phase3_03_ab_test_simulation.ipynb`*
+*`notebooks/bayesian_ab_test_simulation.ipynb`*

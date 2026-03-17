@@ -47,7 +47,7 @@ docker compose exec api python -m src.infrastructure.data_generation.generate_sy
 # 2. Run dbt transformations
 docker compose exec dbt dbt run --profiles-dir .
 
-# 3. Train models (Phase 4)
+# 3. Train models
 docker compose exec api dvc repro
 ```
 
@@ -128,6 +128,6 @@ See [`.env.example`](https://github.com/joewynn/SaaSGuard/blob/main/.env.example
 | Variable | Default | Description |
 |---|---|---|
 | `DUCKDB_PATH` | `/app/data/saasguard.duckdb` | Warehouse file path (mounted volume) |
-| `GROQ_API_KEY` | — | Required for LLM executive summaries (Phase 5) |
+| `GROQ_API_KEY` | — | Required for LLM executive summaries |
 | `SUPERSET_SECRET_KEY` | change_me | Must be changed in production |
 | `APP_ENV` | `development` | Controls logging verbosity and gunicorn vs uvicorn |

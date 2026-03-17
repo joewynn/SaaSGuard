@@ -183,9 +183,9 @@ all statistical guardrails will still pass (by design of the profile system).
 | Simplification | Real-world difference | Impact on model |
 |---|---|---|
 | Binary destiny at birth | Real churn is a continuous process influenced by external events (competitor launch, price change, key contact leaving) | Model will be slightly overconfident — calibrate with Platt scaling |
-| No seasonality | Real SaaS usage dips in Q4 holidays and spikes in Q1 planning | Feature engineering should add month-of-year features in Phase 4 |
+| No seasonality | Real SaaS usage dips in Q4 holidays and spikes in Q1 planning | Feature engineering can add month-of-year features |
 | No customer-to-customer effects | Real churn can propagate within an enterprise (one power user leaving reduces other seats) | Not modelled — acceptable for v1 |
-| MRR is static | Real MRR changes with seat counts and tier upgrades | Survival analysis (Phase 3) handles time-varying risk better than snapshot MRR |
+| MRR is static | Real MRR changes with seat counts and tier upgrades | Survival analysis handles time-varying risk better than snapshot MRR |
 
 These limitations are documented here so readers understand the deliberate design
 tradeoffs — not unexamined assumptions.

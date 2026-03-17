@@ -17,7 +17,7 @@ Before SaaSGuard's AI layer, a Customer Success Manager preparing for an account
 ## With AI Layer: 30-Second API Call
 
 `POST /summaries/customer` returns a 3–5 sentence narrative grounded in:
-- Calibrated churn probability + SHAP drivers (Phase 4 model)
+- Calibrated churn probability + SHAP drivers
 - Usage events (last 30 days)
 - Open support tickets
 - GTM opportunity status
@@ -34,7 +34,7 @@ Before SaaSGuard's AI layer, a Customer Success Manager preparing for an account
 | Active accounts per CSM | 20 | Industry benchmark (Gainsight 2024) |
 | Account briefs written/week | 20 (weekly review cadence) | Assumption |
 | Time per brief (manual) | 15 min | Baseline above |
-| Time per brief (AI-assisted) | 2 min (30s + review) | Phase 5 measurement |
+| Time per brief (AI-assisted) | 2 min (30s + review) | measured |
 | **Net time saved per CSM/week** | **~3.3 hours** | (15 − 2) × 20 / 60 |
 | CSMs on platform (Year 1 assumption) | 10 | Business assumption |
 | **Total time saved per week** | **~33 hours** | 3.3 × 10 |
@@ -46,14 +46,14 @@ Before SaaSGuard's AI layer, a Customer Success Manager preparing for an account
 
 ## Quality Metrics
 
-Time saved is only valuable if quality is maintained or improved. Phase 5 tracks:
+Time saved is only valuable if quality is maintained or improved. The system tracks:
 
 | Metric | Target | How Measured |
 |---|---|---|
 | Guardrail pass rate | > 90% | % of summaries with `confidence_score = 1.0` in production logs |
 | Probability accuracy | ±2pp | Guardrail `probability_mismatch` flag rate |
 | CSM accuracy rating | > 80% "accurate" | Optional survey in Superset dashboard |
-| Human correction rate | < 5%/week | Flagging workflow (Phase 7 scope) |
+| Human correction rate | < 5%/week | Flagging workflow |
 | API latency (Groq) | < 3s p95 | structlog timing → Prometheus |
 | API latency (Ollama) | < 15s p95 | Acceptable for local dev |
 
@@ -71,12 +71,12 @@ The AI layer accelerates the human judgment loop, turning raw model predictions 
 
 ---
 
-## Phase 7 Scope: Feedback Loop
+## Feedback Loop
 
 To continuously improve summary quality:
 
 1. Log every summary with: `customer_id`, `model_used`, `confidence_score`, `guardrail_flags`, `generated_at`
-2. Track CSM "thumbs up / thumbs down" ratings via Superset (Phase 6 dashboard)
+2. Track CSM "thumbs up / thumbs down" ratings via Superset dashboard
 3. Weekly review: identify systematic errors (recurring flags, low-rated summaries)
 4. Feed high-quality summaries + corrections back as few-shot examples in the prompt (no fine-tuning required)
 5. Report correction rate trend to VP CS as a platform health metric

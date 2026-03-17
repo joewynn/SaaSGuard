@@ -1,8 +1,8 @@
-# Phase 4 – Predictive Model Design & Accuracy
+# Predictive Model Design & Accuracy
 
 ## Overview
 
-Phase 4 delivers the core machine learning layer: a calibrated XGBoost churn model that
+The model layer delivers: a calibrated XGBoost churn model that
 takes each active customer's 15-feature vector and returns `P(churn in 90 days)`, SHAP
 feature explanations, and a recommended CS action.
 
@@ -27,7 +27,7 @@ CalibratedClassifierCV(method='isotonic', cv=5)
 
 ## Feature Set (15 total)
 
-| Feature | Type | Source | Phase 3 Signal |
+| Feature | Type | Source | EDA Signal |
 |---|---|---|---|
 | `mrr` | Numerical | customers table | Revenue-at-risk weighting |
 | `tenure_days` | Numerical | Derived from signup_date | Time-in-product |
@@ -37,7 +37,7 @@ CalibratedClassifierCV(method='isotonic', cv=5)
 | `avg_adoption_score` | Numerical | usage_events | Feature depth (|r|>0.20) |
 | `days_since_last_event` | Numerical | usage_events | Recency decay |
 | `retention_signal_count` | Numerical | usage_events | High-value event depth |
-| `integration_connects_first_30d` | Numerical | usage_events | **Phase 4 addition** — 2.7× lower churn |
+| `integration_connects_first_30d` | Numerical | usage_events | Activation gate — 2.7× lower churn |
 | `tickets_last_30d` | Numerical | support_tickets | Pre-churn frustration signal |
 | `high_priority_tickets` | Numerical | support_tickets | Positively correlated with churn |
 | `avg_resolution_hours` | Numerical | support_tickets | CS experience quality |
@@ -52,7 +52,7 @@ CalibratedClassifierCV(method='isotonic', cv=5)
 | AUC-ROC | > 0.80 | Model must reliably rank at-risk customers above safe ones |
 | Brier score | < 0.15 | Calibrated probabilities → trustworthy risk tiers |
 | Precision @ decile 1 | > 0.60 | CS team acts on top 10% — this is the actionable bucket |
-| Tier calibration | ±15pp of KM | Model tier rates should match Phase 3 survival baseline |
+| Tier calibration | ±15pp of KM | Model tier rates should match survival analysis baseline |
 
 ## Training Strategy
 

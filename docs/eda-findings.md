@@ -1,14 +1,14 @@
-# EDA & Experiment Findings — Phase 3
+# EDA & Experiment Findings
 
 **Version:** 1.0
 **Date:** 2026-03-14
 **Source notebooks:**
 
-- `notebooks/phase3_01_eda_cohort_analysis.ipynb`
-- `notebooks/phase3_02_survival_analysis.ipynb`
-- `notebooks/phase3_03_ab_test_simulation.ipynb`
+- `notebooks/cohort_analysis_and_retention_curves.ipynb`
+- `notebooks/survival_analysis_and_time_to_churn.ipynb`
+- `notebooks/bayesian_ab_test_simulation.ipynb`
 
-This document synthesises Phase 3 analytical findings for executive communication.
+This document synthesises analytical findings for executive communication.
 Each finding follows the format: **Statistical evidence → Business insight → Exec deck bullet
 → ROI model validation**.
 
@@ -44,7 +44,7 @@ CS outreach in weeks 3–10 targets the window with the highest marginal return.
 
 ### ROI Model Validation
 
-Phase 1 ROI model assumed 20–25% first-90-day churn for starter tier. The survival
+The initial ROI model assumed 20–25% first-90-day churn for starter tier. The survival
 analysis finds **~33% for starter specifically** — slightly higher than the conservative
 estimate. **This strengthens the ROI case**: the addressable at-risk pool is larger
 than modelled.
@@ -129,8 +129,8 @@ volume — it requires product and pricing levers too.
 
 ### ROI Model Validation
 
-The Phase 1 model used 43% observed churn rate for starter across all timeframes.
-Phase 3 finds this is concentrated in the first 280 days (median survival). The model
+The initial model used 43% observed churn rate for starter across all timeframes.
+The survival analysis finds this is concentrated in the first 280 days (median survival). The model
 is **calibrated**: it correctly identifies starter as the highest-priority intervention
 target.
 
@@ -149,7 +149,7 @@ Frequentist power analysis (alpha=0.05, power=0.80, one-tailed):
   typical cohort sizes**
 
 Bayesian Beta-Bernoulli simulation with prior `Beta(2, 8)` (informative, defensible
-from Phase 2 data):
+from historical data):
 
 - At **n = 40 per arm**: P(treatment > control) ≈ 0.82 for a true 5pp effect
 - At **n = 60 per arm**: P(treatment > control) ≈ 0.88
@@ -174,9 +174,9 @@ that can produce actionable results within **one to two quarters**.
 
 ### ROI Model Validation
 
-The Phase 1 ROI model assumed a 10–15% churn reduction from CS intervention but
-**did not include measurement cost or confidence requirements**. Phase 3 adds rigour:
-the Bayesian design produces a measurable, defensible ROI signal within one quarter,
+The initial ROI model assumed a 10–15% churn reduction from CS intervention but
+**did not include measurement cost or confidence requirements**. The Bayesian design
+adds rigour: it produces a measurable, defensible ROI signal within one quarter,
 reducing the risk of investing in a CS programme that doesn't actually work.
 
 ---
@@ -187,7 +187,7 @@ reducing the risk of investing in a CS programme that doesn't actually work.
 
 Point-biserial correlation (feature vs. churn label), ranked by |r|:
 
-| Rank | Feature | Correlation | Direction | Phase 4 Priority |
+| Rank | Feature | Correlation | Direction | Model Priority |
 |---|---|---|---|---|
 | 1 | `events_last_30d` | −0.38 | Negative | Primary decay signal |
 | 2 | `avg_adoption_score` | −0.34 | Negative | Adoption trajectory |
@@ -209,7 +209,7 @@ The five features above explain the majority of observable churn variance. Criti
 *all five are leading indicators* — measurable at 30–60 days before churn events occur.
 This is the empirical basis for the 60-day lead time requirement in the PRD.
 
-**Feature engineering implication for Phase 4:** The model should prioritise temporal
+**Feature engineering implication:** The model should prioritise temporal
 features (decay over 7d, 14d, 30d windows) over snapshot features, and include the
 integration gate as a binary feature in addition to the count.
 
@@ -220,7 +220,7 @@ integration gate as a binary feature in addition to the count.
 
 ### ROI Model Validation
 
-Phase 1 PRD claimed "early CS intervention yields 10–15% churn reduction." Phase 3
+The PRD claimed "early CS intervention yields 10–15% churn reduction." The analysis
 shows the five signals are detectable with 30–60 days lead time. **The technical
 feasibility of the PRD's intervention window is now empirically validated.**
 
@@ -234,21 +234,19 @@ feasibility of the PRD's intervention window is now empirically validated.**
 | **Integration threshold** | KM log-rank p<0.001; 2.7× retention multiplier | 3 integrations = activation gate | "≥3 integrations → 2.7× retention advantage" | **$340K+ ARR retained per year** |
 | **Plan tier survival gap** | Multivariate log-rank p<0.001; HR 0.18 for enterprise | Starter needs structural intervention | "Enterprise: 82% lower hazard after controls" | **Calibrates tier-specific CS budget** |
 | **CS intervention measurability** | Bayesian simulation; 60/arm → 88% confidence | Measurement-driven CS programme | "60 customers/quarter → actionable results in Q2" | **De-risks ROI claim with rigour** |
-| **Top 5 predictive features** | Cox PH HRs; all p<0.001 | 60-day lead time validated empirically | "Five signals explain 80% of churn hazard" | **Validates Phase 4 feature engineering** |
+| **Top 5 predictive features** | Cox PH HRs; all p<0.001 | 60-day lead time validated empirically | "Five signals explain 80% of churn hazard" | **Validates model feature engineering** |
 
 ---
 
-## Next Steps → Phase 4: Predictive Models
-
-Phase 3 has validated:
+## Key Takeaways
 
 1. ✅ The data has statistically significant, learnable churn signal
 2. ✅ Key features are identified and ranked before modelling begins
 3. ✅ A 60-day lead time is empirically achievable
 4. ✅ The experiment framework for measuring CS intervention ROI is formally specified
 
-Phase 4 will build on these findings to train XGBoost + survival churn models with:
+The XGBoost churn model was built with:
 
-- SHAP explanations grounded in the Phase 3 feature ranking
-- Calibration validation against the KM baseline curves from Phase 3
-- Business ROI framing aligned to the quantified intervention windows from this analysis
+- SHAP explanations grounded in the feature ranking above
+- Calibration validation against the KM baseline curves
+- Business ROI framing aligned to the quantified intervention windows

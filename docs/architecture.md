@@ -31,7 +31,7 @@ graph TB
         GR[OpportunityRepository Interface]
     end
 
-    subgraph ai_summary_domain["AI Summary Domain – Phase 5"]
+    subgraph ai_summary_domain["AI Summary Domain"]
         SP[SummaryPort ABC]
         GS[GuardrailsService]
         ESE[ExecutiveSummary Entity]
@@ -111,7 +111,7 @@ sequenceDiagram
     FastAPI-->>Client: 200 {churn_probability, risk_score, shap_values}
 ```
 
-## AI Summary Request Flow (Phase 5)
+## AI Summary Request Flow
 
 ```mermaid
 sequenceDiagram

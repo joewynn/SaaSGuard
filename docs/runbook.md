@@ -190,7 +190,7 @@ dvc repro
 # 2. Review accuracy metrics in tests/model_accuracy/
 pytest tests/model_accuracy/ -v
 
-# 3. Manual review: open notebooks/phase4_01_churn_model.ipynb
+# 3. Manual review: open notebooks/churn_model_training_and_calibration.ipynb
 #    Verify calibration curve + AUC-ROC >= previous version
 
 # 4. If metrics pass, push new artifacts to DVC remote

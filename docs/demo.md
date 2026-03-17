@@ -64,14 +64,14 @@ Open **http://localhost:8888**
 
 Key notebooks to show:
 
-- `phase3_01_eda_cohort_analysis.ipynb`: Monthly retention cohorts, churn rate by tier × industry, correlation heatmap
-- `phase3_02_survival_analysis.ipynb`: Kaplan-Meier survival curves, Cox PH model, integration activation gate
-- `phase3_03_ab_test_simulation.ipynb`: Bayesian A/B test with power analysis — why frequentist tests fail in B2B SaaS
-- `phase4_01_model_training.ipynb`: XGBoost training, AUC/Brier evaluation, SHAP global importance + individual waterfall
+- `cohort_analysis_and_retention_curves.ipynb`: Monthly retention cohorts, churn rate by tier × industry, correlation heatmap
+- `survival_analysis_and_time_to_churn.ipynb`: Kaplan-Meier survival curves, Cox PH model, integration activation gate
+- `bayesian_ab_test_simulation.ipynb`: Bayesian A/B test with power analysis — why frequentist tests fail in B2B SaaS
+- `churn_model_training_and_calibration.ipynb`: XGBoost training, AUC/Brier evaluation, SHAP global importance + individual waterfall
 
-**Talking point (Phase 3):** *"We ran a Bayesian test instead of a classical one because our customer segments are small — this is typical in B2B SaaS."*
+**Talking point:** *"We ran a Bayesian test instead of a classical one because our customer segments are small — this is typical in B2B SaaS."*
 
-**Talking point (Phase 4):** *"The SHAP waterfall shows exactly which features pushed this customer's churn probability from the baseline to 0.78. CS teams see this on every API call."*
+**Talking point:** *"The SHAP waterfall shows exactly which features pushed this customer's churn probability from the baseline to 0.78. CS teams see this on every API call."*
 
 ---
 
