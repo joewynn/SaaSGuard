@@ -39,6 +39,28 @@ def model_registry_loaded() -> bool:
     return models_dir.is_dir() and any(models_dir.glob("*.pkl"))
 
 
+def marts_populated() -> bool:
+    """Check whether the dbt churn feature mart has been built and contains rows.
+
+    Business Context: The API is useless if dbt never ran — prediction endpoints
+    will return 404s for every customer. This check prevents the readiness probe
+    from reporting healthy when the data pipeline hasn't completed.
+
+    Returns:
+        True if mart_customer_churn_features has at least one row.
+    """
+    try:
+        from src.infrastructure.db.duckdb_adapter import get_connection
+
+        with get_connection(read_only=True) as conn:
+            count = conn.execute(
+                "SELECT COUNT(*) FROM marts.mart_customer_churn_features"
+            ).fetchone()
+            return count is not None and count[0] > 0
+    except Exception:
+        return False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan — startup initialisation and graceful shutdown.
@@ -117,6 +139,8 @@ async def readiness() -> dict[str, str]:
     """
     if not model_registry_loaded():
         raise HTTPException(status_code=503, detail="Model not loaded")
+    if not marts_populated():
+        raise HTTPException(status_code=503, detail="dbt marts not populated — data pipeline may not have run")
     return {"status": "ready", "version": "0.7.0"}
 
 
