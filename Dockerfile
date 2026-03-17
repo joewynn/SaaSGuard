@@ -67,21 +67,25 @@ EXPOSE 8000 8888
 # ── Stage 5: production ────────────────────────────────────────────────────────
 FROM deps AS prod
 
-COPY src/ ./src/
-COPY app/ ./app/
-COPY gunicorn.conf.py ./
+# Create non-root user FIRST so --chown can reference it below
+RUN addgroup --system saasguard && adduser --system --ingroup saasguard saasguard
+RUN chown saasguard:saasguard /app
 
-# Bake demo data and model artifacts from data-gen stage
-COPY --from=data-gen /app/data/saasguard.duckdb ./data/saasguard.duckdb
-COPY --from=data-gen /app/models/ ./models/
+# Copy application code with ownership
+COPY --chown=saasguard:saasguard src/ ./src/
+COPY --chown=saasguard:saasguard app/ ./app/
+COPY --chown=saasguard:saasguard gunicorn.conf.py ./
+
+# Copy ENTIRE data/ and models/ directories (not just files) so saasguard
+# owns the folders — DuckDB must write .wal/.tmp files next to the database
+COPY --chown=saasguard:saasguard --from=data-gen /app/data/ ./data/
+COPY --chown=saasguard:saasguard --from=data-gen /app/models/ ./models/
 
 # Activate the venv so gunicorn, python etc. resolve from it at runtime
 ENV PATH="/app/.venv/bin:$PATH"
 ENV DUCKDB_PATH=/app/data/saasguard.duckdb
 ENV MODELS_DIR=/app/models
 
-# Non-root user for security
-RUN addgroup --system saasguard && adduser --system --ingroup saasguard saasguard
 USER saasguard
 
 EXPOSE 8000
@@ -89,4 +93,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["gunicorn", "app.main:app", "-c", "gunicorn.conf.py"]
+# Use $PORT from Railway (falls back to 8000 locally)
+CMD ["sh", "-c", "gunicorn -c gunicorn.conf.py app.main:app --bind 0.0.0.0:${PORT:-8000}"]
