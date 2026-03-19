@@ -231,11 +231,18 @@ class TestChurnFeatureExtractor:
     def test_feature_extractor_returns_numeric_values(
         self, active_customer_id: str
     ) -> None:
-        """All feature values must be numeric (int or float, not NaN/None)."""
+        """Numeric features must be int/float (no NaN); categorical features must be non-empty str.
+
+        plan_tier and industry are returned as raw strings for the OrdinalEncoder
+        to handle — changing them to floats would break the XGBoost pipeline.
+        """
         from src.infrastructure.ml.churn_feature_extractor import ChurnFeatureExtractor
         from src.infrastructure.repositories.customer_repository import (
             DuckDBCustomerRepository,
         )
+
+        # Features deliberately returned as strings for the OrdinalEncoder
+        CATEGORICAL_FEATURES = {"plan_tier", "industry"}
 
         customer = DuckDBCustomerRepository().get_by_id(active_customer_id)
         assert customer is not None
@@ -243,12 +250,17 @@ class TestChurnFeatureExtractor:
         features = ChurnFeatureExtractor().extract(customer)
 
         for name, value in features.items():
-            assert isinstance(value, (int, float)), (
-                f"Feature '{name}' has non-numeric type {type(value).__name__}: {value!r}"
-            )
-            assert not (isinstance(value, float) and np.isnan(value)), (
-                f"Feature '{name}' is NaN — check mart COALESCE defaults."
-            )
+            if name in CATEGORICAL_FEATURES:
+                assert isinstance(value, str) and value, (
+                    f"Categorical feature '{name}' must be a non-empty string, got {value!r}"
+                )
+            else:
+                assert isinstance(value, (int, float)), (
+                    f"Feature '{name}' has non-numeric type {type(value).__name__}: {value!r}"
+                )
+                assert not (isinstance(value, float) and np.isnan(value)), (
+                    f"Feature '{name}' is NaN — check mart COALESCE defaults."
+                )
 
 
 # ── XGBoost Model Inference Tests ────────────────────────────────────────────

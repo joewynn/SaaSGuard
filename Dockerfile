@@ -55,7 +55,16 @@ RUN python -m src.infrastructure.ml.train_churn_model
 RUN python -m src.infrastructure.ml.train_expansion_model
 
 # 7. Export drift baseline → models/churn_training_baseline.json
+#    NOTE: models/*.json is gitignored. This step regenerates the baseline at
+#    build time so the API starts without a drift-warning. If running locally
+#    (Docker unavailable), generate it with:
+#      uv run python -m src.infrastructure.monitoring.drift_detector --export-baseline
 RUN python -m src.infrastructure.monitoring.drift_detector --export-baseline
+
+# Verify with (once Docker is available):
+#   docker build --target data-gen -t saasguard-data-gen . && \
+#   docker run --rm saasguard-data-gen ls -lh /app/models/
+#   docker run --rm saasguard-data-gen id   # should show non-root in prod stage
 
 # ── Stage 4: development (includes dev extras, hot-reload) ─────────────────────
 FROM base AS dev

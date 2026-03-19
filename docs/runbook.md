@@ -214,7 +214,47 @@ docker compose restart api
 
 ---
 
-## 6. Useful Diagnostic Commands
+## 6. Docker Build Validation (Manual — Run When Docker Is Available)
+
+The `Dockerfile` `data-gen` stage runs a full pipeline at build time:
+`generate_synthetic_data → build_warehouse → dbt build → train_churn_model → train_expansion_model → export-baseline`
+
+Because Docker Desktop is not always available locally, validate with these commands when it is:
+
+```bash
+# Build and verify model artifacts exist in the data-gen stage
+docker build --target data-gen -t saasguard-data-gen . && \
+docker run --rm saasguard-data-gen ls -lh /app/models/
+# Expected: churn_model.pkl, expansion_model.pkl, churn_training_baseline.json
+
+# Build the production image and verify the non-root user
+docker build --target prod -t saasguard-prod .
+docker run --rm saasguard-prod id
+# Expected: uid=<non-zero>(saasguard) gid=<non-zero>(saasguard)
+
+# Full smoke test after build
+docker compose up -d --build
+sleep 20
+curl http://localhost:8000/health   # {"status": "ok"}
+curl http://localhost:8000/ready    # {"status": "ready"}
+docker compose ps                   # all services "healthy"
+```
+
+### Drift Baseline (`models/churn_training_baseline.json`)
+
+This file is **gitignored** (`models/*.json`) because it is generated from training data.
+It must exist at API startup or a drift warning is logged.
+
+- **In Docker:** regenerated automatically in the `data-gen` stage (step 7).
+- **Locally (no Docker):**
+  ```bash
+  uv run python -m src.infrastructure.monitoring.drift_detector --export-baseline
+  ```
+- **In CI:** the `data-gen` build stage handles it; the prod image inherits from `data-gen`.
+
+---
+
+## 7. Useful Diagnostic Commands
 
 ```bash
 # Service status

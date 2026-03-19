@@ -25,6 +25,7 @@ VALID_EVENT_TYPES = {
     "user_invite",
     "integration_connect",
     "api_call",
+    "premium_feature_trial",  # added v0.9.0 — expansion intent signal
 }
 VALID_PRIORITIES = {"low", "medium", "high", "critical"}
 VALID_TICKET_TOPICS = {"compliance", "integration", "billing", "onboarding", "feature_request"}
