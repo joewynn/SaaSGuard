@@ -27,6 +27,12 @@ _FEATURE_LABELS: dict[str, str] = {
     "plan_tier": "Commercial plan tier",
     "industry": "Industry vertical",
     "is_early_stage": "In onboarding window (first 90 days)",
+    # Expansion-specific feature labels
+    "premium_feature_trials_30d": "Premium feature trials in the last 30 days",
+    "feature_request_tickets_90d": "Feature request tickets in the last 90 days",
+    "has_open_expansion_opp": "Active expansion opportunity in Sales pipeline",
+    "expansion_opp_amount": "Value of open expansion opportunity (USD)",
+    "mrr_tier_ceiling_pct": "Tier ceiling pressure (% of the way to top of current tier)",
 }
 
 
@@ -67,6 +73,18 @@ class PromptBuilder:
                 "Mention any recent support tickets if present. "
                 "Tone: practical, direct, urgent if risk tier is HIGH or CRITICAL. "
                 "Never use the words SHAP, shap_impact, feature_name, or any column names."
+            )
+        elif audience == "expansion":
+            instruction = (
+                "Write a 3-sentence expansion opportunity briefing for a Sales/CS Manager. "
+                "Refer to the customer by their industry and plan — never their ID or UUID. "
+                "Sentence 1: state the upgrade propensity tier and target plan, quantifying the "
+                "expected ARR uplift opportunity. "
+                "Sentence 2: name the top 2 signals driving the upgrade intent "
+                "(e.g. premium feature trials, feature requests, or tier-ceiling pressure). "
+                "Sentence 3: provide one specific, actionable next step grounded in the data. "
+                "Tone: opportunity-focused, ARR-quantified, concise. "
+                "Never use the words SHAP, shap_impact, feature_name, column names, or the customer UUID."
             )
         else:  # executive
             instruction = (

@@ -16,11 +16,13 @@ class PlanTier(StrEnum):
 
     Tier correlates with feature access, support SLA, and churn risk profile.
     Enterprise customers have dedicated CSMs and lower base churn rates.
+    CUSTOM represents bespoke enterprise contracts — the ceiling of the tier ladder.
     """
 
     STARTER = "starter"
     GROWTH = "growth"
     ENTERPRISE = "enterprise"
+    CUSTOM = "custom"
 
 
 class Industry(StrEnum):

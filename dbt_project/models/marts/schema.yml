@@ -63,6 +63,70 @@ models:
         description: "Average ticket resolution time (hours). Higher = worse CS experience."
         tests: [not_null]
 
+  - name: mart_customer_expansion_features
+    description: >
+      ML feature store for expansion propensity — one row per active, non-upgraded customer.
+      Reuses all 15 churn features from mart_customer_churn_features via JOIN,
+      plus 5 expansion-specific signals. Used by ExpansionFeatureExtractor.
+    columns:
+      - name: customer_id
+        description: "UUID primary key — joins to customers table."
+        tests: [not_null, unique]
+      - name: mrr
+        tests: [not_null]
+      - name: tenure_days
+        tests: [not_null]
+      - name: is_early_stage
+        tests: [not_null]
+      - name: total_events
+        tests: [not_null]
+      - name: events_last_30d
+        tests: [not_null]
+      - name: events_last_7d
+        tests: [not_null]
+      - name: avg_adoption_score
+        tests: [not_null]
+      - name: days_since_last_event
+        tests: [not_null]
+      - name: retention_signal_count
+        tests: [not_null]
+      - name: integration_connects_first_30d
+        tests: [not_null]
+      - name: tickets_last_30d
+        tests: [not_null]
+      - name: high_priority_tickets
+        tests: [not_null]
+      - name: avg_resolution_hours
+        tests: [not_null]
+      - name: plan_tier
+        tests: [not_null]
+      - name: industry
+        tests: [not_null]
+      - name: premium_feature_trials_30d
+        description: >
+          Count of premium_feature_trial events in the last 30 days.
+          Primary expansion signal — customers trialing above-tier features.
+        tests: [not_null]
+      - name: feature_request_tickets_90d
+        description: >
+          Count of support tickets with topic='feature_request' in the last 90 days.
+          Indicates demand for capabilities not in current tier.
+        tests: [not_null]
+      - name: has_open_expansion_opp
+        description: >
+          TRUE if there is an open expansion-type GTM opportunity for this customer.
+          Leakage guard: should not be the #1 SHAP feature — see model card.
+        tests: [not_null]
+      - name: expansion_opp_amount
+        description: "Total USD value of open expansion GTM opportunities (0 if none)."
+        tests: [not_null]
+      - name: mrr_tier_ceiling_pct
+        description: >
+          How close current MRR is to the top of the customer's tier.
+          Formula: (mrr - tier_floor) / (tier_ceiling - tier_floor), clamped [0, 1].
+          High value (~1.0) = customer has outgrown their tier.
+        tests: [not_null]
+
   - name: mart_customer_risk_scores
     description: >
       Customer risk scoring mart for BI dashboards — one row per active customer

@@ -27,7 +27,8 @@ DDL: dict[str, str] = {
             plan_tier     VARCHAR        NOT NULL,
             signup_date   DATE           NOT NULL,
             mrr           DECIMAL(10, 2) NOT NULL,
-            churn_date    DATE
+            churn_date    DATE,
+            upgrade_date  DATE
         )
     """,
     "usage_events": """
@@ -51,12 +52,13 @@ DDL: dict[str, str] = {
     """,
     "gtm_opportunities": """
         CREATE OR REPLACE TABLE raw.gtm_opportunities (
-            opp_id       VARCHAR        NOT NULL,
-            customer_id  VARCHAR        NOT NULL,
-            stage        VARCHAR        NOT NULL,
-            close_date   DATE           NOT NULL,
-            amount       DECIMAL(12, 2) NOT NULL,
-            sales_owner  VARCHAR        NOT NULL
+            opp_id            VARCHAR        NOT NULL,
+            customer_id       VARCHAR        NOT NULL,
+            stage             VARCHAR        NOT NULL,
+            close_date        DATE           NOT NULL,
+            amount            DECIMAL(12, 2) NOT NULL,
+            sales_owner       VARCHAR        NOT NULL,
+            opportunity_type  VARCHAR        NOT NULL
         )
     """,
     "risk_signals": """

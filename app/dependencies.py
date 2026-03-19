@@ -15,6 +15,7 @@ from src.application.use_cases.generate_executive_summary import (
 )
 from src.application.use_cases.get_customer_360 import GetCustomer360UseCase
 from src.application.use_cases.predict_churn import PredictChurnUseCase
+from src.application.use_cases.predict_expansion import PredictExpansionUseCase
 from src.domain.ai_summary.guardrails_service import GuardrailsService
 from src.domain.prediction.risk_model_service import RiskModelService
 from src.infrastructure.repositories.customer_repository import DuckDBCustomerRepository
@@ -97,6 +98,26 @@ def get_summary_use_case() -> GenerateExecutiveSummaryUseCase:
         usage_repo=DuckDBUsageRepository(),
         summary_service=summary_service,
         guardrails=GuardrailsService(),
+    )
+
+
+@lru_cache(maxsize=1)
+def get_predict_expansion_use_case() -> PredictExpansionUseCase:
+    """Build and cache the PredictExpansionUseCase with real infrastructure.
+
+    Lazy imports inside function body — same pattern as get_predict_churn_use_case.
+    Model is loaded once per worker process via @lru_cache.
+    """
+    from src.domain.expansion.expansion_service import ExpansionModelService
+    from src.infrastructure.ml.expansion_feature_extractor import ExpansionFeatureExtractor
+    from src.infrastructure.ml.xgboost_expansion_model import XGBoostExpansionModel
+
+    return PredictExpansionUseCase(
+        customer_repo=DuckDBCustomerRepository(),
+        expansion_service=ExpansionModelService(
+            model=XGBoostExpansionModel(),
+            feature_extractor=ExpansionFeatureExtractor(),
+        ),
     )
 
 

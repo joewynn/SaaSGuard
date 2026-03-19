@@ -11,6 +11,50 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.9.0] – 2026-03-19 – Expansion Propensity Module
+
+### Added
+
+- **Expansion domain** (`src/domain/expansion/`) — bounded context mirroring the prediction domain:
+  - `UpgradePropensity` value object: P(upgrade in 90d), tier mapping via `RiskTier`
+  - `TargetTier` value object: tier-ladder logic, ARR uplift multipliers, `calculate_expected_uplift()`
+  - `ExpansionResult` entity: `expected_arr_uplift`, `is_high_value_target`, `recommended_action()` with conflict matrix
+  - `ExpansionModelService` domain service with `ExpansionModelPort` ABC and `ExpansionFeatureVector` Protocol
+- **Infrastructure** (`src/infrastructure/ml/`):
+  - `ExpansionFeatureExtractor` — 20-feature dual-path extractor (mart + raw SQL fallback)
+  - `XGBoostExpansionModel` — CalibratedClassifierCV + TreeExplainer adapter
+  - `train_expansion_model.py` — full training pipeline with point-in-time correctness, leakage guard, AUC/Brier thresholds
+- **Application layer** (`src/application/use_cases/predict_expansion.py`) — `PredictExpansionUseCase`
+- **API layer**:
+  - `POST /predictions/upgrade` — upgrade propensity endpoint
+  - `GET /predictions/customers/{id}/360` — full NRR lifecycle view with conflict-matrix routing
+  - `UpgradePredictionRequest/Response`, `Customer360Response` Pydantic schemas
+- **dbt**:
+  - `mart_customer_expansion_features.sql` — 20-feature expansion mart (reuses churn mart via JOIN)
+  - Schema tests block for all 20 columns in `schema.yml`
+- **Synthetic data** (`generate_synthetic_data.py`):
+  - `upgrade_date` column on customers (expanded destiny)
+  - `premium_feature_trial` event type (7th event type, destiny-weighted)
+  - `opportunity_type` column on GTM opportunities (`expansion` vs `new_business`)
+  - Feature-request ticket topic boost for expanded customers
+- **dbt staging updates**: `upgrade_date`/`is_upgraded` in `stg_customers`, `is_premium_trial` in `stg_usage_events`, `opportunity_type`/`is_open_expansion_opp` in `stg_gtm_opportunities`
+- **Tests** (TDD-first):
+  - `tests/unit/domain/test_expansion_value_objects.py` — hypothesis property tests + tier mapping
+  - `tests/unit/domain/test_expansion_service.py` — fake model isolation tests
+  - `tests/unit/application/test_predict_expansion_use_case.py` — use case layer tests
+  - `tests/integration/test_expansion_data_contracts.py` — Mann-Whitney U causal coherence check
+- **LLM**: expansion audience in `PromptBuilder`, 5 new features in `KNOWN_FEATURES` whitelist
+- **Documentation**: `docs/expansion-model-card.md`, `docs/expansion-propensity-methodology.md`, `docs/api-reference/expansion.md`
+- `PlanTier.CUSTOM` added to customer domain for seat/add-on expansion tier
+
+### Changed
+
+- `mkdocs.yml` — Expansion Model Card and Methodology in Models nav; Expansion Domain in API Reference nav
+- `app/dependencies.py` — `get_predict_expansion_use_case()` singleton
+- `src/domain/customer/value_objects.py` — `PlanTier.CUSTOM` added
+
+---
+
 ## [0.8.0] – 2026-03-15 – Phase 8: Executive Presentation
 
 ### Added
