@@ -45,6 +45,12 @@ KNOWN_FEATURES: frozenset[str] = frozenset(
         "compliance_gap_score",
         "vendor_risk_flags",
         "usage_decay_score",
+        # Expansion-specific features
+        "premium_feature_trials_30d",
+        "feature_request_tickets_90d",
+        "has_open_expansion_opp",
+        "expansion_opp_amount",
+        "mrr_tier_ceiling_pct",
     ]
 )
 

@@ -62,6 +62,7 @@ INDUSTRIES = [
 EVENT_TYPES = [
     "evidence_upload", "monitoring_run", "report_view",
     "user_invite", "integration_connect", "api_call",
+    "premium_feature_trial",
 ]
 
 # Events per week by destiny (Poisson lambda)
@@ -106,6 +107,9 @@ TICKET_TOPICS_CHURNER = ["onboarding", "integration", "billing", "compliance", "
 TICKET_TOPICS_CHURNER_PROBS = [0.30, 0.35, 0.20, 0.10, 0.05]
 TICKET_TOPICS_HEALTHY = ["compliance", "feature_request", "onboarding", "integration", "billing"]
 TICKET_TOPICS_HEALTHY_PROBS = [0.35, 0.35, 0.15, 0.10, 0.05]
+# Expanded customers skew heavily toward feature_request — asking for capabilities above their tier
+TICKET_TOPICS_EXPANDED = ["feature_request", "compliance", "onboarding", "integration", "billing"]
+TICKET_TOPICS_EXPANDED_PROBS = [0.55, 0.25, 0.10, 0.07, 0.03]
 
 # compliance_gap_score Beta distribution params (alpha, beta) per destiny
 COMPLIANCE_GAP_BETA: dict[str, tuple[float, float]] = {
@@ -199,6 +203,13 @@ def _generate_customers() -> pd.DataFrame:
         if churn_date and churn_date > today:
             churn_date = None  # Treat as still active (censored)
 
+        # Upgrade date — analogous to churn_date for the expansion signal
+        upgrade_date = None
+        if destiny == "expanded":
+            upgrade_days = int(rng.integers(120, 541))
+            candidate = signup_date + timedelta(days=upgrade_days)
+            upgrade_date = candidate if candidate <= today else None
+
         rows.append({
             "customer_id": _uuid(),
             "industry": rng.choice(INDUSTRIES),
@@ -206,6 +217,7 @@ def _generate_customers() -> pd.DataFrame:
             "signup_date": signup_date.isoformat(),
             "mrr": mrr,
             "churn_date": churn_date.isoformat() if churn_date else None,
+            "upgrade_date": upgrade_date.isoformat() if upgrade_date else None,
             "_destiny": destiny,  # internal — dropped before output
         })
 
@@ -296,10 +308,14 @@ def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
                 score = float(np.clip(rng.normal(score_mean, 0.08), 0.0, 1.0))
 
                 # Event type weighted by destiny — churners skew toward passive events
+                # 7-type weights: evidence_upload, monitoring_run, report_view,
+                #   user_invite, integration_connect, api_call, premium_feature_trial
                 if destiny in ("early_churner", "mid_churner"):
-                    weights = [0.30, 0.15, 0.35, 0.05, 0.05, 0.10]
-                else:
-                    weights = [0.20, 0.25, 0.15, 0.10, 0.10, 0.20]
+                    weights = [0.30, 0.14, 0.35, 0.05, 0.05, 0.10, 0.01]
+                elif destiny == "expanded":
+                    weights = [0.18, 0.18, 0.12, 0.10, 0.10, 0.17, 0.15]
+                else:  # retained
+                    weights = [0.19, 0.24, 0.15, 0.10, 0.10, 0.20, 0.02]
 
                 event_type = rng.choice(EVENT_TYPES, p=weights)
                 all_events.append({
@@ -358,10 +374,12 @@ def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
         for _ in range(n_normal):
             ticket_date = signup + timedelta(days=int(rng.integers(0, max(1, (normal_end - signup).days))))
             priority = rng.choice(priorities, p=TICKET_PRIORITY_PROBS[destiny])
-            topic = rng.choice(
-                TICKET_TOPICS_CHURNER if is_churner else TICKET_TOPICS_HEALTHY,
-                p=TICKET_TOPICS_CHURNER_PROBS if is_churner else TICKET_TOPICS_HEALTHY_PROBS,
-            )
+            if destiny == "expanded":
+                topic = rng.choice(TICKET_TOPICS_EXPANDED, p=TICKET_TOPICS_EXPANDED_PROBS)
+            elif is_churner:
+                topic = rng.choice(TICKET_TOPICS_CHURNER, p=TICKET_TOPICS_CHURNER_PROBS)
+            else:
+                topic = rng.choice(TICKET_TOPICS_HEALTHY, p=TICKET_TOPICS_HEALTHY_PROBS)
             res_hours = int(rng.integers(4, 48) if is_churner else rng.integers(2, 16))
             tickets.append({
                 "ticket_id": _uuid(),
@@ -459,6 +477,7 @@ def _generate_gtm_opportunities(customers: pd.DataFrame) -> pd.DataFrame:
                 )
 
             amount = round(mrr * rng.uniform(6.0, 18.0), 2)
+            opportunity_type = "expansion" if destiny == "expanded" else "new_business"
             opps.append({
                 "opp_id": _uuid(),
                 "customer_id": cust["customer_id"],
@@ -466,6 +485,7 @@ def _generate_gtm_opportunities(customers: pd.DataFrame) -> pd.DataFrame:
                 "close_date": close_date.isoformat(),
                 "amount": amount,
                 "sales_owner": rng.choice(sales_owners),
+                "opportunity_type": opportunity_type,
             })
 
     return pd.DataFrame(opps)

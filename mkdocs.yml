@@ -112,6 +112,8 @@ nav:
     - Model Card: model-card.md
     - Model Design & Accuracy: model-design.md
     - SHAP Feature Importance: shap-analysis.md
+    - Expansion Model Card: expansion-model-card.md
+    - Expansion Propensity Methodology: expansion-propensity-methodology.md
   - AI Layer:
     - Ethical Guardrails: ethical-guardrails.md
     - LLM Time Saved (ROI): llm-time-saved.md
@@ -126,6 +128,7 @@ nav:
     - Customer Domain: api-reference/customer.md
     - Usage Domain: api-reference/usage.md
     - Prediction Domain: api-reference/prediction.md
+    - Expansion Domain: api-reference/expansion.md
     - GTM Domain: api-reference/gtm.md
     - Application Use Cases: api-reference/use-cases.md
     - AI Summary Domain: api-reference/ai-summary.md
