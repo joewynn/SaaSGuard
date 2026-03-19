@@ -4,6 +4,13 @@ Mounted into the Superset container at /app/pythonpath/superset_config.py
 """
 
 import os
+import sys
+
+# duckdb-engine is installed in the user .local path (pip install --user)
+# Prepend it so Superset's venv can find the dialects
+_duckdb_path = "/app/superset_home/.local/lib/python3.10/site-packages"
+if _duckdb_path not in sys.path:
+    sys.path.insert(0, _duckdb_path)
 
 # Security
 SECRET_KEY = os.environ.get("SUPERSET_SECRET_KEY", "change_me_in_production")
@@ -11,7 +18,7 @@ SECRET_KEY = os.environ.get("SUPERSET_SECRET_KEY", "change_me_in_production")
 # DuckDB connection string (mounted volume path)
 DUCKDB_PATH = os.environ.get("DUCKDB_PATH", "/app/data/saasguard.duckdb")
 
-# Enable feature flags for dashboard embedding (Phase 6)
+# Enable feature flags for dashboard embedding
 FEATURE_FLAGS = {
     "EMBEDDED_SUPERSET": True,
     "ENABLE_TEMPLATE_PROCESSING": True,

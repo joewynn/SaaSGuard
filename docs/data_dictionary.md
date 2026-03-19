@@ -14,8 +14,9 @@ Primary entity. One row per customer. `churn_date` is NULL for active customers 
 | `signup_date` | DATE | Date of first contract |
 | `mrr` | DECIMAL | Monthly Recurring Revenue (USD) |
 | `churn_date` | DATE / NULL | NULL = still active (censored) |
+| `upgrade_date` | DATE / NULL | Date customer upgraded to next plan tier. NULL = not yet upgraded. Added v0.9.0 for expansion propensity model. |
 
-**Correlations baked in:** `enterprise` tier churns less; `starter` tier with low `feature_adoption_score` churns within 90 days at elevated rate.
+**Correlations baked in:** `enterprise` tier churns less; `starter` tier with low `feature_adoption_score` churns within 90 days at elevated rate. Customers with `upgrade_date IS NOT NULL` have statistically higher `premium_feature_trials_30d` (Mann-Whitney U p < 0.05).
 
 ---
 
@@ -28,10 +29,12 @@ One row per product interaction. High cardinality (~10M rows for 5k customers ov
 | `event_id` | VARCHAR | UUID |
 | `customer_id` | VARCHAR | FK → customers |
 | `timestamp` | TIMESTAMP | UTC |
-| `event_type` | VARCHAR | evidence_upload \| monitoring_run \| report_view \| user_invite \| integration_connect \| api_call |
+| `event_type` | VARCHAR | evidence_upload \| monitoring_run \| report_view \| user_invite \| integration_connect \| api_call \| **premium_feature_trial** |
 | `feature_adoption_score` | FLOAT | 0–1 composite score at time of event |
 
-**Correlations baked in:** Declining event frequency in the 30 days before churn; `integration_connect` events are strong retention signals.
+**`premium_feature_trial`** (added v0.9.0): customer accessed a feature available only in their next plan tier. This is the single strongest expansion signal (`mean_abs_shap=3.94`). Destiny-weighted — customers with `upgrade_date IS NOT NULL` are 4–6× more likely to generate this event type.
+
+**Correlations baked in:** Declining event frequency in the 30 days before churn; `integration_connect` events are strong retention signals; `premium_feature_trial` frequency positively correlates with upgrade propensity.
 
 ---
 
@@ -47,6 +50,7 @@ CRM-style table. One row per sales/expansion opportunity.
 | `close_date` | DATE | Actual or expected close date |
 | `amount` | DECIMAL | USD opportunity value |
 | `sales_owner` | VARCHAR | Anonymised rep name |
+| `opportunity_type` | VARCHAR | **expansion** \| new_business. Added v0.9.0. `expansion` = existing customer upgrade; `new_business` = net-new logo. |
 
 ---
 
@@ -135,3 +139,25 @@ Computed/external risk flags per customer. Updated periodically.
 | `customer_id` | VARCHAR | FK → customers |
 | `compliance_gap_score` | FLOAT | 0–1; higher = more compliance gaps detected |
 | `vendor_risk_flags` | INTEGER | Count of third-party vendor risk alerts |
+
+---
+
+## mart_customer_expansion_features (dbt mart — v0.9.0)
+
+Pre-aggregated expansion feature mart. One row per **active non-upgraded** customer
+(WHERE `is_active = TRUE AND is_upgraded = FALSE`). This is the inference population
+for the expansion propensity model. Queried by `ExpansionFeatureExtractor` (~1ms).
+
+**Scope note:** Upgraded customers are excluded from this mart because they are no
+longer expansion candidates. Training uses a wider query that includes upgraded customers
+as positive labels.
+
+| Column | Type | Description |
+|---|---|---|
+| `customer_id` | VARCHAR | FK → customers |
+| **15 churn features** | (see above) | Reused from `mart_customer_churn_features` via JOIN — no duplication |
+| `premium_feature_trials_30d` | INTEGER | Count of `premium_feature_trial` events in last 30 days. Strongest expansion signal (mean |SHAP|=3.94). |
+| `feature_request_tickets_90d` | INTEGER | Count of support tickets with `topic = 'feature_request'` in last 90 days. Customer explicitly asking for above-tier capabilities. |
+| `has_open_expansion_opp` | BOOLEAN | TRUE if an open GTM opportunity with `opportunity_type = 'expansion'` exists for this customer. Sales intent signal — use with caution (leakage guard applied). |
+| `expansion_opp_amount` | DECIMAL | USD value of the open expansion opportunity (0 if none). |
+| `mrr_tier_ceiling_pct` | FLOAT | `(mrr − tier_floor) / (tier_ceiling − tier_floor)`, clamped [0, 1]. Measures how close the customer's MRR is to the top of their tier. High value (~1.0) = outgrown tier → ripe for upgrade conversation. |

@@ -43,3 +43,17 @@ stages:
     outs:
       - ../models/risk_model.pkl
       - ../models/risk_model_metadata.json
+
+  train_expansion_model:
+    cmd: python -m src.infrastructure.ml.train_expansion_model
+    deps:
+      - src/infrastructure/ml/train_expansion_model.py
+      - src/infrastructure/ml/expansion_feature_extractor.py
+      - src/infrastructure/ml/xgboost_expansion_model.py
+      - ../data/saasguard.duckdb
+    params:
+      - params.yaml:
+          - random_seed
+    outs:
+      - ../models/expansion_model.pkl
+      - ../models/expansion_model_metadata.json

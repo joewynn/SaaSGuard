@@ -51,7 +51,10 @@ RUN dbt build --project-dir dbt_project --profiles-dir dbt_project --target prod
 # 5. Train XGBoost churn model → models/churn_model.pkl + metadata JSON
 RUN python -m src.infrastructure.ml.train_churn_model
 
-# 6. Export drift baseline → models/churn_training_baseline.json
+# 6. Train expansion propensity model → models/expansion_model.pkl + metadata JSON
+RUN python -m src.infrastructure.ml.train_expansion_model
+
+# 7. Export drift baseline → models/churn_training_baseline.json
 RUN python -m src.infrastructure.monitoring.drift_detector --export-baseline
 
 # ── Stage 4: development (includes dev extras, hot-reload) ─────────────────────

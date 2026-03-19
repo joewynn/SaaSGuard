@@ -105,3 +105,69 @@ SaaSGuard is a churn and risk prediction layer that sits on top of existing prod
 | Alert fatigue (too many CS outreaches) | Medium | Precision threshold tuning; ≥40% conversion gate |
 | LLM hallucination in summaries | Low-Medium | Human-in-loop gate + confidence disclaimer |
 | Data staleness reducing prediction quality | Low | DVC pipeline + freshness SLA checks in dbt |
+
+---
+
+## Expansion Propensity Addendum (v0.9.0)
+
+**Last updated:** 2026-03-19
+
+### Problem Extension
+
+The original PRD addressed only the retention half of the NRR equation: who to save.
+It left unanswered: *who is ready to buy more?*
+
+CS and Sales operate independently. Sales pursues expansion based on deal size and
+relationship. CS focuses on retention. Neither team has a signal for **which customers
+are organically ready to upgrade** — leading to:
+
+- Expansion conversations with customers who are silently at risk (high conversion
+  leakage when churns follow weeks after upsell)
+- Missed expansion opportunities with high-propensity customers who never receive an
+  outreach because they're "not at risk"
+
+### Solution Extension
+
+A second propensity model — **P(upgrade in 90 days)** — running alongside the churn
+model. Together they produce the **Propensity Quadrant**:
+
+| Quadrant | churn_prob | upgrade_propensity | GTM Action |
+|----------|-----------|-------------------|------------|
+| Growth Engine | Low | High | Book expansion call immediately |
+| Rescue & Expand | High | High | CS retention play first, then expand |
+| Flight Risk | High | Low | Immediate CS intervention |
+| Stable | Low | Low | Nurture / self-serve |
+
+**New API endpoint:** `POST /predictions/upgrade` → `UpgradePredictionResponse`
+(upgrade_propensity, target_tier, expected_arr_uplift, top_shap_features, recommended_action)
+
+### New Success Metrics
+
+| Metric | Target |
+|--------|--------|
+| Expansion model AUC-ROC | ≥ 0.75 (achieved: 0.928) |
+| Precision at top-10% decile | ≥ 20% (achieved: 21.7%) |
+| Top-10% decile ARR captured | ≥ $1M at 25% conversion |
+| Combined NRR impact (base case) | $3.2M ($2M churn + $1.2M expansion) |
+
+### New Personas
+
+**Sales AE — `POST /predictions/upgrade`**
+> "Show me which of my accounts are organically ready to expand — I want to call them
+> before they come to me. Give me the top reason why they're ready and the expected
+> deal size."
+
+**RevOps — Propensity Quadrant Dashboard**
+> "I need a single view that tells me which accounts Sales should work, which CS should
+> own, and which are at risk of being poached into an expansion conversation before
+> the retention risk is resolved."
+
+### Expansion Features (5 new, on top of 15 churn features)
+
+| Feature | Signal |
+|---------|--------|
+| `premium_feature_trials_30d` | Customer trialling above-tier features → intent to upgrade |
+| `feature_request_tickets_90d` | Requesting capabilities they don't have → tier pressure |
+| `has_open_expansion_opp` | Sales already aware → coordinate, don't duplicate |
+| `expansion_opp_amount` | Size of identified opportunity |
+| `mrr_tier_ceiling_pct` | How close current MRR is to top of their tier |

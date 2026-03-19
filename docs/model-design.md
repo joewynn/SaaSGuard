@@ -115,3 +115,126 @@ curl -X POST http://localhost:8000/predictions/churn \
   -H "Content-Type: application/json" \
   -d '{"customer_id": "<uuid-from-duckdb>"}'
 ```
+
+---
+
+## Section 2 — Expansion Propensity Model (v0.9.0)
+
+### Overview
+
+The expansion model complements the churn model by predicting `P(upgrade in 90 days)`
+for active non-upgraded customers. Both models feed the **Propensity Quadrant** — the
+primary Superset dashboard visualization.
+
+### Architecture
+
+```
+ExpansionFeatureExtractor
+    └── Queries marts.mart_customer_expansion_features (1 DuckDB read, ~1ms)
+        Primary path: mart table (pre-computed 20 features)
+        Fallback path: inline SQL (if mart not available at inference time)
+
+sklearn Pipeline
+    ├── ColumnTransformer
+    │   ├── StandardScaler        → 18 numerical features
+    │   └── OrdinalEncoder        → plan_tier, industry
+    └── XGBClassifier
+        ├── n_estimators=300, max_depth=5, learning_rate=0.05
+        ├── scale_pos_weight = n_not_upgraded / n_upgraded
+        └── eval_metric='logloss'
+
+CalibratedClassifierCV(method='isotonic', cv=5)
+    └── Wraps the pipeline for probability calibration
+```
+
+### Feature Set (20 total — 15 churn features + 5 expansion-specific)
+
+**Base features (reused from churn model via mart JOIN):**
+
+| Feature | Type | Source |
+|---|---|---|
+| `mrr` | Numerical | customers |
+| `tenure_days` | Numerical | Derived |
+| `total_events` | Numerical | usage_events |
+| `events_last_30d` | Numerical | usage_events |
+| `events_last_7d` | Numerical | usage_events |
+| `avg_adoption_score` | Numerical | usage_events |
+| `days_since_last_event` | Numerical | usage_events |
+| `retention_signal_count` | Numerical | usage_events |
+| `integration_connects_first_30d` | Numerical | usage_events |
+| `tickets_last_30d` | Numerical | support_tickets |
+| `high_priority_tickets` | Numerical | support_tickets |
+| `avg_resolution_hours` | Numerical | support_tickets |
+| `is_early_stage` | Binary | Derived |
+| `plan_tier` | Categorical | customers |
+| `industry` | Categorical | customers |
+
+**Expansion-specific features (5 new):**
+
+| Feature | Type | Source | Signal |
+|---|---|---|---|
+| `premium_feature_trials_30d` | Numerical | usage_events | Customer trialling above-tier features |
+| `feature_request_tickets_90d` | Numerical | support_tickets | Requesting unowned capabilities |
+| `has_open_expansion_opp` | Boolean | gtm_opportunities | Sales aware of expansion intent |
+| `expansion_opp_amount` | Numerical | gtm_opportunities | Size of identified opportunity |
+| `mrr_tier_ceiling_pct` | Numerical | Derived | `(mrr - floor) / (ceiling - floor)` |
+
+### Leakage Guard
+
+`has_open_expansion_opp` encodes a *sales decision* (did Sales open an opp?), not a
+*customer signal*. If this feature dominates the SHAP ranking, the model is predicting
+Sales' behaviour, not the customer's readiness.
+
+**Guard:** Training script asserts `has_open_expansion_opp` is not rank #1 SHAP feature.
+Notebook Section 5 re-asserts this on the hold-out set.
+
+### Training Design
+
+**Label:** `is_upgraded = 1` if `upgrade_date IS NOT NULL` and `upgrade_date ≤ REFERENCE_DATE`.
+Customers with no upgrade and no churn at REFERENCE_DATE are `is_upgraded = 0`.
+
+**Point-in-time correctness:** Features computed as of the REFERENCE_DATE observation window,
+not as of today. Prevents lookahead bias.
+
+**Scope:** Training data includes all non-churned customers (both upgraded and not).
+The mart (`mart_customer_expansion_features`) scopes to non-upgraded only (inference candidates).
+
+### Accuracy Targets & Achieved Metrics
+
+| Metric | Target | Achieved | Status |
+|---|---|---|---|
+| AUC-ROC | ≥ 0.75 | **0.928** | ✅ |
+| Brier score | < 0.25 | 0.190 | ✅ |
+| Precision @ decile 1 | ≥ 20% | 21.7% | ✅ |
+
+### Top SHAP Features (from training run)
+
+1. `premium_feature_trials_30d` — mean |SHAP| 3.94 (strongest expansion signal)
+2. `tenure_days` — 2.88 (longer-tenured customers more likely to upgrade)
+3. `mrr_tier_ceiling_pct` — 1.90 (tier pressure: close to ceiling = ripe for upgrade)
+4. `retention_signal_count` — 0.84 (engaged customers upgrade)
+5. `total_events` — 0.59 (lifetime engagement depth)
+
+### Reproducing the Expansion Model
+
+```bash
+# 1. Regenerate synthetic data (adds upgrade_date, premium_feature_trial, opportunity_type)
+uv run python -m src.infrastructure.data_generation.generate_synthetic_data
+
+# 2. Rebuild DuckDB warehouse
+uv run python -m src.infrastructure.db.build_warehouse
+
+# 3. Run dbt models (or the Docker-free runner)
+docker compose exec dbt dbt run
+# OR (without Docker):
+uv run python scripts/run_dbt_models.py
+
+# 4. Train the model
+uv run python -m src.infrastructure.ml.train_expansion_model
+
+# 5. Run tests
+uv run pytest tests/unit/domain/test_expansion_value_objects.py \
+              tests/unit/domain/test_expansion_service.py \
+              tests/unit/application/test_predict_expansion_use_case.py \
+              tests/integration/test_expansion_data_contracts.py -v --no-cov
+```

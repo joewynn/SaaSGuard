@@ -33,14 +33,18 @@ a dashboard ready for action.
 
 | Metric | Target | Status |
 |---|---|---|
-| AUC-ROC | ≥ 0.80 | ✅ Achieved |
+| Churn model AUC-ROC | ≥ 0.80 | ✅ Achieved |
 | Calibration vs. Kaplan-Meier | ±15pp | ✅ Achieved |
-| Precision @ top decile | ≥ 0.60 | ✅ Achieved |
-| Conservative ROI | $850K net | ✅ Modelled |
-| Base-case ROI | $1.85M net (12.3×) | ✅ Modelled |
-| Payback period | < 1 month | ✅ Modelled |
+| Precision @ top churn decile | ≥ 0.60 | ✅ Achieved |
+| **Expansion model AUC-ROC** | **≥ 0.75** | **✅ 0.928 achieved** |
+| **Expansion precision @ top-10%** | **≥ 20%** | **✅ 21.7% achieved** |
+| Churn protection (base case) | $2.0M ARR | ✅ Modelled |
+| **Expansion capture (base case)** | **$1.2M ARR** | **✅ Modelled** |
+| **Combined NRR impact (base case)** | **$3.2M net** | **✅ Modelled** |
+| Payback period | < 30 days | ✅ 17 days |
 
-**Top signal:** `events_last_30d` — a 50% drop in 30-day product activity doubles churn risk.
+**Top churn signal:** `events_last_30d` — a 50% drop in 30-day activity doubles churn risk.
+**Top expansion signal:** `premium_feature_trials_30d` — trialling above-tier features is the #1 upgrade predictor.
 
 **Built-in experiment:** Bayesian A/B, 60 accounts/arm, 88% confidence in 1–2 quarters.
 

@@ -100,14 +100,47 @@ flowchart LR
 
 ---
 
-### Stage 4: Expansion — `gtm_domain`
+### Stage 4: Expansion — `gtm_domain` + `expansion` bounded context
 
 **Definition:** Retained customer upgrades plan tier, adds seats, or buys additional frameworks.
 
-**SaaSGuard's role:**
-- Surfaces revenue-at-risk when an open expansion opportunity exists for a high-churn-risk customer
-- CS team prioritises save over expansion until churn risk drops below threshold
-- Retained customers generate NRR uplift (+25% with formal CS programs, per Benchmarkit 2025)
+**SaaSGuard's expansion propensity module (v0.9.0):**
+
+The expansion bounded context adds a second propensity model — `P(upgrade in 90 days)` — giving GTM teams a prioritised, signal-driven expansion pipeline. Combined with the churn model, it produces the **Propensity Quadrant**.
+
+#### Propensity Quadrant Diagram
+
+```mermaid
+quadrantChart
+    title Propensity Quadrant — GTM Action Matrix
+    x-axis Low Churn Risk --> High Churn Risk
+    y-axis Low Upgrade Propensity --> High Upgrade Propensity
+    quadrant-1 Rescue & Expand
+    quadrant-2 Growth Engine
+    quadrant-3 Stable
+    quadrant-4 Flight Risk
+    Customer A: [0.15, 0.72]
+    Customer B: [0.63, 0.68]
+    Customer C: [0.72, 0.18]
+    Customer D: [0.10, 0.08]
+```
+
+#### Conflict Matrix — Churn × Expansion → GTM Action
+
+| Churn risk | Upgrade propensity | Quadrant | GTM Action |
+|---|---|---|---|
+| Low (< 0.40) | High (≥ 0.25) | **Growth Engine** | Book expansion call; AE-led |
+| High (≥ 0.40) | High (≥ 0.25) | **Rescue & Expand** | CS retention play first; AE holds |
+| High (≥ 0.40) | Low (< 0.25) | **Flight Risk** | Immediate CS intervention; no expansion |
+| Low (< 0.40) | Low (< 0.25) | **Stable** | Nurture / self-serve; low-touch |
+
+#### Tier Ladder with Uplift Multipliers
+
+| Current tier | MRR range | Next tier | ARR multiplier | Expected uplift (mean MRR) |
+|---|---|---|---|---|
+| Starter | $500–$2K | Growth | 3.0× | ~$18K ARR per convert |
+| Growth | $2K–$8K | Enterprise | 5.0× | ~$120K ARR per convert |
+| Enterprise | $8K–$50K | Custom | 1.2× | ~$50K ARR per seat expand |
 
 **Real VoC evidence:**
 > *"Companies with formal customer success teams retain customers at higher rates, with firms having dedicated CSMs seeing up to 25% higher NRR than those without."*
@@ -116,7 +149,10 @@ flowchart LR
 > *"The first 30–90 days after signup are the most important in defining account lifetime value — customers retained past 90 days expand at 3× the rate of those who nearly churned."*
 > — Churnfree, B2B SaaS Benchmarks 2026
 
-**Leading metric:** Open `gtm_opportunities` with `stage = proposal` or `qualification` linked to customers with `churn_probability < 0.25`.
+**Leading metrics:**
+- `upgrade_propensity ≥ 0.25` AND `churn_probability < 0.40` → Growth Engine (expansion call)
+- Top-10% propensity decile: ~$1.2M captured ARR at 25% conversion rate
+- Open `gtm_opportunities` with `opportunity_type = expansion` linked to customers with `churn_probability < 0.25`
 
 ---
 

@@ -201,3 +201,101 @@ Epics map to the 8 project phases. Each story has acceptance criteria written fr
 - [ ] ROI figures cite real benchmark sources from `stakeholder-notes.md`
 - [ ] No raw ML metrics shown without business translation
 - [ ] `docs/presentation/` contains deck outline + speaker notes
+
+---
+
+## EPIC-09 — Expansion Propensity Module
+
+### SGD-037 · Design expansion domain model (entities, VOs, service)
+**Type:** Architecture | **Priority:** P1 | **Phase:** Expansion (v0.9.0)
+
+**User story:** As a data scientist, I want a clean DDD expansion domain so that business logic
+(tier ladders, ARR uplift, conflict matrix) lives in domain code, not the ML pipeline.
+
+**Acceptance criteria:**
+- [ ] `UpgradePropensity` frozen VO validates [0, 1] range; raises on violation
+- [ ] `TargetTier` VO encodes tier ladder and `calculate_expected_uplift()` formula
+- [ ] `ExpansionResult` entity holds propensity, target tier, SHAP features, ARR uplift, recommended action
+- [ ] `ExpansionModelService` returns `ExpansionResult` from feature dict + model output
+- [ ] All VOs are immutable (frozen dataclasses)
+- [ ] Unit tests pass: 29/29 for VOs + service
+
+---
+
+### SGD-038 · Build expansion feature mart (dbt)
+**Type:** Data | **Priority:** P1 | **Phase:** Expansion (v0.9.0)
+
+**User story:** As a ML engineer, I want a single DuckDB mart table with all 20 expansion
+features so that the model and API can read features in ~1ms.
+
+**Acceptance criteria:**
+- [ ] `mart_customer_expansion_features` contains 20 columns (15 churn + 5 expansion)
+- [ ] Scope: active customers who have NOT yet upgraded (expansion candidates only)
+- [ ] 5 expansion-specific features: `premium_feature_trials_30d`, `feature_request_tickets_90d`,
+  `has_open_expansion_opp`, `expansion_opp_amount`, `mrr_tier_ceiling_pct`
+- [ ] dbt schema tests pass (not_null, accepted_values)
+- [ ] Mart populates ~3K rows from 5K synthetic customers
+
+---
+
+### SGD-039 · Train expansion propensity model
+**Type:** ML | **Priority:** P1 | **Phase:** Expansion (v0.9.0)
+
+**User story:** As a data scientist, I want a calibrated XGBoost model that predicts
+P(upgrade in 90d) with AUC ≥ 0.75 so that the top-10% decile captures ≥ $1M ARR.
+
+**Acceptance criteria:**
+- [ ] AUC-ROC ≥ 0.75 on held-out test set (20% split, stratified)
+- [ ] CalibratedClassifierCV wraps XGBClassifier (isotonic, cv=5)
+- [ ] Point-in-time correctness: feature window is [signup_date, REFERENCE_DATE)
+- [ ] Leakage guard: `has_open_expansion_opp` must NOT be rank #1 SHAP feature
+- [ ] Artifacts written: `models/expansion_model.pkl` + `models/expansion_model_metadata.json`
+- [ ] Training script exits non-zero if AUC < 0.70
+
+---
+
+### SGD-040 · Implement `POST /predictions/upgrade` API endpoint
+**Type:** API | **Priority:** P1 | **Phase:** Expansion (v0.9.0)
+
+**User story:** As a Sales AE, I want to call `/predictions/upgrade` with a customer_id and
+receive the upgrade propensity, target tier, expected ARR uplift, and top SHAP drivers.
+
+**Acceptance criteria:**
+- [ ] `POST /predictions/upgrade` returns `UpgradePredictionResponse` (Pydantic v2)
+- [ ] Response includes: `upgrade_propensity`, `propensity_tier`, `target_tier`,
+  `expected_arr_uplift_annual`, `top_shap_features`, `recommended_action`, `model_version`
+- [ ] 422 on unknown customer_id; 409 on already-churned customer
+- [ ] OpenAPI docs auto-generated with Business Context in docstring
+- [ ] API contract tests pass
+
+---
+
+### SGD-041 · Regenerate synthetic data with expansion signals
+**Type:** Data | **Priority:** P1 | **Phase:** Expansion (v0.9.0)
+
+**User story:** As a data engineer, I want the synthetic dataset to include `upgrade_date`,
+`premium_feature_trial` events, and `opportunity_type` so that the expansion model has
+realistic training signal.
+
+**Acceptance criteria:**
+- [ ] `customers.upgrade_date` populated for 10–20% of customers
+- [ ] `usage_events.event_type` includes `premium_feature_trial` (7th event type)
+- [ ] `gtm_opportunities.opportunity_type` includes `expansion` vs `new_business`
+- [ ] Expanded customers have statistically higher `premium_feature_trials_30d`
+  (Mann-Whitney U p < 0.05)
+- [ ] Integration test `test_expansion_data_contracts.py` passes: 5/5
+
+---
+
+### SGD-042 · Create expansion propensity notebook (Section 10)
+**Type:** Notebook | **Priority:** P2 | **Phase:** Expansion (v0.9.0)
+
+**User story:** As a portfolio reviewer, I want a notebook that walks through the complete
+expansion analysis — data validation, EDA, calibration, SHAP, ROI, and Propensity Quadrant.
+
+**Acceptance criteria:**
+- [ ] `notebooks/expansion_propensity_modeling.ipynb` with 7 sections
+- [ ] Section 5 includes leakage guard assertion
+- [ ] Section 6 computes top-10% decile ARR uplift ≥ $1M at 25% conversion
+- [ ] Section 7 produces `data/propensity_quadrant.png` (primary Superset viz)
+- [ ] All cells run without error on a clean kernel

@@ -90,3 +90,49 @@ Payback period:                  <1 month
 - [B2B SaaS Benchmarks: A Complete Guide 2026 — Churnfree](https://churnfree.com/blog/b2b-saas-churn-rate-benchmarks/)
 - [B2B SaaS Churn Rates: 33 Statistics — Genesys Growth](https://genesysgrowth.com/blog/saas-churn-rates-stats-for-marketing-leaders)
 - [B2B Customer Retention Statistics 2025 — Serpsculpt](https://serpsculpt.com/b2b-customer-retention-statistics/)
+
+---
+
+## Section 4 — Expansion Revenue Model
+
+The expansion propensity model scores active non-upgraded customers with P(upgrade in 90d).
+The expected ARR uplift per customer mirrors `TargetTier.calculate_expected_uplift()` in
+the domain model:
+
+```
+expected_arr_uplift = (MRR × 12) × (tier_multiplier − 1) × upgrade_propensity
+```
+
+**Tier multipliers:**
+
+| Current tier | Target tier | Multiplier | Rationale |
+|---|---|---|---|
+| Starter ($500–$2K MRR) | Growth | 3.0× | ~$1,500 MRR → $4,500 MRR |
+| Growth ($2K–$8K MRR) | Enterprise | 5.0× | Higher seat + feature cost |
+| Enterprise ($8K–$50K MRR) | Custom | 1.2× | Incremental seat expansion |
+
+**Example — Starter customer, MRR=$1,200, propensity=0.65:**
+```
+expected_arr_uplift = ($1,200 × 12) × (3.0 − 1) × 0.65
+                    = $14,400 × 2.0 × 0.65
+                    = $18,720 expected ARR uplift
+```
+
+---
+
+## Section 5 — Combined NRR Calculator
+
+Full NRR impact from both propensity models at 25% expansion conversion rate:
+
+| Component | Conservative | Base case | Optimistic |
+|-----------|------------|-----------|------------|
+| Churn protection | $1.0M | $2.0M | $3.0M |
+| Expansion capture | $0.5M | $1.2M | $2.5M |
+| **Total NRR impact** | **$1.5M** | **$3.2M** | **$5.5M** |
+| Platform cost | $0.15M | $0.15M | $0.15M |
+| **Net ROI** | **$1.35M (9×)** | **$3.05M (20×)** | **$5.35M (35×)** |
+
+**Payback period:** < 17 days in base case (vs. < 1 month for churn-only).
+
+**Key sensitivity:** Conversion rate is the biggest lever.
+A 10% swing in conversion rate = ±$480K in expansion ARR (see `docs/economic-model.md`).

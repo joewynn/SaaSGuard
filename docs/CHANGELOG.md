@@ -11,6 +11,42 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [0.9.1] – 2026-03-19 – Pipeline Activation + Business Narrative
+
+### Added
+
+- **Data pipeline fully activated**: synthetic data regenerated (5K customers, 3.57M events), DuckDB warehouse rebuilt with `upgrade_date` + `opportunity_type` columns, all mart tables populated
+- **Expansion model trained**: AUC=0.928, Brier=0.190, precision@decile1=21.7%; artifacts at `models/expansion_model.pkl`
+- **Notebook** `notebooks/expansion_propensity_modeling.ipynb` — 7 sections: data validation, EDA, correlation heatmap, calibration, SHAP beeswarm + leakage guard, decile ROI, Propensity Quadrant
+- **`docs/economic-model.md`** — NRR bridge document: formula, churn baseline + expansion addendum, combined scenario table ($1.5M–$5.5M), payback ≤17 days, conversion-rate sensitivity
+- **Business document updates**:
+  - `docs/prd.md` — Expansion Propensity Addendum (problem extension, new personas, new success metrics)
+  - `docs/roi-calculator.md` — Section 4 (expansion revenue model) + Section 5 (combined NRR calculator, 20× ROI)
+  - `docs/growth-framework.md` — Stage 4 expanded with Propensity Quadrant diagram, conflict matrix, tier ladder with multipliers
+  - `docs/tickets.md` — EPIC-09 (stories SGD-037 through SGD-042)
+  - `docs/model-design.md` — Section 2: Expansion Propensity Model (20 features, training design, leakage guard, thresholds)
+  - `docs/data_dictionary.md` — `upgrade_date`, `premium_feature_trial`, `opportunity_type`, `mart_customer_expansion_features` (5 columns)
+- **Deck** `docs/presentation/deck.md` — Slide 11: "Retain + Expand" with Propensity Quadrant and $3.2M combined NRR
+- **One-pager** `docs/one-pager.md` — expansion ROI row ($1.2M) added to proof table
+- **`scripts/run_dbt_models.py`** — Docker-free dbt runner executing all staging views and mart tables directly against DuckDB
+- **`DVC/dvc.yaml`** — `train_expansion_model` stage added for full pipeline reproducibility
+- **`mkdocs.yml`** — `economic-model.md` added to Product & Planning nav section
+
+### Fixed
+
+- `src/infrastructure/db/build_warehouse.py` — DDL updated to include `upgrade_date` (customers) and `opportunity_type` (gtm_opportunities)
+- `Dockerfile` — `train_expansion_model` step added to `data-gen` stage so `expansion_model.pkl` is present in prod image
+- `docker-compose.yml` — jupyterlab healthcheck added
+
+### Metrics
+
+- 53/53 expansion tests pass (unit + integration + property-based)
+- Mann-Whitney U: expanded customers have statistically more `premium_feature_trials_30d` (p < 0.05)
+- Combined NRR impact base case: **$3.2M** ($2.0M churn protection + $1.2M expansion capture)
+- Payback period: **17 days** (vs. 30 days for churn-only)
+
+---
+
 ## [0.9.0] – 2026-03-19 – Expansion Propensity Module
 
 ### Added
