@@ -22,14 +22,15 @@ class ChurnFeatureVector(Protocol):
     This keeps the protocol minimal and moves feature logic into dbt.
     """
 
-    def extract(self, customer: Customer) -> dict[str, float]:
+    def extract(self, customer: Customer) -> dict[str, float | str]:
         """Extract the model's feature vector for a customer.
 
         Args:
             customer: Active Customer entity (used to look up mart row by ID).
 
         Returns:
-            Flat dict of feature_name → numeric value (15 features total).
+            Flat dict of feature_name → value (numerics as float, categoricals
+            as lowercase string for sklearn OrdinalEncoder compatibility).
             All feature engineering lives in mart_customer_churn_features.
 
         Raises:
@@ -47,12 +48,12 @@ class ChurnModelPort(ABC):
     """
 
     @abstractmethod
-    def predict_proba(self, features: dict[str, float]) -> float:
+    def predict_proba(self, features: dict[str, float | str]) -> float:
         """Return P(churn in 90 days) for the given feature vector."""
         ...
 
     @abstractmethod
-    def explain(self, features: dict[str, float]) -> list[ShapFeature]:
+    def explain(self, features: dict[str, float | str]) -> list[ShapFeature]:
         """Return SHAP feature contributions for explainability."""
         ...
 

@@ -42,6 +42,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -270,9 +271,9 @@ class DriftDetector:
                 max_val=float(data["max"]),  # type: ignore[arg-type]
                 mean=float(data["mean"]),  # type: ignore[arg-type]
                 std=float(data["std"]),  # type: ignore[arg-type]
-                bins=[float(b) for b in data["bins"]],  # type: ignore[union-attr]
-                hist=[float(h) for h in data["hist"]],  # type: ignore[union-attr]
-                sample=[float(s) for s in data["sample"]],  # type: ignore[union-attr]
+                bins=[float(b) for b in cast(list[Any], data["bins"])],
+                hist=[float(h) for h in cast(list[Any], data["hist"])],
+                sample=[float(s) for s in cast(list[Any], data["sample"])],
             )
             for name, data in raw.items()
         }
