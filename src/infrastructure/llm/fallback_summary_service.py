@@ -96,7 +96,7 @@ class FallbackSummaryService(SummaryPort):
             LLM answer string from whichever provider responded.
         """
         try:
-            return self._primary.answer_question(context, question)  # type: ignore[attr-defined]
+            return str(self._primary.answer_question(context, question))  # type: ignore[attr-defined]
         except Exception as exc:
             log.warning(
                 "llm.primary_failed.fallback_to_secondary",
@@ -104,7 +104,7 @@ class FallbackSummaryService(SummaryPort):
                 secondary=self._secondary.provider_name,
                 error=str(exc),
             )
-            return self._secondary.answer_question(context, question)  # type: ignore[attr-defined]
+            return str(self._secondary.answer_question(context, question))  # type: ignore[attr-defined]
 
     @property
     def model_name(self) -> str:
