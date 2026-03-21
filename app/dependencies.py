@@ -62,26 +62,35 @@ def get_predict_churn_use_case() -> PredictChurnUseCase:
 
 
 def _build_summary_service() -> object:
-    """Instantiate the configured LLM backend (Groq or Ollama).
+    """Instantiate the LLM backend with an automatic Ollama fallback.
 
-    Reads LLM_PROVIDER from environment (default: groq).
-    Groq requires GROQ_API_KEY. Ollama uses OLLAMA_HOST.
+    When LLM_PROVIDER=groq (default), returns a FallbackSummaryService that
+    tries Groq first and falls back to Ollama on any connection or API error.
+    When LLM_PROVIDER=ollama, returns Ollama directly (no fallback needed).
+
+    Env vars:
+        LLM_PROVIDER: 'groq' (default) or 'ollama'.
+        GROQ_API_KEY: Required when using Groq.
+        OLLAMA_HOST: Ollama base URL (default: http://localhost:11434).
+        LLM_MODEL: Override the model ID for the primary provider.
     """
+    from src.infrastructure.llm.ollama_summary_service import OllamaSummaryService
+
     provider = os.getenv("LLM_PROVIDER", "groq").lower()
+    ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+    ollama = OllamaSummaryService(host=ollama_host, model="llama3.1:8b")
 
     if provider == "ollama":
-        from src.infrastructure.llm.ollama_summary_service import OllamaSummaryService
+        return ollama
 
-        host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        model = os.getenv("LLM_MODEL", "llama3.1:8b")
-        return OllamaSummaryService(host=host, model=model)
-
-    # Default: Groq
+    # Default: Groq primary → Ollama secondary
+    from src.infrastructure.llm.fallback_summary_service import FallbackSummaryService
     from src.infrastructure.llm.groq_summary_service import GroqSummaryService
 
     api_key = os.getenv("GROQ_API_KEY", "")
     model = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
-    return GroqSummaryService(api_key=api_key, model=model)
+    groq = GroqSummaryService(api_key=api_key, model=model)
+    return FallbackSummaryService(primary=groq, secondary=ollama)
 
 
 @lru_cache(maxsize=1)
