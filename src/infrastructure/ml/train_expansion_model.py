@@ -67,6 +67,9 @@ NUMERICAL_FEATURES = [
     "days_since_last_event",
     "retention_signal_count",
     "integration_connects_first_30d",
+    # Activation gate: binary flag for ≥3 integrations in onboarding window.
+    # Surfaces the 2.7× churn reduction threshold as a first-class feature.
+    "activated_at_30d",
     "tickets_last_30d",
     "high_priority_tickets",
     "avg_resolution_hours",
@@ -77,6 +80,8 @@ NUMERICAL_FEATURES = [
     "has_open_expansion_opp",
     "expansion_opp_amount",
     "mrr_tier_ceiling_pct",
+    # Feature 22 — primary free-tier tier-pressure signal
+    "feature_limit_hit_30d",
 ]
 CATEGORICAL_FEATURES = ["plan_tier", "industry"]
 ALL_FEATURES = NUMERICAL_FEATURES + CATEGORICAL_FEATURES
@@ -146,7 +151,11 @@ def _load_training_data(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
                 COUNT(*) FILTER (
                     WHERE e.event_type = 'premium_feature_trial'
                       AND e.timestamp::DATE >= cr.obs_date - INTERVAL '30 days'
-                )                                                                   AS premium_feature_trials_30d
+                )                                                                   AS premium_feature_trials_30d,
+                COUNT(*) FILTER (
+                    WHERE e.event_type = 'feature_limit_hit'
+                      AND e.timestamp::DATE >= cr.obs_date - INTERVAL '30 days'
+                )                                                                   AS feature_limit_hit_30d
             FROM raw.usage_events e
             JOIN customer_ref cr USING (customer_id)
             WHERE e.timestamp::DATE < cr.obs_date  -- point-in-time
@@ -202,9 +211,15 @@ def _load_training_data(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
             COALESCE(ea.events_last_30d, 0)                                         AS events_last_30d,
             COALESCE(ea.events_last_7d, 0)                                          AS events_last_7d,
             COALESCE(ea.avg_adoption_score, 0.0)                                    AS avg_adoption_score,
-            COALESCE(ea.days_since_last_event, 999)                                 AS days_since_last_event,
+            -- Smart imputation: no events → inactive for full tenure, not 999
+            CASE WHEN ea.total_events IS NULL THEN cr.tenure_days
+                 ELSE ea.days_since_last_event
+            END                                                                     AS days_since_last_event,
             COALESCE(ea.retention_signal_count, 0)                                  AS retention_signal_count,
             COALESCE(ea.integration_connects_first_30d, 0)                         AS integration_connects_first_30d,
+            -- Activation gate: ≥3 integrations in onboarding window
+            CASE WHEN COALESCE(ea.integration_connects_first_30d, 0) >= 3 THEN 1 ELSE 0 END
+                                                                                    AS activated_at_30d,
             COALESCE(ea.premium_feature_trials_30d, 0)                              AS premium_feature_trials_30d,
             COALESCE(ta.tickets_last_30d, 0)                                        AS tickets_last_30d,
             COALESCE(ta.high_priority_tickets, 0)                                   AS high_priority_tickets,
@@ -212,8 +227,9 @@ def _load_training_data(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
             COALESCE(ta.feature_request_tickets_90d, 0)                             AS feature_request_tickets_90d,
             COALESCE(eo.has_open_expansion_opp, FALSE)::INT                         AS has_open_expansion_opp,
             COALESCE(eo.expansion_opp_amount, 0.0)                                  AS expansion_opp_amount,
-            -- Tier ceiling pressure
+            -- Tier ceiling pressure (FREE = 0.0; use feature_limit_hit_30d instead)
             CASE cr.plan_tier
+                WHEN 'free'       THEN 0.0
                 WHEN 'starter'    THEN LEAST(1.0, GREATEST(0.0,
                     (cr.mrr - 500.0)   / (2000.0  - 500.0)))
                 WHEN 'growth'     THEN LEAST(1.0, GREATEST(0.0,
@@ -221,7 +237,8 @@ def _load_training_data(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
                 WHEN 'enterprise' THEN LEAST(1.0, GREATEST(0.0,
                     (cr.mrr - 8000.0)  / (50000.0 - 8000.0)))
                 ELSE 0.0
-            END                                                                     AS mrr_tier_ceiling_pct
+            END                                                                     AS mrr_tier_ceiling_pct,
+            COALESCE(ea.feature_limit_hit_30d, 0)                                  AS feature_limit_hit_30d
         FROM customer_ref cr
         LEFT JOIN event_agg          ea USING (customer_id)
         LEFT JOIN ticket_agg         ta USING (customer_id)
@@ -251,7 +268,7 @@ def _build_pipeline(scale_pos_weight: float) -> Pipeline:
                     handle_unknown="use_encoded_value",
                     unknown_value=-1,
                     categories=[
-                        ["starter", "growth", "enterprise", "custom"],  # plan_tier
+                        ["free", "starter", "growth", "enterprise", "custom"],  # plan_tier
                         [
                             "fintech", "healthtech", "legaltech", "hr tech",
                             "edtech", "insurtech", "proptech", "retailtech", "other",

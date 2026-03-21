@@ -124,3 +124,61 @@ class TestTargetTier:
         """Property-based: uplift is always >= 0 for any valid MRR and propensity."""
         result = TargetTier(PlanTier.STARTER).calculate_expected_uplift(mrr, propensity)
         assert result >= 0.0
+
+
+class TestTargetTierFreeTier:
+    """Tests for FREE tier — zero-MRR freemium-to-Starter conversion path."""
+
+    def test_free_next_tier_is_starter(self) -> None:
+        assert TargetTier(PlanTier.FREE).next_tier == PlanTier.STARTER
+
+    def test_free_expected_uplift_uses_starter_floor(self) -> None:
+        # MRR=0.0, propensity=0.5 → 500 * 12 * 0.5 = 3000
+        result = TargetTier(PlanTier.FREE).calculate_expected_uplift(0.0, 0.5)
+        assert result == pytest.approx(3000.0)
+
+    def test_free_expected_uplift_ignores_passed_mrr(self) -> None:
+        # MRR arg is ignored for FREE; always uses Starter floor $500
+        result = TargetTier(PlanTier.FREE).calculate_expected_uplift(999.0, 0.5)
+        assert result == pytest.approx(3000.0)
+
+    def test_free_full_propensity(self) -> None:
+        # 500 * 12 * 1.0 = 6000
+        result = TargetTier(PlanTier.FREE).calculate_expected_uplift(0.0, 1.0)
+        assert result == pytest.approx(6000.0)
+
+    def test_free_zero_propensity(self) -> None:
+        result = TargetTier(PlanTier.FREE).calculate_expected_uplift(0.0, 0.0)
+        assert result == 0.0
+
+    def test_free_critical_propensity_is_high_value_target(self) -> None:
+        from src.domain.expansion.entities import ExpansionResult
+        from src.domain.prediction.value_objects import RiskTier
+
+        result = ExpansionResult(
+            customer_id="cust-free-001",
+            current_mrr=0.0,
+            propensity=__import__("src.domain.expansion.value_objects", fromlist=["UpgradePropensity"]).UpgradePropensity(value=0.80),
+            target=TargetTier(PlanTier.FREE),
+        )
+        assert result.propensity.tier == RiskTier.CRITICAL
+        assert result.is_high_value_target is True
+
+    def test_free_low_propensity_is_not_high_value_target(self) -> None:
+        from src.domain.expansion.entities import ExpansionResult
+
+        result = ExpansionResult(
+            customer_id="cust-free-002",
+            current_mrr=0.0,
+            propensity=__import__("src.domain.expansion.value_objects", fromlist=["UpgradePropensity"]).UpgradePropensity(value=0.30),
+            target=TargetTier(PlanTier.FREE),
+        )
+        assert result.is_high_value_target is False
+
+    @given(
+        propensity=st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+    )
+    def test_free_uplift_always_non_negative(self, propensity: float) -> None:
+        """Property-based: FREE tier uplift is always >= 0."""
+        result = TargetTier(PlanTier.FREE).calculate_expected_uplift(0.0, propensity)
+        assert result >= 0.0

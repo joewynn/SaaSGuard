@@ -148,3 +148,41 @@ class TestPredictExpansionUseCase:
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-exp-001"))
         assert result.target.current_tier == PlanTier.GROWTH
         assert result.target.next_tier == PlanTier.ENTERPRISE
+
+
+@pytest.fixture()
+def active_free_customer() -> Customer:
+    return Customer(
+        customer_id="cust-free-app-001",
+        industry=Industry.FINTECH,
+        plan_tier=PlanTier.FREE,
+        signup_date=date(2025, 11, 1),
+        mrr=MRR(amount=Decimal("0.00")),
+    )
+
+
+class TestPredictExpansionUseCaseFreeTier:
+
+    def test_returns_expansion_result_for_free_customer(
+        self, active_free_customer: Customer
+    ) -> None:
+        use_case = _make_use_case(active_free_customer, probability=0.78)
+        result = use_case.execute(PredictExpansionRequest(customer_id="cust-free-app-001"))
+        assert isinstance(result, ExpansionResult)
+        assert result.customer_id == "cust-free-app-001"
+
+    def test_free_customer_arr_uplift_non_zero(
+        self, active_free_customer: Customer
+    ) -> None:
+        # propensity=0.78, floor 500*12*0.78 = 4680
+        use_case = _make_use_case(active_free_customer, probability=0.78)
+        result = use_case.execute(PredictExpansionRequest(customer_id="cust-free-app-001"))
+        assert result.expected_arr_uplift > 0.0
+
+    def test_free_customer_target_is_starter(
+        self, active_free_customer: Customer
+    ) -> None:
+        use_case = _make_use_case(active_free_customer)
+        result = use_case.execute(PredictExpansionRequest(customer_id="cust-free-app-001"))
+        assert result.target.current_tier == PlanTier.FREE
+        assert result.target.next_tier == PlanTier.STARTER

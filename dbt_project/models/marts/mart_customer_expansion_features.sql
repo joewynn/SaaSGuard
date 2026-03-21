@@ -49,6 +49,7 @@ expansion_opp_summary AS (
 ),
 
 -- Tier floor/ceiling for mrr_tier_ceiling_pct computation
+-- Free: always 0.0 (no MRR pressure signal — use feature_limit_hit instead)
 -- Starter: 500-2000, Growth: 2000-8000, Enterprise: 8000-50000
 tier_pressure AS (
     SELECT
@@ -56,18 +57,40 @@ tier_pressure AS (
         plan_tier,
         mrr,
         CASE plan_tier
+            WHEN 'free'       THEN 0.0
             WHEN 'starter'    THEN 500.0
             WHEN 'growth'     THEN 2000.0
             WHEN 'enterprise' THEN 8000.0
             ELSE 0.0
         END AS tier_floor,
         CASE plan_tier
+            WHEN 'free'       THEN 0.01   -- sentinel: prevents div-by-zero; result clamped to 0
             WHEN 'starter'    THEN 2000.0
             WHEN 'growth'     THEN 8000.0
             WHEN 'enterprise' THEN 50000.0
             ELSE 1.0
         END AS tier_ceiling
     FROM customer_base
+),
+
+feature_limit_summary AS (
+    SELECT
+        customer_id,
+        COUNT(*) FILTER (
+            WHERE event_timestamp >= CURRENT_DATE - INTERVAL '30 days'
+              AND is_feature_limit_hit = TRUE
+        )                                   AS feature_limit_hit_30d
+    FROM {{ ref('stg_usage_events') }}
+    GROUP BY customer_id
+),
+
+outreach_summary AS (
+    SELECT
+        customer_id,
+        TRUE                                AS was_contacted,
+        MIN(days_since_outreach)            AS days_since_last_outreach
+    FROM {{ ref('stg_expansion_outreach') }}
+    GROUP BY customer_id
 )
 
 SELECT
@@ -86,6 +109,7 @@ SELECT
     cf.days_since_last_event,
     cf.retention_signal_count,
     cf.integration_connects_first_30d,
+    cf.activated_at_30d,
     cf.tickets_last_30d,
     cf.high_priority_tickets,
     cf.avg_resolution_hours,
@@ -108,9 +132,21 @@ SELECT
     -- 5. Tier ceiling pressure: how close current MRR is to the top of their tier
     -- Formula: (mrr - floor) / (ceiling - floor), clamped to [0, 1]
     -- High value (~1.0) = customer has outgrown their tier → ripe for upgrade conversation
-    LEAST(1.0, GREATEST(0.0,
-        (tp.mrr - tp.tier_floor) / NULLIF(tp.tier_ceiling - tp.tier_floor, 0)
-    ))                                                           AS mrr_tier_ceiling_pct
+    -- FREE tier: always 0.0 (no MRR pressure; use feature_limit_hit_30d instead)
+    CASE
+        WHEN tp.plan_tier = 'free' THEN 0.0
+        ELSE LEAST(1.0, GREATEST(0.0,
+            (tp.mrr - tp.tier_floor) / NULLIF(tp.tier_ceiling - tp.tier_floor, 0)
+        ))
+    END                                                          AS mrr_tier_ceiling_pct,
+
+    -- 6. Feature limit hits in last 30 days (Feature 21 — primary free-tier signal)
+    -- For free-tier customers, this replaces mrr_tier_ceiling_pct as the tier-pressure signal
+    COALESCE(fl.feature_limit_hit_30d, 0)                       AS feature_limit_hit_30d,
+
+    -- Reporting columns (NOT ML features — excluded from model training)
+    COALESCE(os.was_contacted, FALSE)                           AS was_contacted,
+    os.days_since_last_outreach                                 AS days_since_last_outreach
 
 FROM customer_base cb
 JOIN churn_features             cf USING (customer_id)
@@ -118,3 +154,5 @@ JOIN tier_pressure              tp USING (customer_id)
 LEFT JOIN premium_trial_summary pt USING (customer_id)
 LEFT JOIN feature_request_summary fr USING (customer_id)
 LEFT JOIN expansion_opp_summary eo USING (customer_id)
+LEFT JOIN feature_limit_summary fl USING (customer_id)
+LEFT JOIN outreach_summary      os USING (customer_id)

@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
+from src.domain.customer.value_objects import PlanTier
 from src.domain.expansion.value_objects import TargetTier, UpgradePropensity
 from src.domain.prediction.entities import ShapFeature
 from src.domain.prediction.value_objects import RiskTier
@@ -68,9 +69,18 @@ class ExpansionResult:
         domain, not the dashboard filters. Threshold: > $10k expected uplift
         AND propensity tier is High or Critical.
 
+        FREE-tier override: free-to-paid max uplift is $6k (below the $10k
+        threshold), so free-tier customers at CRITICAL propensity (≥0.75)
+        always return True — the conversion event is high-priority regardless.
+
         Returns:
             True if the account should be escalated for active outreach.
         """
+        if (
+            self.target.current_tier == PlanTier.FREE
+            and self.propensity.tier == RiskTier.CRITICAL
+        ):
+            return True
         return (
             self.expected_arr_uplift > 10_000
             and self.propensity.tier in (RiskTier.HIGH, RiskTier.CRITICAL)
@@ -104,7 +114,7 @@ class ExpansionResult:
                 )
             if high_churn and high_expansion:
                 return (
-                    f"\u26a0\ufe0f Flight Risk — Senior Exec intervention required before any "
+                    f"Flight Risk — Senior Exec intervention required before any "
                     f"upsell motion. Restore health first, then revisit {next_plan} migration."
                 )
             if high_churn and not high_expansion:

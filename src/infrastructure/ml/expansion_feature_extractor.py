@@ -46,7 +46,11 @@ event_agg AS (
         COUNT(*) FILTER (
             WHERE event_type = 'premium_feature_trial'
               AND CAST(timestamp AS DATE) >= CURRENT_DATE - INTERVAL '30 days'
-        )                                                                       AS premium_feature_trials_30d
+        )                                                                       AS premium_feature_trials_30d,
+        COUNT(*) FILTER (
+            WHERE event_type = 'feature_limit_hit'
+              AND CAST(timestamp AS DATE) >= CURRENT_DATE - INTERVAL '30 days'
+        )                                                                       AS feature_limit_hit_30d
     FROM raw.usage_events
     WHERE customer_id = ?
 ),
@@ -100,9 +104,15 @@ SELECT
     COALESCE(e.events_last_30d, 0)                         AS events_last_30d,
     COALESCE(e.events_last_7d, 0)                          AS events_last_7d,
     COALESCE(e.avg_adoption_score, 0.0)                    AS avg_adoption_score,
-    COALESCE(e.days_since_last_event, 999)                 AS days_since_last_event,
+    -- Smart imputation: no events → inactive for account's full lifetime, not 999
+    CASE WHEN e.total_events IS NULL THEN c.tenure_days
+         ELSE e.days_since_last_event
+    END                                                     AS days_since_last_event,
     COALESCE(e.retention_signal_count, 0)                  AS retention_signal_count,
     COALESCE(i.integration_connects_first_30d, 0)          AS integration_connects_first_30d,
+    -- Activation gate: ≥3 integrations in onboarding window → 2.7× lower churn
+    CASE WHEN COALESCE(i.integration_connects_first_30d, 0) >= 3 THEN 1 ELSE 0 END
+                                                            AS activated_at_30d,
     COALESCE(t.tickets_last_30d, 0)                        AS tickets_last_30d,
     COALESCE(t.high_priority_tickets, 0)                   AS high_priority_tickets,
     COALESCE(t.avg_resolution_hours, 0.0)                  AS avg_resolution_hours,
@@ -114,13 +124,15 @@ SELECT
     COALESCE(t.feature_request_tickets_90d, 0)             AS feature_request_tickets_90d,
     COALESCE(eo.has_open_expansion_opp, FALSE)             AS has_open_expansion_opp,
     COALESCE(eo.expansion_opp_amount, 0.0)                 AS expansion_opp_amount,
-    -- mrr_tier_ceiling_pct: how close MRR is to the top of the current tier
+    -- mrr_tier_ceiling_pct: how close MRR is to the top of the current tier (FREE = 0.0)
     CASE c.plan_tier
+        WHEN 'free'       THEN 0.0
         WHEN 'starter'    THEN LEAST(1.0, GREATEST(0.0, (c.mrr - 500.0)   / (2000.0  - 500.0)))
         WHEN 'growth'     THEN LEAST(1.0, GREATEST(0.0, (c.mrr - 2000.0)  / (8000.0  - 2000.0)))
         WHEN 'enterprise' THEN LEAST(1.0, GREATEST(0.0, (c.mrr - 8000.0)  / (50000.0 - 8000.0)))
         ELSE 0.0
-    END                                                                        AS mrr_tier_ceiling_pct
+    END                                                                        AS mrr_tier_ceiling_pct,
+    COALESCE(e.feature_limit_hit_30d, 0)                       AS feature_limit_hit_30d
 FROM customer_base c
 LEFT JOIN event_agg         e ON TRUE
 LEFT JOIN integration_agg   i ON TRUE
@@ -130,25 +142,26 @@ LEFT JOIN expansion_opp_agg eo ON TRUE
 
 
 class ExpansionFeatureExtractor:
-    """Thin adapter that maps customer history → 20-feature expansion dict.
+    """Thin adapter that maps customer history → 21-feature expansion dict.
 
     Business Context: Mirrors ChurnFeatureExtractor exactly. Primary path
     reads from mart_customer_expansion_features (~1ms). Fallback path
-    computes all 20 features inline from raw.* tables (~5ms).
+    computes all 21 features inline from raw.* tables (~5ms).
 
-    The 20 features are: 15 base churn features + 5 expansion signals:
+    The 21 features are: 15 base churn features + 6 expansion signals:
         premium_feature_trials_30d, feature_request_tickets_90d,
-        has_open_expansion_opp, expansion_opp_amount, mrr_tier_ceiling_pct.
+        has_open_expansion_opp, expansion_opp_amount, mrr_tier_ceiling_pct,
+        feature_limit_hit_30d (Feature 21 — primary free-tier signal).
     """
 
     def extract(self, customer: Customer) -> dict[str, float | str]:
-        """Fetch the 20-feature expansion vector for a customer.
+        """Fetch the 21-feature expansion vector for a customer.
 
         Args:
             customer: Active Customer entity.
 
         Returns:
-            Dict of 20 feature_name → value (numerics as float, categoricals
+            Dict of 21 feature_name → value (numerics as float, categoricals
             as lowercase string).
 
         Raises:
@@ -182,6 +195,7 @@ class ExpansionFeatureExtractor:
                     days_since_last_event,
                     retention_signal_count,
                     integration_connects_first_30d,
+                    activated_at_30d,
                     tickets_last_30d,
                     high_priority_tickets,
                     avg_resolution_hours,
@@ -192,7 +206,8 @@ class ExpansionFeatureExtractor:
                     feature_request_tickets_90d,
                     has_open_expansion_opp,
                     expansion_opp_amount,
-                    mrr_tier_ceiling_pct
+                    mrr_tier_ceiling_pct,
+                    feature_limit_hit_30d
                 FROM marts.mart_customer_expansion_features
                 WHERE customer_id = ?
                 """,
@@ -236,7 +251,7 @@ class ExpansionFeatureExtractor:
 
     @staticmethod
     def _row_to_features(row: tuple) -> dict[str, float | str]:  # type: ignore[type-arg]
-        """Parse a DB result tuple into the 20-feature dict expected by the model."""
+        """Parse a DB result tuple into the 21-feature dict expected by the model."""
         (
             mrr,
             tenure_days,
@@ -247,6 +262,7 @@ class ExpansionFeatureExtractor:
             days_since_last_event,
             retention_signal_count,
             integration_connects_first_30d,
+            activated_at_30d,
             tickets_last_30d,
             high_priority_tickets,
             avg_resolution_hours,
@@ -258,10 +274,11 @@ class ExpansionFeatureExtractor:
             has_open_expansion_opp,
             expansion_opp_amount,
             mrr_tier_ceiling_pct,
+            feature_limit_hit_30d,
         ) = row
 
         return {
-            # Base churn features (15)
+            # Base churn features (15 + activated_at_30d = 16)
             "mrr": float(mrr),
             "tenure_days": float(tenure_days),
             "total_events": float(total_events),
@@ -271,16 +288,18 @@ class ExpansionFeatureExtractor:
             "days_since_last_event": float(days_since_last_event),
             "retention_signal_count": float(retention_signal_count),
             "integration_connects_first_30d": float(integration_connects_first_30d),
+            "activated_at_30d": float(int(activated_at_30d)),
             "tickets_last_30d": float(tickets_last_30d),
             "high_priority_tickets": float(high_priority_tickets),
             "avg_resolution_hours": float(avg_resolution_hours),
             "plan_tier": str(plan_tier).lower(),
             "industry": str(industry).lower(),
             "is_early_stage": float(int(is_early_stage)),
-            # Expansion-specific features (5)
+            # Expansion-specific features (6)
             "premium_feature_trials_30d": float(premium_feature_trials_30d),
             "feature_request_tickets_90d": float(feature_request_tickets_90d),
             "has_open_expansion_opp": float(int(bool(has_open_expansion_opp))),
             "expansion_opp_amount": float(expansion_opp_amount),
             "mrr_tier_ceiling_pct": float(mrr_tier_ceiling_pct),
+            "feature_limit_hit_30d": float(feature_limit_hit_30d),
         }

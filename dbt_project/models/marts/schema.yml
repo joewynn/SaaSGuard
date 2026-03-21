@@ -19,7 +19,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [starter, growth, enterprise]
+              values: [free, starter, growth, enterprise]
       - name: mrr
         description: "Monthly Recurring Revenue (USD). Used for revenue-at-risk weighting."
         tests: [not_null]
@@ -125,7 +125,56 @@ models:
           How close current MRR is to the top of the customer's tier.
           Formula: (mrr - tier_floor) / (tier_ceiling - tier_floor), clamped [0, 1].
           High value (~1.0) = customer has outgrown their tier.
+          FREE tier: always 0.0 — use feature_limit_hit_30d as the tier-pressure signal.
         tests: [not_null]
+      - name: feature_limit_hit_30d
+        description: >
+          Count of feature_limit_hit events in the last 30 days. Feature 21.
+          Primary tier-pressure signal for free-tier customers.
+          For paid tiers, provides a complementary behavioral signal.
+        tests: [not_null]
+      - name: was_contacted
+        description: "TRUE if this customer has been contacted in the outreach log."
+        tests: [not_null]
+      - name: days_since_last_outreach
+        description: "Days since most recent CS outreach. NULL if never contacted."
+
+  - name: mart_propensity_quadrant
+    description: >
+      Classifies every active expansion candidate into one of 4 quadrants based on
+      rule-based churn risk and expansion proxy score. Powers the Propensity Quadrant
+      Superset dashboard (Dashboard 5). Refreshed by dbt run.
+    columns:
+      - name: customer_id
+        description: "UUID primary key."
+        tests: [not_null, unique]
+      - name: churn_probability
+        description: "Rule-based churn score from mart_customer_risk_scores."
+        tests: [not_null]
+      - name: upgrade_propensity_proxy
+        description: "Weighted expansion proxy score [0, 1]. Not the ML model score."
+        tests: [not_null]
+      - name: quadrant_label
+        description: "One of: Flight Risk, Growth Engine, Churn Candidate, Stable Base."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Flight Risk', 'Growth Engine', 'Churn Candidate', 'Stable Base']
+      - name: arr_at_risk
+        description: "ARR × churn_score. Estimated ARR at risk."
+        tests: [not_null]
+      - name: mrr
+        description: "Customer MRR."
+        tests: [not_null]
+      - name: plan_tier
+        tests: [not_null]
+      - name: expected_arr_uplift_proxy
+        description: "Probability-weighted uplift estimate using rule-based proxy score."
+        tests: [not_null]
+      - name: was_contacted
+        tests: [not_null]
+      - name: days_since_last_outreach
+        description: "NULL if never contacted."
 
   - name: mart_customer_risk_scores
     description: >

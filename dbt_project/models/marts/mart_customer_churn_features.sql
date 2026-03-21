@@ -57,10 +57,22 @@ SELECT
     COALESCE(e.events_last_30d, 0)           AS events_last_30d,
     COALESCE(e.events_last_7d, 0)            AS events_last_7d,
     COALESCE(e.avg_adoption_score, 0)        AS avg_adoption_score,
-    COALESCE(e.days_since_last_event, 999)   AS days_since_last_event,
+    -- Smart imputation: a customer with no events is inactive for exactly tenure_days,
+    -- not 999. Using 999 aliases new accounts (day 1–7) with severely lapsed ones,
+    -- inflating the churn score of every new customer on their first Monday morning.
+    CASE
+        WHEN e.total_events IS NULL THEN c.tenure_days
+        ELSE e.days_since_last_event
+    END                                      AS days_since_last_event,
     COALESCE(e.retention_signal_count, 0)    AS retention_signal_count,
     -- Phase 4 integration gate feature
     COALESCE(i.integration_connects_first_30d, 0) AS integration_connects_first_30d,
+    -- Activation gate binary: ≥3 integrations in first 30d → 2.7× lower churn (log-rank p<0.001)
+    -- Exposes the threshold effect as a first-class feature for unambiguous SHAP attribution.
+    CASE
+        WHEN COALESCE(i.integration_connects_first_30d, 0) >= 3 THEN 1
+        ELSE 0
+    END                                      AS activated_at_30d,
     -- Support features
     COALESCE(t.tickets_last_30d, 0)          AS tickets_last_30d,
     COALESCE(t.high_priority_tickets, 0)     AS high_priority_tickets,

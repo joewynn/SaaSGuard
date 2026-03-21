@@ -7,14 +7,14 @@ their downstream behaviour. This ensures the data is causally coherent —
 a model trained on it will learn genuine signal, not noise.
 
 Churn destiny probabilities by plan tier:
-    ┌──────────────────┬─────────┬────────┬────────────┐
-    │ Profile          │ starter │ growth │ enterprise │
-    ├──────────────────┼─────────┼────────┼────────────┤
-    │ early_churner    │  25%    │   8%   │    3%      │
-    │ mid_churner      │  20%    │  12%   │    5%      │
-    │ retained         │  45%    │  65%   │   75%      │
-    │ expanded         │  10%    │  15%   │   17%      │
-    └──────────────────┴─────────┴────────┴────────────┘
+    ┌──────────────────┬─────────┬────────┬────────────┬──────┐
+    │ Profile          │ starter │ growth │ enterprise │ free │
+    ├──────────────────┼─────────┼────────┼────────────┼──────┤
+    │ early_churner    │  25%    │   8%   │    3%      │  40% │
+    │ mid_churner      │  20%    │  12%   │    5%      │  20% │
+    │ retained         │  45%    │  65%   │   75%      │  25% │
+    │ expanded         │  10%    │  15%   │   17%      │  15% │
+    └──────────────────┴─────────┴────────┴────────────┴──────┘
 
 Usage: python -m src.infrastructure.data_generation.generate_synthetic_data
 """
@@ -33,14 +33,15 @@ from faker import Faker
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 RANDOM_SEED = 42
-N_CUSTOMERS = 5_000
+N_CUSTOMERS = 5_500   # +500 free-tier customers added in v0.9.1
 OUTPUT_DIR = Path("data/raw")
 
-PLAN_TIERS: list[str] = ["starter", "growth", "enterprise"]
-PLAN_TIER_WEIGHTS = [0.50, 0.35, 0.15]  # market distribution
+PLAN_TIERS: list[str] = ["free", "starter", "growth", "enterprise"]
+PLAN_TIER_WEIGHTS = [0.09, 0.46, 0.32, 0.13]  # market distribution (renormalised for free)
 
 # MRR ranges (min, max) per plan tier
 MRR_RANGES: dict[str, tuple[float, float]] = {
+    "free":       (0.0, 0.0),        # freemium — zero MRR
     "starter": (500.0, 2_000.0),
     "growth": (2_000.0, 8_000.0),
     "enterprise": (8_000.0, 50_000.0),
@@ -48,6 +49,7 @@ MRR_RANGES: dict[str, tuple[float, float]] = {
 
 # Destiny probabilities per plan tier [early_churner, mid_churner, retained, expanded]
 DESTINY_PROBS: dict[str, list[float]] = {
+    "free":       [0.40, 0.20, 0.25, 0.15],   # high early churn, 15% convert to paid
     "starter":    [0.25, 0.20, 0.45, 0.10],
     "growth":     [0.08, 0.12, 0.65, 0.15],
     "enterprise": [0.03, 0.05, 0.75, 0.17],
@@ -62,7 +64,7 @@ INDUSTRIES = [
 EVENT_TYPES = [
     "evidence_upload", "monitoring_run", "report_view",
     "user_invite", "integration_connect", "api_call",
-    "premium_feature_trial",
+    "premium_feature_trial", "feature_limit_hit",
 ]
 
 # Events per week by destiny (Poisson lambda)
@@ -81,12 +83,24 @@ INTEGRATION_LAMBDA: dict[str, float] = {
     "expanded":      4.5,
 }
 
+# feature_limit_hit event weight per destiny (probability within event draw)
+# Free/expanded customers hit limits most; all paid tiers get minimal noise
+FEATURE_LIMIT_HIT_WEIGHT: dict[str, float] = {
+    "free_expanded":      0.20,   # free customers who will convert
+    "free_retained":      0.08,   # free customers who stay free
+    "free_early_churner": 0.02,   # free customers who churn
+    "free_mid_churner":   0.02,
+    "paid":               0.01,   # all paid tiers — noise level
+}
+
 # Support ticket rate (tickets per month, Poisson lambda)
 TICKET_RATE_NORMAL: dict[str, float] = {
     "early_churner": 1.5,
     "mid_churner":   0.8,
     "retained":      0.3,
     "expanded":      0.2,
+    "free_churner":  0.5,   # proxy for free early/mid churners
+    "free_other":    0.1,   # proxy for free retained/expanded
 }
 # Rate during pre-churn spike window (last 60 days before churn)
 TICKET_RATE_SPIKE: dict[str, float] = {
@@ -183,11 +197,15 @@ def _generate_customers() -> pd.DataFrame:
 
         signup_date = _random_date(SIGNUP_START, SIGNUP_END)
 
-        # MRR: expanded customers get top 30% of their tier range
+        # MRR: free tier is always 0; expanded paid customers get top 30% of tier range
         mrr_min, mrr_max = MRR_RANGES[plan_tier]
-        if destiny == "expanded":
+        if plan_tier == "free":
+            mrr = 0.0
+        elif destiny == "expanded":
             mrr_min = mrr_min + 0.70 * (mrr_max - mrr_min)
-        mrr = round(float(rng.uniform(mrr_min, mrr_max)), 2)
+            mrr = round(float(rng.uniform(mrr_min, mrr_max)), 2)
+        else:
+            mrr = round(float(rng.uniform(mrr_min, mrr_max)), 2)
 
         # Churn date
         churn_date = None
@@ -308,16 +326,29 @@ def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
                 score = float(np.clip(rng.normal(score_mean, 0.08), 0.0, 1.0))
 
                 # Event type weighted by destiny — churners skew toward passive events
-                # 7-type weights: evidence_upload, monitoring_run, report_view,
-                #   user_invite, integration_connect, api_call, premium_feature_trial
-                if destiny in ("early_churner", "mid_churner"):
-                    weights = [0.30, 0.14, 0.35, 0.05, 0.05, 0.10, 0.01]
+                # 8-type weights: evidence_upload, monitoring_run, report_view,
+                #   user_invite, integration_connect, api_call,
+                #   premium_feature_trial, feature_limit_hit
+                plan_tier_local = cust["plan_tier"]
+                is_free = plan_tier_local == "free"
+                if is_free and destiny == "expanded":
+                    weights = [0.15, 0.10, 0.15, 0.08, 0.08, 0.12, 0.12, 0.20]
+                elif is_free and destiny == "retained":
+                    weights = [0.20, 0.15, 0.20, 0.10, 0.10, 0.09, 0.08, 0.08]
+                elif is_free:  # free early/mid churner
+                    weights = [0.28, 0.12, 0.30, 0.08, 0.06, 0.12, 0.02, 0.02]
+                elif destiny in ("early_churner", "mid_churner"):
+                    weights = [0.30, 0.14, 0.35, 0.05, 0.05, 0.10, 0.01, 0.00]
                 elif destiny == "expanded":
-                    weights = [0.18, 0.18, 0.12, 0.10, 0.10, 0.17, 0.15]
-                else:  # retained
-                    weights = [0.19, 0.24, 0.15, 0.10, 0.10, 0.20, 0.02]
+                    weights = [0.18, 0.17, 0.12, 0.10, 0.10, 0.17, 0.15, 0.01]
+                else:  # retained paid
+                    weights = [0.19, 0.24, 0.15, 0.10, 0.10, 0.20, 0.02, 0.00]
+                # Normalise (weights may not sum to exactly 1.0 due to edits)
+                w_arr = [float(w) for w in weights]
+                w_sum = sum(w_arr)
+                w_arr = [w / w_sum for w in w_arr]
 
-                event_type = rng.choice(EVENT_TYPES, p=weights)
+                event_type = rng.choice(EVENT_TYPES, p=w_arr)
                 all_events.append({
                     "event_id": _uuid(),
                     "customer_id": cust["customer_id"],
@@ -527,6 +558,64 @@ def _generate_risk_signals(customers: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+# ── Expansion outreach log generation ─────────────────────────────────────────
+
+def _generate_expansion_outreach_log(customers: pd.DataFrame) -> pd.DataFrame:
+    """Generate a feedback-loop log of CS outreach to expansion-propensity candidates.
+
+    Business Context:
+        The outreach log enables model lift measurement after CS intervention.
+        It simulates real-world post-outreach outcomes so the feedback loop
+        integration tests have meaningful data to validate against.
+
+    Sampling logic:
+        - ~300 'expanded'-destiny customers are selected as contacts.
+        - Each gets 1-2 outreach rows (multi-touch campaigns).
+        - propensity_at_outreach ~ Beta(7, 3) (mean ≈ 0.70) — top decile scoring.
+        - outcome mix: upgraded 30%, active 50%, no_response 20%.
+
+    Args:
+        customers: DataFrame with _destiny and customer_id columns.
+
+    Returns:
+        DataFrame with columns: outreach_id, customer_id, contacted_date,
+        propensity_at_outreach, outreach_channel, outcome.
+    """
+    today = date(2026, 3, 14)
+    expanded_ids = customers[customers["_destiny"] == "expanded"]["customer_id"].tolist()
+
+    # Sample ~300 contacts (or all if fewer)
+    n_contacts = min(300, len(expanded_ids))
+    contacted_ids = rng.choice(expanded_ids, size=n_contacts, replace=False).tolist()
+
+    channels = ["email", "phone", "in_app", "qbr"]
+    channel_weights = [0.40, 0.30, 0.20, 0.10]
+    outcomes_upgraded = ["upgraded", "active", "no_response"]
+    outcome_weights_upgraded = [0.30, 0.50, 0.20]
+
+    rows = []
+    for cid in contacted_ids:
+        n_touchpoints = int(rng.integers(1, 3))  # 1 or 2 outreach rows
+        for _ in range(n_touchpoints):
+            # propensity_at_outreach ~ Beta(7, 3), mean ≈ 0.70
+            propensity = float(np.clip(rng.beta(7.0, 3.0), 0.0, 1.0))
+            # contacted_date: within last 12 months
+            days_ago = int(rng.integers(0, 365))
+            contacted_date = today - timedelta(days=days_ago)
+            channel = rng.choice(channels, p=channel_weights)
+            outcome = rng.choice(outcomes_upgraded, p=outcome_weights_upgraded)
+            rows.append({
+                "outreach_id": _uuid(),
+                "customer_id": cid,
+                "contacted_date": contacted_date.isoformat(),
+                "propensity_at_outreach": round(propensity, 4),
+                "outreach_channel": channel,
+                "outcome": outcome,
+            })
+
+    return pd.DataFrame(rows)
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def generate_all(output_dir: Path = OUTPUT_DIR) -> None:
@@ -552,6 +641,9 @@ def generate_all(output_dir: Path = OUTPUT_DIR) -> None:
     print("Generating risk signals...")
     risk_signals = _generate_risk_signals(customers)
 
+    print("Generating expansion outreach log...")
+    outreach_log = _generate_expansion_outreach_log(customers)
+
     # Drop internal _destiny column before writing
     customers_out = customers.drop(columns=["_destiny"])
 
@@ -561,14 +653,19 @@ def generate_all(output_dir: Path = OUTPUT_DIR) -> None:
     support_tickets.to_csv(output_dir / "support_tickets.csv", index=False)
     gtm_opportunities.to_csv(output_dir / "gtm_opportunities.csv", index=False)
     risk_signals.to_csv(output_dir / "risk_signals.csv", index=False)
+    outreach_log.to_csv(output_dir / "expansion_outreach_log.csv", index=False)
 
     # ── Summary stats (visual QA) ─────────────────────────────────────────────
     print("\n── Generation Summary ──────────────────────────────────────────")
-    print(f"  customers:         {len(customers_out):>8,}")
-    print(f"  usage_events:      {len(usage_events):>8,}")
-    print(f"  support_tickets:   {len(support_tickets):>8,}")
-    print(f"  gtm_opportunities: {len(gtm_opportunities):>8,}")
-    print(f"  risk_signals:      {len(risk_signals):>8,}")
+    print(f"  customers:              {len(customers_out):>8,}")
+    print(f"  usage_events:           {len(usage_events):>8,}")
+    print(f"  support_tickets:        {len(support_tickets):>8,}")
+    print(f"  gtm_opportunities:      {len(gtm_opportunities):>8,}")
+    print(f"  risk_signals:           {len(risk_signals):>8,}")
+    print(f"  expansion_outreach_log: {len(outreach_log):>8,}")
+
+    free_count = len(customers[customers["plan_tier"] == "free"])
+    print(f"\n── Free-tier customers: {free_count:,} ({free_count/len(customers_out):.1%})")
 
     print("\n── Churn rates by plan tier ────────────────────────────────────")
     for tier in PLAN_TIERS:

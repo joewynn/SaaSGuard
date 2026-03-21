@@ -140,3 +140,44 @@ class TestExpansionModelService:
     def test_model_version_propagated(self, growth_customer: Customer) -> None:
         result = _make_service().predict(growth_customer)
         assert result.model_version == "1.0.0"
+
+
+class TestExpansionModelServiceFreeTier:
+    """Tests for FREE-tier customers — zero-MRR freemium conversion path."""
+
+    @pytest.fixture()
+    def free_customer(self) -> Customer:
+        from datetime import date
+        return Customer(
+            customer_id="cust-free-svc-001",
+            industry=Industry.FINTECH,
+            plan_tier=PlanTier.FREE,
+            signup_date=date(2025, 12, 1),
+            mrr=MRR(amount=Decimal("0.00")),
+        )
+
+    def _make_free_service(self, probability: float = 0.80) -> ExpansionModelService:
+        feature_extractor = MagicMock()
+        feature_extractor.extract.return_value = {
+            "mrr": 0.0, "premium_feature_trials_30d": 3.0,
+            "feature_limit_hit_30d": 2.0,
+            "mrr_tier_ceiling_pct": 0.0, "plan_tier": "free",
+        }
+        return ExpansionModelService(
+            model=FakeExpansionModel(fixed_probability=probability),
+            feature_extractor=feature_extractor,
+        )
+
+    def test_free_tier_target_is_starter(self, free_customer: Customer) -> None:
+        result = self._make_free_service().predict(free_customer)
+        assert result.target.current_tier == PlanTier.FREE
+        assert result.target.next_tier == PlanTier.STARTER
+
+    def test_free_tier_arr_uplift_uses_starter_floor(self, free_customer: Customer) -> None:
+        # propensity=0.80, floor=500, 500*12*0.80 = 4800
+        result = self._make_free_service(probability=0.80).predict(free_customer)
+        assert result.expected_arr_uplift == pytest.approx(4800.0)
+
+    def test_free_critical_propensity_is_high_value_target(self, free_customer: Customer) -> None:
+        result = self._make_free_service(probability=0.80).predict(free_customer)
+        assert result.is_high_value_target is True

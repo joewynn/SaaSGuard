@@ -77,9 +77,15 @@ SELECT
     COALESCE(e.events_last_30d, 0)                      AS events_last_30d,
     COALESCE(e.events_last_7d, 0)                       AS events_last_7d,
     COALESCE(e.avg_adoption_score, 0.0)                 AS avg_adoption_score,
-    COALESCE(e.days_since_last_event, 999)              AS days_since_last_event,
+    -- Smart imputation: no events → inactive for account's full lifetime, not 999
+    CASE WHEN e.total_events IS NULL THEN c.tenure_days
+         ELSE e.days_since_last_event
+    END                                                 AS days_since_last_event,
     COALESCE(e.retention_signal_count, 0)               AS retention_signal_count,
     COALESCE(i.integration_connects_first_30d, 0)       AS integration_connects_first_30d,
+    -- Activation gate: ≥3 integrations in onboarding window → 2.7× lower churn
+    CASE WHEN COALESCE(i.integration_connects_first_30d, 0) >= 3 THEN 1 ELSE 0 END
+                                                        AS activated_at_30d,
     COALESCE(t.tickets_last_30d, 0)                     AS tickets_last_30d,
     COALESCE(t.high_priority_tickets, 0)                AS high_priority_tickets,
     COALESCE(t.avg_resolution_hours, 0.0)               AS avg_resolution_hours,
@@ -150,6 +156,7 @@ class ChurnFeatureExtractor:
                     days_since_last_event,
                     retention_signal_count,
                     integration_connects_first_30d,
+                    activated_at_30d,
                     tickets_last_30d,
                     high_priority_tickets,
                     avg_resolution_hours,
@@ -158,7 +165,7 @@ class ChurnFeatureExtractor:
                     is_early_stage
                 FROM marts.mart_customer_churn_features
                 WHERE customer_id = ?
-                """,
+""",
                 [customer.customer_id],
             ).fetchone()
 
@@ -218,6 +225,7 @@ class ChurnFeatureExtractor:
             days_since_last_event,
             retention_signal_count,
             integration_connects_first_30d,
+            activated_at_30d,
             tickets_last_30d,
             high_priority_tickets,
             avg_resolution_hours,
@@ -236,6 +244,7 @@ class ChurnFeatureExtractor:
             "days_since_last_event": float(days_since_last_event),
             "retention_signal_count": float(retention_signal_count),
             "integration_connects_first_30d": float(integration_connects_first_30d),
+            "activated_at_30d": float(int(activated_at_30d)),
             "tickets_last_30d": float(tickets_last_30d),
             "high_priority_tickets": float(high_priority_tickets),
             "avg_resolution_hours": float(avg_resolution_hours),

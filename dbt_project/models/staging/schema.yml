@@ -24,7 +24,7 @@ sources:
             tests:
               - not_null
               - accepted_values:
-                  values: [starter, growth, enterprise]
+                  values: [free, starter, growth, enterprise]
           - name: signup_date
             tests: [not_null]
           - name: mrr
@@ -44,7 +44,7 @@ sources:
             tests:
               - not_null
               - accepted_values:
-                  values: [evidence_upload, monitoring_run, report_view, user_invite, integration_connect, api_call]
+                  values: [evidence_upload, monitoring_run, report_view, user_invite, integration_connect, api_call, premium_feature_trial, feature_limit_hit]
           - name: feature_adoption_score
             tests: [not_null]
 
@@ -99,8 +99,50 @@ sources:
           - name: vendor_risk_flags
             tests: [not_null]
 
+      - name: expansion_outreach_log
+        description: "CS outreach log for expansion candidates — enables model lift measurement."
+        columns:
+          - name: outreach_id
+            tests: [not_null, unique]
+          - name: customer_id
+            tests: [not_null]
+          - name: contacted_date
+            tests: [not_null]
+          - name: propensity_at_outreach
+            tests: [not_null]
+          - name: outreach_channel
+            tests: [not_null]
+          - name: outcome
+            tests:
+              - not_null
+              - accepted_values:
+                  values: [upgraded, churned, no_response, active]
+
 
 models:
+  - name: stg_expansion_outreach
+    description: "Cleaned expansion outreach log with conversion flag and days since outreach."
+    columns:
+      - name: outreach_id
+        tests: [not_null, unique]
+      - name: customer_id
+        tests: [not_null]
+      - name: contacted_date
+        tests: [not_null]
+      - name: propensity_at_outreach
+        tests: [not_null]
+      - name: outreach_channel
+        tests: [not_null]
+      - name: outcome
+        tests:
+          - not_null
+          - accepted_values:
+              values: [upgraded, churned, no_response, active]
+      - name: is_converted
+        tests: [not_null]
+      - name: days_since_outreach
+        tests: [not_null]
+
   - name: stg_customers
     description: "Cleaned customers with tenure and lifecycle flags."
     columns:
@@ -109,7 +151,7 @@ models:
       - name: plan_tier
         tests:
           - accepted_values:
-              values: [starter, growth, enterprise]
+              values: [free, starter, growth, enterprise]
       - name: tenure_days
         tests: [not_null]
       - name: is_active

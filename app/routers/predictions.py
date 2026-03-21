@@ -10,6 +10,7 @@ from app.schemas.prediction import (
     ChurnPredictionRequest,
     ChurnPredictionResponse,
     Customer360Response,
+    ShapFeatureDTO,
     UpgradePredictionRequest,
     UpgradePredictionResponse,
 )
@@ -50,7 +51,7 @@ async def predict_churn(
         risk_score=result.risk_score.value,
         risk_tier=result.risk_score.tier.value,
         top_shap_features=[
-            {"feature": f.feature_name, "value": f.feature_value, "shap_impact": f.shap_impact}
+            ShapFeatureDTO(feature_name=f.feature_name, feature_value=f.feature_value, shap_impact=f.shap_impact)
             for f in result.top_shap_features
         ],
         recommended_action=result.recommended_action,
@@ -89,11 +90,14 @@ async def predict_upgrade(
         target_tier=result.target.next_tier.value if result.target.next_tier else None,
         expected_arr_uplift=result.expected_arr_uplift,
         top_shap_features=[
-            {"feature": f.feature_name, "value": f.feature_value, "shap_impact": f.shap_impact}
+            ShapFeatureDTO(feature_name=f.feature_name, feature_value=f.feature_value, shap_impact=f.shap_impact)
             for f in result.top_features
         ],
         recommended_action=result.recommended_action(),
         model_version=result.model_version,
+        # No churn context on /upgrade — flight risk is always False
+        is_flight_risk=False,
+        flight_risk_reason=None,
     )
 
 
@@ -150,15 +154,24 @@ async def get_customer_360(
         raise HTTPException(status_code=503, detail=f"Expansion service error: {exc}") from exc
 
     # Apply conflict matrix
-    recommended_action = expansion_result.recommended_action(
-        churn_probability=churn_result.churn_probability.value
+    churn_prob = churn_result.churn_probability.value
+    expansion_prop = expansion_result.propensity.value
+    recommended_action = expansion_result.recommended_action(churn_probability=churn_prob)
+
+    # Machine-readable flight risk signal — both scores must exceed 50%
+    is_flight_risk = churn_prob >= 0.50 and expansion_prop >= 0.50
+    flight_risk_reason = (
+        f"Churn probability {churn_prob:.0%} and upgrade propensity "
+        f"{expansion_prop:.0%} both exceed 50% threshold. "
+        "Restore account health before any upsell motion."
+        if is_flight_risk else None
     )
 
     return Customer360Response(
         customer_id=customer_id,
-        churn_probability=churn_result.churn_probability.value,
+        churn_probability=churn_prob,
         churn_risk_tier=churn_result.churn_probability.risk_tier.value,
-        upgrade_propensity=expansion_result.propensity.value,
+        upgrade_propensity=expansion_prop,
         propensity_tier=expansion_result.propensity.tier.value,
         target_tier=(
             expansion_result.target.next_tier.value
@@ -168,11 +181,13 @@ async def get_customer_360(
         is_high_value_target=expansion_result.is_high_value_target,
         recommended_action=recommended_action,
         churn_top_features=[
-            {"feature": f.feature_name, "value": f.feature_value, "shap_impact": f.shap_impact}
+            ShapFeatureDTO(feature_name=f.feature_name, feature_value=f.feature_value, shap_impact=f.shap_impact)
             for f in churn_result.top_shap_features
         ],
         expansion_top_features=[
-            {"feature": f.feature_name, "value": f.feature_value, "shap_impact": f.shap_impact}
+            ShapFeatureDTO(feature_name=f.feature_name, feature_value=f.feature_value, shap_impact=f.shap_impact)
             for f in expansion_result.top_features
         ],
+        is_flight_risk=is_flight_risk,
+        flight_risk_reason=flight_risk_reason,
     )

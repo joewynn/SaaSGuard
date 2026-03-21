@@ -8,5 +8,6 @@ SELECT
     event_type,
     CAST(feature_adoption_score AS FLOAT)                   AS feature_adoption_score,
     event_type IN ('integration_connect', 'api_call', 'monitoring_run') AS is_retention_signal,
-    event_type = 'premium_feature_trial'                    AS is_premium_trial
+    event_type = 'premium_feature_trial'                    AS is_premium_trial,
+    event_type = 'feature_limit_hit'                        AS is_feature_limit_hit
 FROM {{ source('raw', 'usage_events') }}

@@ -65,6 +65,7 @@ class TargetTier:
     def next_tier(self) -> PlanTier | None:
         """The next plan tier in the upgrade sequence, or None at the ceiling."""
         mapping: dict[PlanTier, PlanTier | None] = {
+            PlanTier.FREE:       PlanTier.STARTER,   # freemium → first paid tier
             PlanTier.STARTER:    PlanTier.GROWTH,
             PlanTier.GROWTH:     PlanTier.ENTERPRISE,
             PlanTier.ENTERPRISE: PlanTier.CUSTOM,   # seat/add-on expansion, not full tier flip
@@ -79,8 +80,11 @@ class TargetTier:
         Business Context: Multipliers derived from median ACV jumps observed between
         tiers. Enterprise → CUSTOM is 1.2× because growth at that tier comes from
         seat additions and add-on modules (Dash, Sign, AI), not a full tier change.
+        FREE uses 0.0 as a sentinel — the guard clause in calculate_expected_uplift
+        handles the FREE → STARTER conversion using the Starter floor ARR instead.
         """
         multipliers: dict[PlanTier, float] = {
+            PlanTier.FREE:       0.0,   # sentinel — guard clause handles FREE conversion
             PlanTier.STARTER:    3.0,   # ~$1k → ~$3k MRR
             PlanTier.GROWTH:     5.0,   # ~$5k → ~$25k MRR
             PlanTier.ENTERPRISE: 1.2,   # seat/add-on upsell, not a tier flip
@@ -91,21 +95,29 @@ class TargetTier:
     def calculate_expected_uplift(self, current_mrr: float, propensity: float) -> float:
         """Probability-weighted net annual revenue opportunity from this upgrade.
 
-        Formula: (MRR × 12) × (multiplier - 1) × propensity
+        Formula (paid tiers): (MRR × 12) × (multiplier - 1) × propensity
+        Formula (FREE tier):  500 × 12 × propensity  (Starter floor ARR)
 
-        Business Context: Uses (multiplier - 1) to capture only the *additional*
-        revenue, not the full ACV. A 3× jump is a 200% increase — the net uplift
-        is 2× current ARR, not 3×. This makes the dollar figure defensible in a
-        VP Sales review where double-counting is closely scrutinised.
+        Business Context: FREE tier customers have zero MRR so the standard
+        (MRR × 12 × ...) formula would always yield $0. Instead, the Starter floor
+        ARR ($500/mo = $6k/yr) is used as the conversion value. This surfaces
+        free-to-paid conversion as a real revenue opportunity in Sales prioritisation.
+        The $500/mo floor matches the Starter tier minimum (per tier ladder).
 
         Args:
             current_mrr: Customer's current Monthly Recurring Revenue (USD).
+                         Ignored for FREE tier — Starter floor is used instead.
             propensity: UpgradePropensity.value — calibrated probability in [0, 1].
 
         Returns:
             Expected net ARR uplift in USD, rounded to 2 decimal places.
-            Returns 0.0 if there is no higher tier or multiplier is zero.
+            Returns 0.0 if there is no higher tier, multiplier is zero, or
+            propensity is zero.
         """
+        free_to_starter_floor_mrr = 500.0
+        # Guard: FREE tier uses Starter floor, not current MRR (which is always 0)
+        if self.current_tier == PlanTier.FREE:
+            return round(free_to_starter_floor_mrr * 12 * propensity, 2)
         if not self.next_tier or self.arr_uplift_multiplier == 0:
             return 0.0
         return round(current_mrr * 12 * max(0.0, self.arr_uplift_multiplier - 1) * propensity, 2)

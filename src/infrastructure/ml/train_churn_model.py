@@ -62,6 +62,9 @@ NUMERICAL_FEATURES = [
     "days_since_last_event",
     "retention_signal_count",
     "integration_connects_first_30d",
+    # Activation gate: binary flag for ≥3 integrations in onboarding window.
+    # Surfaces the 2.7× churn reduction threshold as a first-class feature.
+    "activated_at_30d",
     "tickets_last_30d",
     "high_priority_tickets",
     "avg_resolution_hours",
@@ -186,9 +189,15 @@ def _load_training_data(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
             COALESCE(ea.events_last_30d, 0)                                     AS events_last_30d,
             COALESCE(ea.events_last_7d, 0)                                      AS events_last_7d,
             COALESCE(ea.avg_adoption_score, 0.0)                                AS avg_adoption_score,
-            COALESCE(ea.days_since_last_event, 999)                             AS days_since_last_event,
+            -- Smart imputation: no events → inactive for full tenure, not 999
+            CASE WHEN ea.total_events IS NULL THEN cr.tenure_days
+                 ELSE ea.days_since_last_event
+            END                                                                 AS days_since_last_event,
             COALESCE(ea.retention_signal_count, 0)                              AS retention_signal_count,
             COALESCE(ea.integration_connects_first_30d, 0)                     AS integration_connects_first_30d,
+            -- Activation gate: ≥3 integrations in onboarding window
+            CASE WHEN COALESCE(ea.integration_connects_first_30d, 0) >= 3 THEN 1 ELSE 0 END
+                                                                                AS activated_at_30d,
             COALESCE(ta.tickets_last_30d, 0)                                    AS tickets_last_30d,
             COALESCE(ta.high_priority_tickets, 0)                               AS high_priority_tickets,
             COALESCE(ta.avg_resolution_hours, 0.0)                              AS avg_resolution_hours

@@ -17,8 +17,11 @@ class PlanTier(StrEnum):
     Tier correlates with feature access, support SLA, and churn risk profile.
     Enterprise customers have dedicated CSMs and lower base churn rates.
     CUSTOM represents bespoke enterprise contracts — the ceiling of the tier ladder.
+    FREE represents the freemium tier (zero MRR); the highest-leverage conversion
+    event in SaaS is free → paid when a customer hits a feature data-sharing limit.
     """
 
+    FREE = "free"
     STARTER = "starter"
     GROWTH = "growth"
     ENTERPRISE = "enterprise"
