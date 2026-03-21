@@ -64,6 +64,22 @@ class OllamaSummaryService(SummaryPort):
         full_prompt = f"{_SYSTEM_PROMPT}\n\n{prompt}"
         return self._call_ollama(full_prompt)
 
+    def generate_from_prompt(self, prompt: str) -> str:
+        """Call local Ollama API with a pre-assembled prompt and return raw LLM text.
+
+        Business Context: Used by the expansion narrative pipeline. Delegates to
+        _call_ollama with the system prompt prepended for consistent behaviour
+        across providers.
+
+        Args:
+            prompt: Fully assembled prompt string.
+
+        Returns:
+            Raw LLM-generated text string (no watermark; guardrails applied by caller).
+        """
+        full_prompt = f"{_SYSTEM_PROMPT}\n\n{prompt}"
+        return self._call_ollama(full_prompt)
+
     def answer_question(self, context: SummaryContext, question: str) -> str:
         """Answer a free-text question using local Ollama inference.
 

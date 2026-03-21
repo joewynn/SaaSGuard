@@ -68,6 +68,18 @@ DDL: dict[str, str] = {
             vendor_risk_flags    INTEGER NOT NULL
         )
     """,
+    "expansion_outreach_log": """
+        CREATE OR REPLACE TABLE raw.expansion_outreach_log (
+            log_id           VARCHAR   NOT NULL,
+            customer_id      VARCHAR   NOT NULL,
+            correlation_id   VARCHAR   NOT NULL,
+            outreach_date    DATE      NOT NULL,
+            audience         VARCHAR   NOT NULL,
+            ae_owner         VARCHAR   NOT NULL,
+            outcome          VARCHAR,
+            fact_confidence  FLOAT
+        )
+    """,
 }
 
 

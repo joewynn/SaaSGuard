@@ -79,6 +79,37 @@ class GroqSummaryService(SummaryPort):
             raise RuntimeError(f"Groq API error: {exc}") from exc
         return response.choices[0].message.content or ""
 
+    def generate_from_prompt(self, prompt: str) -> str:
+        """Call Groq API with a pre-assembled prompt and return raw LLM text.
+
+        Business Context: Used by the expansion narrative pipeline where the
+        full prompt is built by PromptBuilder.build_expansion_prompt() before
+        the LLM call. max_tokens=600 accommodates brief + optional email draft.
+
+        Args:
+            prompt: Fully assembled prompt string.
+
+        Returns:
+            Raw LLM-generated text string (no watermark; guardrails applied by caller).
+        """
+        try:
+            response = self._client.chat.completions.create(
+                model=self._model,
+                messages=[
+                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=600,
+                temperature=0.2,
+            )
+        except groq_sdk.AuthenticationError as exc:
+            raise RuntimeError(
+                "Groq API key is missing or invalid. Set GROQ_API_KEY in your environment."
+            ) from exc
+        except groq_sdk.APIError as exc:
+            raise RuntimeError(f"Groq API error: {exc}") from exc
+        return response.choices[0].message.content or ""
+
     def answer_question(self, context: SummaryContext, question: str) -> str:
         """Answer a free-text question about a customer, constrained to DuckDB context.
 

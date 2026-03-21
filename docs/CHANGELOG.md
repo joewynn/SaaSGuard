@@ -11,6 +11,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.2.0] – 2026-03-21 – Expansion Narrative Service (Signal-to-Action Engine)
+
+### Added
+
+- **`POST /summaries/expansion`** — new FastAPI endpoint that generates a personalised AE tactical brief + optional email draft from the expansion propensity model output; propensity gates at 0.15 (HTTP 422) and 0.35 (no-LLM "not ready" message)
+- **`ExpansionGuardrailsService`** — three-gate validation for expansion LLM output: Gate 1 hallucination detection (snake_case whitelist → REJECTED at 2+ flags), Gate 2 tone calibration (strip urgency if propensity < 0.50), Gate 3 PII/jargon scrub on email drafts only; confidence = 1.0 − (0.25 × n_flags)
+- **`ExpansionSummaryResult`** entity with `correlation_id` UUID for V2 lift-measurement data flywheel (join brief quality → close rates in `expansion_outreach_log`)
+- **`GenerateExpansionSummaryUseCase`** — full orchestration: customer guard → expansion predict → propensity gates → CSM audience override → LLM call → guardrails → result
+- **`SummaryPort.generate_from_prompt()`** — new abstract method for pre-assembled prompt strings; implemented on both `GroqSummaryService` and `OllamaSummaryService` (max_tokens=600, temperature=0.2)
+- **`PromptBuilder.build_expansion_prompt()`** — expansion-specific prompt builder injecting only SHAP-verified facts; AE audience adds optional email draft section labelled `[EMAIL_DRAFT]`
+- **32 new unit tests** (13 domain guardrails + 10 application use case + 9 API router); full suite: 197 passed, 85.5% coverage
+- **Pre-req fix**: `build_warehouse.py` now loads `expansion_outreach_log.csv` into `raw` schema — unblocks dbt tests for `stg_expansion_outreach` and `mart_propensity_quadrant`
+
+### Changed
+
+- `SummaryPort` (abstract) — added `generate_from_prompt` abstract method (backwards-compatible: existing implementations `GroqSummaryService` and `OllamaSummaryService` now implement both methods)
+- `app/dependencies.py` — added `get_expansion_summary_use_case()` factory with `@lru_cache(maxsize=1)`
+- `app/main.py` — registered `expansion_summary.router` under `/summaries` prefix
+
+---
+
 ## [0.9.1] – 2026-03-19 – Pipeline Activation + Business Narrative
 
 ### Added

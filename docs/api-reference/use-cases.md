@@ -13,3 +13,7 @@ The application layer orchestrates domain objects to fulfil business use cases. 
 ## Get Customer 360
 
 ::: src.application.use_cases.get_customer_360
+
+## Generate Expansion Summary
+
+::: src.application.use_cases.generate_expansion_summary

@@ -14,11 +14,17 @@ AI/LLM layer — executive summaries and RAG Q&A grounded in DuckDB customer dat
 
 ::: src.domain.ai_summary.guardrails_service
 
+## Expansion Guardrails Service
+
+::: src.domain.ai_summary.expansion_guardrails_service
+
 ## Application Use Cases
 
 ::: src.application.use_cases.generate_executive_summary
 
 ::: src.application.use_cases.ask_customer_question
+
+::: src.application.use_cases.generate_expansion_summary
 
 ## Infrastructure — LLM Adapters
 

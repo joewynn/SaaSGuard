@@ -13,9 +13,13 @@ from src.application.use_cases.ask_customer_question import AskCustomerQuestionU
 from src.application.use_cases.generate_executive_summary import (
     GenerateExecutiveSummaryUseCase,
 )
+from src.application.use_cases.generate_expansion_summary import (
+    GenerateExpansionSummaryUseCase,
+)
 from src.application.use_cases.get_customer_360 import GetCustomer360UseCase
 from src.application.use_cases.predict_churn import PredictChurnUseCase
 from src.application.use_cases.predict_expansion import PredictExpansionUseCase
+from src.domain.ai_summary.expansion_guardrails_service import ExpansionGuardrailsService
 from src.domain.ai_summary.guardrails_service import GuardrailsService
 from src.domain.prediction.risk_model_service import RiskModelService
 from src.infrastructure.repositories.customer_repository import DuckDBCustomerRepository
@@ -130,6 +134,26 @@ def get_customer_360_use_case() -> GetCustomer360UseCase:
     return GetCustomer360UseCase(
         customer_repo=DuckDBCustomerRepository(),
         predict_use_case=get_predict_churn_use_case(),
+    )
+
+
+@lru_cache(maxsize=1)
+def get_expansion_summary_use_case() -> GenerateExpansionSummaryUseCase:
+    """Build and cache the GenerateExpansionSummaryUseCase.
+
+    Reuses the same LLM backend as the executive summary use case.
+    Caches once per worker process via @lru_cache.
+    """
+    from src.domain.ai_summary.summary_port import SummaryPort
+
+    summary_service = _build_summary_service()
+    assert isinstance(summary_service, SummaryPort)
+
+    return GenerateExpansionSummaryUseCase(
+        customer_repo=DuckDBCustomerRepository(),
+        expansion_use_case=get_predict_expansion_use_case(),
+        summary_service=summary_service,
+        guardrails=ExpansionGuardrailsService(),
     )
 
 

@@ -21,6 +21,15 @@ Auto-generated from Google-style docstrings in `src/domain/expansion/`.
       members:
         - ExpansionResult
 
+## Summary Result Entity
+
+::: src.domain.expansion.summary_entities
+    options:
+      show_root_heading: true
+      show_source: true
+      members:
+        - ExpansionSummaryResult
+
 ## Domain Service
 
 ::: src.domain.expansion.expansion_service

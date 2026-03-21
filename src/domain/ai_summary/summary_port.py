@@ -39,6 +39,23 @@ class SummaryPort(ABC):
             Raw LLM-generated text string (watermark NOT yet appended).
         """
 
+    @abstractmethod
+    def generate_from_prompt(self, prompt: str) -> str:
+        """Generate a raw LLM response from a pre-assembled prompt string.
+
+        Business Context: Used by the expansion narrative pipeline where
+        PromptBuilder.build_expansion_prompt() assembles the full prompt
+        before calling the LLM. This avoids coupling the LLM backend to
+        SummaryContext and allows expansion-specific prompt engineering.
+
+        Args:
+            prompt: Fully assembled prompt string (including [CONTEXT],
+                    [INSTRUCTION], and [CONSTRAINT] blocks).
+
+        Returns:
+            Raw LLM-generated text string (watermark NOT yet appended).
+        """
+
     @property
     @abstractmethod
     def model_name(self) -> str:

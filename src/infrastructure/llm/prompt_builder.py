@@ -108,6 +108,94 @@ class PromptBuilder:
             f"Do not repeat metric names, column names, or the customer's UUID in your output."
         )
 
+    def build_expansion_prompt(
+        self,
+        expansion_result: object,
+        audience: str,
+        include_email_draft: bool = False,
+    ) -> str:
+        """Assemble an expansion narrative prompt grounded in ExpansionResult facts.
+
+        Business Context: Only injects facts from expansion_result.to_summary_context()
+        and the top 3 SHAP features. The LLM cannot reference signals outside
+        this set — primary hallucination-prevention at the prompt level.
+
+        Args:
+            expansion_result: ExpansionResult entity from the expansion pipeline.
+            audience: 'account_executive' (tactical brief + optional email) or
+                      'csm' (nurture brief only, no email).
+            include_email_draft: If True AND audience is 'account_executive',
+                                 append email draft instructions.
+
+        Returns:
+            Complete prompt string ready to send to the LLM.
+        """
+        ctx = expansion_result.to_summary_context()  # type: ignore[union-attr]
+        top3 = expansion_result.top_features[:3]  # type: ignore[union-attr]
+
+        signal_lines = "\n".join(
+            "  - {label} (impact: {direction})".format(
+                label=_FEATURE_LABELS.get(f.feature_name, f.feature_name),
+                direction="positive" if f.shap_impact > 0 else "negative",
+            )
+            for f in top3
+        )
+        if not signal_lines:
+            signal_lines = "  (no top signals available)"
+
+        ctx_block = (
+            f"Customer expansion profile:\n"
+            f"  Upgrade propensity: {ctx.get('propensity_score')} "
+            f"(tier: {ctx.get('propensity_tier')})\n"
+            f"  Target upgrade tier: {ctx.get('target_tier')}\n"
+            f"  Expected ARR uplift: {ctx.get('expected_uplift')}\n"
+            f"\n"
+            f"Top 3 expansion signals (SHAP drivers):\n"
+            f"{signal_lines}\n"
+        )
+
+        if audience == "account_executive":
+            instruction = (
+                "Write a 3-sentence AE tactical brief. "
+                "Do NOT use the customer's ID or UUID — refer to them by their "
+                "upgrade propensity tier and target plan only. "
+                "Sentence 1: state the propensity tier and target tier, quantifying "
+                "the expected ARR uplift. "
+                "Sentence 2: name the top 2 signals driving upgrade intent in plain "
+                "business language (e.g. premium feature adoption, feature requests). "
+                "Sentence 3: one specific, actionable next step grounded in the data. "
+                "Tone: opportunity-focused, ARR-quantified, concise."
+            )
+            if include_email_draft:
+                instruction += (
+                    "\n\nThen write a SEPARATE section labelled [EMAIL_DRAFT]: "
+                    "a 3-sentence outreach email from the AE to the economic buyer. "
+                    "Sentence 1: reference the upgrade opportunity and expected value. "
+                    "Sentence 2: connect to the top 2 business signals. "
+                    "Sentence 3: one clear call-to-action (schedule a call, etc.). "
+                    "Do NOT include any customer UUID, internal ID, or ML terms. "
+                    "Close with a professional sign-off."
+                )
+        else:  # csm
+            instruction = (
+                "Write a 3-sentence CSM nurture brief. "
+                "Do NOT use the customer's ID or UUID. "
+                "Sentence 1: state the upgrade propensity and potential ARR uplift. "
+                "Sentence 2: describe the top 2 product-usage signals driving intent. "
+                "Sentence 3: recommend one nurture action for the next 30 days. "
+                "Tone: growth-oriented, product-led, no urgency language."
+            )
+
+        return (
+            f"[CONTEXT]\n{ctx_block}\n"
+            f"[INSTRUCTION]\n{instruction}\n\n"
+            f"[CONSTRAINT]\nBe concise. Temperature: 0.2. "
+            f"Do not invent signals not listed in [CONTEXT]. "
+            f"Do not use the words SHAP, shap_impact, xgboost, lightgbm, "
+            f"propensity_score, or any internal column names. "
+            f"Do not repeat the customer UUID."
+        )
+
     def build_question_prompt(self, context: SummaryContext, question: str) -> str:
         """Assemble a Q&A prompt that constrains answers to available customer data.
 
