@@ -13,31 +13,31 @@
         <meta name="author" content="Joseph M">
       
       
-        <link rel="canonical" href="https://joewynn.github.io/SaaSGuard/ADR/ADR-002-ddd-architecture/">
+        <link rel="canonical" href="https://joewynn.github.io/SaaSGuard/economic-model/">
       
       
-        <link rel="prev" href="../ADR-001-duckdb-over-postgres/">
+        <link rel="prev" href="../expansion-propensity-methodology/">
       
       
-        <link rel="next" href="../ADR-003-render-deployment/">
+        <link rel="next" href="../stakeholder-notes/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>ADR-002 Domain Architecture - SaaSGuard – Revenue Protection & Expansion Platform</title>
+        <title>Economic Model & NRR - SaaSGuard – Revenue Protection & Expansion Platform</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -56,11 +56,11 @@
       
     
     
-      <link rel="stylesheet" href="../../css/timeago.css">
+      <link rel="stylesheet" href="../css/timeago.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adr-002-adopt-domain-driven-design-with-hexagonal-architecture" class="md-skip">
+        <a href="#economic-model-nrr-impact-of-saasguard" class="md-skip">
           Skip to content
         </a>
       
@@ -101,7 +101,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="SaaSGuard – Revenue Protection &amp; Expansion Platform" class="md-header__button md-logo" aria-label="SaaSGuard – Revenue Protection & Expansion Platform" data-md-component="logo">
+    <a href=".." title="SaaSGuard – Revenue Protection &amp; Expansion Platform" class="md-header__button md-logo" aria-label="SaaSGuard – Revenue Protection & Expansion Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-002 Domain Architecture
+              Economic Model & NRR
             
           </span>
         </div>
@@ -228,7 +228,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -247,7 +247,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../getting-started/" class="md-tabs__link">
+      <a href="../getting-started/" class="md-tabs__link">
         
   
   
@@ -266,7 +266,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../architecture/" class="md-tabs__link">
+      <a href="../architecture/" class="md-tabs__link">
         
   
   
@@ -285,7 +285,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../benchmarks/" class="md-tabs__link">
         
   
   
@@ -306,7 +306,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../model-card/" class="md-tabs__link">
+        <a href="../model-card/" class="md-tabs__link">
           
   
   
@@ -326,7 +326,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../expansion-model-card/" class="md-tabs__link">
+        <a href="../expansion-model-card/" class="md-tabs__link">
           
   
   
@@ -342,11 +342,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../economic-model/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -366,7 +368,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../data_dictionary/" class="md-tabs__link">
+        <a href="../data_dictionary/" class="md-tabs__link">
           
   
   
@@ -386,7 +388,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../ethical-guardrails/" class="md-tabs__link">
+        <a href="../ethical-guardrails/" class="md-tabs__link">
           
   
   
@@ -404,7 +406,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../dashboard-guide/" class="md-tabs__link">
+      <a href="../dashboard-guide/" class="md-tabs__link">
         
   
   
@@ -425,7 +427,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api-reference/" class="md-tabs__link">
+        <a href="../api-reference/" class="md-tabs__link">
           
   
   
@@ -445,7 +447,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../runbook/" class="md-tabs__link">
+        <a href="../runbook/" class="md-tabs__link">
           
   
   
@@ -461,13 +463,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../ADR-001-duckdb-over-postgres/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../ADR/ADR-001-duckdb-over-postgres/" class="md-tabs__link">
           
   
   
@@ -485,7 +485,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../CHANGELOG/" class="md-tabs__link">
+      <a href="../CHANGELOG/" class="md-tabs__link">
         
   
   
@@ -526,7 +526,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="SaaSGuard – Revenue Protection &amp; Expansion Platform" class="md-nav__button md-logo" aria-label="SaaSGuard – Revenue Protection & Expansion Platform" data-md-component="logo">
+    <a href=".." title="SaaSGuard – Revenue Protection &amp; Expansion Platform" class="md-nav__button md-logo" aria-label="SaaSGuard – Revenue Protection & Expansion Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -556,7 +556,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -583,7 +583,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/" class="md-nav__link">
+      <a href="../getting-started/" class="md-nav__link">
         
   
   
@@ -610,7 +610,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         
   
   
@@ -637,7 +637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../benchmarks/" class="md-nav__link">
         
   
   
@@ -716,7 +716,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../model-card/" class="md-nav__link">
+      <a href="../model-card/" class="md-nav__link">
         
   
   
@@ -744,7 +744,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../model-design/" class="md-nav__link">
+      <a href="../model-design/" class="md-nav__link">
         
   
   
@@ -772,7 +772,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shap-analysis/" class="md-nav__link">
+      <a href="../shap-analysis/" class="md-nav__link">
         
   
   
@@ -800,7 +800,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../eda-findings/" class="md-nav__link">
+      <a href="../eda-findings/" class="md-nav__link">
         
   
   
@@ -887,7 +887,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../expansion-model-card/" class="md-nav__link">
+      <a href="../expansion-model-card/" class="md-nav__link">
         
   
   
@@ -915,7 +915,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../expansion-propensity-methodology/" class="md-nav__link">
+      <a href="../expansion-propensity-methodology/" class="md-nav__link">
         
   
   
@@ -947,26 +947,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -984,7 +989,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -999,10 +1004,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../economic-model/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Economic Model & NRR
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1018,6 +1050,125 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#nrr-formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NRR Formula
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#churn-only-baseline-from-roi-calculatormd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Churn-Only Baseline (from roi-calculator.md)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#expansion-addendum-pupgrade-in-90d-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expansion Addendum — P(upgrade in 90d) Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combined-nrr-scenario-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combined NRR Scenario Table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#payback-period" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Payback Period
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sensitivity-analysis-key-lever-conversion-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sensitivity Analysis — Key Lever: Conversion Rate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#free-to-paid-conversion-addendum-v091" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free-to-Paid Conversion Addendum (v0.9.1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changes-operationally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Changes Operationally
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1030,7 +1181,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../stakeholder-notes/" class="md-nav__link">
+      <a href="../stakeholder-notes/" class="md-nav__link">
         
   
   
@@ -1058,7 +1209,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../growth-framework/" class="md-nav__link">
+      <a href="../growth-framework/" class="md-nav__link">
         
   
   
@@ -1086,7 +1237,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../experiment-design/" class="md-nav__link">
+      <a href="../experiment-design/" class="md-nav__link">
         
   
   
@@ -1114,7 +1265,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prd/" class="md-nav__link">
+      <a href="../prd/" class="md-nav__link">
         
   
   
@@ -1201,7 +1352,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data_dictionary/" class="md-nav__link">
+      <a href="../data_dictionary/" class="md-nav__link">
         
   
   
@@ -1229,7 +1380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data-generation/" class="md-nav__link">
+      <a href="../data-generation/" class="md-nav__link">
         
   
   
@@ -1316,7 +1467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ethical-guardrails/" class="md-nav__link">
+      <a href="../ethical-guardrails/" class="md-nav__link">
         
   
   
@@ -1344,7 +1495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../llm-time-saved/" class="md-nav__link">
+      <a href="../llm-time-saved/" class="md-nav__link">
         
   
   
@@ -1379,7 +1530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dashboard-guide/" class="md-nav__link">
+      <a href="../dashboard-guide/" class="md-nav__link">
         
   
   
@@ -1458,7 +1609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../api-reference/" class="md-nav__link">
         
   
   
@@ -1486,7 +1637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/customer/" class="md-nav__link">
+      <a href="../api-reference/customer/" class="md-nav__link">
         
   
   
@@ -1514,7 +1665,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/usage/" class="md-nav__link">
+      <a href="../api-reference/usage/" class="md-nav__link">
         
   
   
@@ -1542,7 +1693,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/prediction/" class="md-nav__link">
+      <a href="../api-reference/prediction/" class="md-nav__link">
         
   
   
@@ -1570,7 +1721,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/expansion/" class="md-nav__link">
+      <a href="../api-reference/expansion/" class="md-nav__link">
         
   
   
@@ -1598,7 +1749,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/gtm/" class="md-nav__link">
+      <a href="../api-reference/gtm/" class="md-nav__link">
         
   
   
@@ -1626,7 +1777,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/use-cases/" class="md-nav__link">
+      <a href="../api-reference/use-cases/" class="md-nav__link">
         
   
   
@@ -1654,7 +1805,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/ai-summary/" class="md-nav__link">
+      <a href="../api-reference/ai-summary/" class="md-nav__link">
         
   
   
@@ -1682,7 +1833,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/infrastructure/" class="md-nav__link">
+      <a href="../api-reference/infrastructure/" class="md-nav__link">
         
   
   
@@ -1710,7 +1861,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../API/" class="md-nav__link">
+      <a href="../API/" class="md-nav__link">
         
   
   
@@ -1797,7 +1948,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runbook/" class="md-nav__link">
+      <a href="../runbook/" class="md-nav__link">
         
   
   
@@ -1825,7 +1976,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../change-management/" class="md-nav__link">
+      <a href="../change-management/" class="md-nav__link">
         
   
   
@@ -1857,31 +2008,26 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
         
           
-          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="">
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
             
   
   
@@ -1899,7 +2045,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_13">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1917,7 +2063,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-001-duckdb-over-postgres/" class="md-nav__link">
+      <a href="../ADR/ADR-001-duckdb-over-postgres/" class="md-nav__link">
         
   
   
@@ -1942,37 +2088,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-002 Domain Architecture
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../ADR/ADR-002-ddd-architecture/" class="md-nav__link">
         
   
   
@@ -1988,81 +2107,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rationale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rationale
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Consequences
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#enforcement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Enforcement
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2075,7 +2119,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-003-render-deployment/" class="md-nav__link">
+      <a href="../ADR/ADR-003-render-deployment/" class="md-nav__link">
         
   
   
@@ -2103,7 +2147,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ADR-004-drift-detection/" class="md-nav__link">
+      <a href="../ADR/ADR-004-drift-detection/" class="md-nav__link">
         
   
   
@@ -2138,7 +2182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../CHANGELOG/" class="md-nav__link">
+      <a href="../CHANGELOG/" class="md-nav__link">
         
   
   
@@ -2185,10 +2229,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
+  <a href="#nrr-formula" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Context
+        NRR Formula
       
     </span>
   </a>
@@ -2196,10 +2240,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
+  <a href="#churn-only-baseline-from-roi-calculatormd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Decision
+        Churn-Only Baseline (from roi-calculator.md)
       
     </span>
   </a>
@@ -2207,10 +2251,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#rationale" class="md-nav__link">
+  <a href="#expansion-addendum-pupgrade-in-90d-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rationale
+        Expansion Addendum — P(upgrade in 90d) Model
       
     </span>
   </a>
@@ -2218,10 +2262,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
+  <a href="#combined-nrr-scenario-table" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Consequences
+        Combined NRR Scenario Table
       
     </span>
   </a>
@@ -2229,10 +2273,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#enforcement" class="md-nav__link">
+  <a href="#payback-period" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Enforcement
+        Payback Period
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sensitivity-analysis-key-lever-conversion-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sensitivity Analysis — Key Lever: Conversion Rate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#free-to-paid-conversion-addendum-v091" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free-to-Paid Conversion Addendum (v0.9.1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changes-operationally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Changes Operationally
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
       
     </span>
   </a>
@@ -2259,68 +2347,239 @@
   
 
 
-<h1 id="adr-002-adopt-domain-driven-design-with-hexagonal-architecture">ADR-002: Adopt Domain-Driven Design with Hexagonal Architecture<a class="headerlink" href="#adr-002-adopt-domain-driven-design-with-hexagonal-architecture" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2026-03-14
-<strong>Status:</strong> Accepted
-<strong>Deciders:</strong> Engineering</p>
+<h1 id="economic-model-nrr-impact-of-saasguard">Economic Model — NRR Impact of SaaSGuard<a class="headerlink" href="#economic-model-nrr-impact-of-saasguard" title="Permanent link">&para;</a></h1>
+<p>SaaSGuard attacks Net Revenue Retention from both sides: preventing churn and capturing expansion. This document is the financial bridge between the two propensity models.</p>
 <hr />
-<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>SaaSGuard spans five business contexts — customers, usage, predictions, expansion, and
-GTM signals. Without explicit boundaries, ML pipeline logic, API handlers, and database
-queries tend to accumulate in the same modules. This creates two operational risks:</p>
-<ol>
-<li><strong>Untestability:</strong> Domain rules embedded inside infrastructure code cannot be
-   unit-tested without a live database or trained model. Any refactoring of the
-   infrastructure layer (e.g., DuckDB → Snowflake) requires retesting business logic.</li>
-<li><strong>Coupling brittleness:</strong> A change to the database schema or model artifact format
-   propagates unpredictably across the codebase when there is no explicit boundary
-   between what the system <em>is</em> (domain) and what it <em>uses</em> (infrastructure).</li>
-</ol>
+<h2 id="nrr-formula">NRR Formula<a class="headerlink" href="#nrr-formula" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>NRR = (ARR_start + ARR_expansion − ARR_churn) / ARR_start
+</span></code></pre></div>
+<p>Best-in-class SaaS companies achieve NRR &gt; 120%. The median for B2B SaaS is ~104%.
+SaaSGuard targets a <strong>+2–4 NRR point improvement</strong> on a $200M ARR base.</p>
 <hr />
-<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p><strong>Domain-Driven Design with hexagonal (ports and adapters) architecture:</strong></p>
+<h2 id="churn-only-baseline-from-roi-calculatormd">Churn-Only Baseline (from <code>roi-calculator.md</code>)<a class="headerlink" href="#churn-only-baseline-from-roi-calculatormd" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Churn reduction</th>
+<th>ARR protected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Conservative</td>
+<td>0.5%</td>
+<td>$1.0M</td>
+</tr>
+<tr>
+<td>Base case</td>
+<td>1.0%</td>
+<td>$2.0M</td>
+</tr>
+<tr>
+<td>Optimistic</td>
+<td>1.5%</td>
+<td>$3.0M</td>
+</tr>
+</tbody>
+</table>
+<p>Platform cost: <strong>$150K/year</strong>. Payback period in base case: <strong>&lt; 1 month.</strong></p>
+<hr />
+<h2 id="expansion-addendum-pupgrade-in-90d-model">Expansion Addendum — P(upgrade in 90d) Model<a class="headerlink" href="#expansion-addendum-pupgrade-in-90d-model" title="Permanent link">&para;</a></h2>
+<p>The expansion propensity model (v0.9.0, AUC=0.928) scores all active non-upgraded
+customers. The <strong>top-10% propensity decile</strong> is the intervention cohort.</p>
+<p><strong>Expected uplift formula</strong> (mirrors <code>TargetTier.calculate_expected_uplift()</code>):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>expected_arr_uplift = (MRR × 12) × (tier_multiplier − 1) × upgrade_propensity
+</span></code></pre></div>
+<p>Tier multipliers from the domain model:</p>
+<table>
+<thead>
+<tr>
+<th>From tier</th>
+<th>To tier</th>
+<th>Multiplier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Starter</td>
+<td>Growth</td>
+<td>3.0×</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>Enterprise</td>
+<td>5.0×</td>
+</tr>
+<tr>
+<td>Enterprise</td>
+<td>Custom</td>
+<td>1.2×</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Expansion scenario inputs (base case):</strong></p>
 <ul>
-<li>Five bounded contexts: <code>customer_domain</code>, <code>usage_domain</code>, <code>prediction_domain</code>,
-  <code>expansion_domain</code>, <code>gtm_domain</code></li>
-<li>Domain layer is pure Python — zero infrastructure imports (<code>import duckdb</code>,
-  <code>import fastapi</code>, file I/O, and HTTP calls are prohibited in <code>src/domain/</code>)</li>
-<li>Application layer orchestrates use cases via dependency injection</li>
-<li>Infrastructure layer implements repository interfaces (DuckDB adapter, model registry,
-  LLM adapters)</li>
-<li>FastAPI is a thin delivery layer — request validation and response serialisation only</li>
+<li>Active expansion candidates: ~3,000 customers</li>
+<li>Top-10% decile: ~300 customers</li>
+<li>Mean propensity in decile: ~0.65</li>
+<li>Assumed CS conversion rate: 25% of flagged accounts</li>
 </ul>
+<p><strong>Captured ARR uplift:</strong> ~$1.2M (base case, 25% conversion)</p>
+<p>The sensitivity analysis below shows conversion rate is the primary lever.</p>
 <hr />
-<h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">&para;</a></h2>
-<p><strong>TDD is only viable when domain logic is decoupled from I/O.</strong> The 165-test suite
-completes in under 8 seconds locally because no test in <code>tests/unit/</code> touches a database
-or model artifact. Infrastructure is replaced with injected fakes.</p>
-<p><strong>Bounded contexts match the data sources.</strong> The four raw tables
-(<code>customers</code>, <code>usage_events</code>, <code>gtm_opportunities</code>, <code>risk_signals</code>) map directly to domain
-contexts. Queries that cross context boundaries go through repository interfaces, not
-direct SQL joins in application code.</p>
-<p><strong>Infrastructure is swappable without touching domain logic.</strong> The repository interface
-pattern means the DuckDB adapter, the pickle-based model registry, and the Groq/Ollama
-LLM adapters can each be replaced by a different implementation (Snowflake, MLflow,
-a different LLM provider) without modifying any domain entity, value object, or use case.</p>
+<h2 id="combined-nrr-scenario-table">Combined NRR Scenario Table<a class="headerlink" href="#combined-nrr-scenario-table" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Churn reduction</th>
+<th>Expansion capture</th>
+<th>Total NRR impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Conservative</strong></td>
+<td>$1.0M</td>
+<td>$0.5M</td>
+<td><strong>$1.5M</strong></td>
+</tr>
+<tr>
+<td><strong>Base case</strong></td>
+<td>$2.0M</td>
+<td>$1.2M</td>
+<td><strong>$3.2M</strong></td>
+</tr>
+<tr>
+<td><strong>Optimistic</strong></td>
+<td>$3.0M</td>
+<td>$2.5M</td>
+<td><strong>$5.5M</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>All figures on $200M ARR base. Expansion at 25% conversion rate (base), 15% (conservative), 40% (optimistic).</p>
+</blockquote>
 <hr />
-<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
-<p><strong>Positive:</strong>
-- Domain logic is 100% unit-testable. Every prediction path — churn scoring, expansion
-  propensity, risk tier classification, conflict matrix resolution — is exercised by
-  injected fakes with no I/O dependency.
-- The repository pattern enables safe infrastructure evolution. A <code>profiles.yml</code> change
-  and a new adapter class are the only requirements to migrate to a different warehouse.
-- Bounded context boundaries enforce a discipline that prevents the model-serving layer
-  from accumulating business rules (a common failure mode in ML codebases).</p>
-<p><strong>Negative:</strong>
-- More files and explicit interfaces than a pipeline-oriented or notebook-first approach.
-  This overhead is the cost of the decoupling guarantee — it is not incidental complexity.</p>
+<h2 id="payback-period">Payback Period<a class="headerlink" href="#payback-period" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Platform cost:        $150,000 / year
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Base case NRR impact: $3,200,000 / year
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>Payback = $150,000 / ($3,200,000 / 12) = 0.56 months ≈ 17 days
+</span></code></pre></div>
+<p>The platform pays for itself in under 30 days in the base case.</p>
 <hr />
-<h2 id="enforcement">Enforcement<a class="headerlink" href="#enforcement" title="Permanent link">&para;</a></h2>
-<p>ADR-002 compliance is verified structurally: <code>src/domain/</code> has no entries in
-<code>pyproject.toml</code>'s infrastructure dependency group, and mypy <code>--strict</code> with
-<code>disallow_any_generics = true</code> catches any infrastructure type leaking into domain
-modules at CI time.</p>
+<h2 id="sensitivity-analysis-key-lever-conversion-rate">Sensitivity Analysis — Key Lever: Conversion Rate<a class="headerlink" href="#sensitivity-analysis-key-lever-conversion-rate" title="Permanent link">&para;</a></h2>
+<p>The expansion model's ROI is most sensitive to the CS conversion rate (the % of
+flagged accounts that actually upgrade following outreach).</p>
+<table>
+<thead>
+<tr>
+<th>Conversion rate</th>
+<th>Captured ARR uplift</th>
+<th>Total NRR (base churn)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10%</td>
+<td>$0.48M</td>
+<td>$2.48M</td>
+</tr>
+<tr>
+<td>15%</td>
+<td>$0.72M</td>
+<td>$2.72M</td>
+</tr>
+<tr>
+<td><strong>25% (base)</strong></td>
+<td><strong>$1.20M</strong></td>
+<td><strong>$3.20M</strong></td>
+</tr>
+<tr>
+<td>35%</td>
+<td>$1.68M</td>
+<td>$3.68M</td>
+</tr>
+<tr>
+<td>40%</td>
+<td>$1.92M</td>
+<td>$3.92M</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Insight:</strong> A 10-percentage-point swing in conversion rate = ±$480K in expansion ARR.
+The SHAP explanation layer ("here's why this customer is ready to upgrade") is the
+primary driver of higher conversion — CS arrives on the call with data, not gut feel.</p>
+<p><strong>Benchmark anchor for 25%:</strong> Gainsight 2024 State of Customer Success (n=1,100 CS leaders) reports 20–30% conversion for signal-driven outreach. 25% is the midpoint and is conservative relative to practitioner benchmarks of 38–45% for same-day limit-hit response (see <code>docs/stakeholder-notes.md</code> Section 5).</p>
+<hr />
+<h2 id="free-to-paid-conversion-addendum-v091">Free-to-Paid Conversion Addendum (v0.9.1)<a class="headerlink" href="#free-to-paid-conversion-addendum-v091" title="Permanent link">&para;</a></h2>
+<p>SaaSGuard v0.9.1 extends the tier ladder to include a <code>FREE</code> tier (zero MRR). The highest-leverage conversion event in SaaS is <strong>free → paid</strong> — the customer has already self-qualified and hit a product constraint.</p>
+<p><strong>Free-to-Paid NRR Row (added to scenario table):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tier event</th>
+<th>Count</th>
+<th>Conversion rate</th>
+<th>ARR per conversion</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Free → Starter</td>
+<td>500 free customers × 15% expand destiny</td>
+<td>25%</td>
+<td>$6,000</td>
+<td><strong>$0.18M</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Domain logic:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a># FREE tier uplift (TargetTier.calculate_expected_uplift)
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a># current_mrr is always 0 — uses Starter floor ARR instead
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>expected_arr_uplift = 500 × 12 × propensity  # = $6,000 at propensity=1.0
+</span></code></pre></div>
+<p>The Starter floor ARR ($500/mo = $6,000/yr) is used because free customers have zero MRR and the standard <code>(MRR × multiplier)</code> formula would always produce $0. This surfaces free-to-paid conversion as a real revenue opportunity in Sales prioritisation.</p>
+<hr />
+<h2 id="what-changes-operationally">What Changes Operationally<a class="headerlink" href="#what-changes-operationally" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Without SaaSGuard</th>
+<th>With SaaSGuard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AE pursues expansion opps based on deal size</td>
+<td>AE prioritises by propensity × ARR uplift</td>
+</tr>
+<tr>
+<td>CS + Sales work in silos — churn risk invisible to AEs</td>
+<td>Conflict matrix routes "Flight Risk" customers to CS first</td>
+</tr>
+<tr>
+<td>Expansion pipeline has ~30% conversion leakage from churn-risk accounts</td>
+<td>Rescue &amp; Expand quadrant routes to CS before AE</td>
+</tr>
+<tr>
+<td>No measurable expansion attribution</td>
+<td><code>/predictions/upgrade</code> endpoint tracks propensity over time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Expansion model metrics: <code>docs/expansion-model-card.md</code></li>
+<li>ROI methodology: <code>docs/roi-calculator.md</code></li>
+<li>Domain logic: <code>src/domain/expansion/value_objects.py</code> — <code>TargetTier.calculate_expected_uplift()</code></li>
+<li>Benchmark: <em>"B2B SaaS median NRR is 104%; top quartile exceeds 120%"</em> — SaaStr Annual 2025</li>
+</ul>
 
 
 
@@ -2353,7 +2612,7 @@ modules at CI time.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 15, 2026 00:23:13 UTC"><span class="timeago" datetime="2026-03-15T00:23:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 15, 2026 00:23:13 UTC">2026-03-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 19, 2026 07:26:53 UTC"><span class="timeago" datetime="2026-03-19T07:26:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 19, 2026 07:26:53 UTC">2026-03-19</span>
   </span>
 
     
@@ -2435,14 +2694,14 @@ modules at CI time.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "content.code.annotate", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../../js/timeago.min.js"></script>
+        <script src="../js/timeago.min.js"></script>
       
-        <script src="../../js/timeago_mkdocs_material.js"></script>
+        <script src="../js/timeago_mkdocs_material.js"></script>
       
     
   </body>

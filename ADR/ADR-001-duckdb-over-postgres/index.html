@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Production-grade B2B SaaS churn and compliance risk prediction platform. Built with DDD, TDD, FastAPI, DuckDB, and Apache Superset.
+        <meta name="description" content="B2B SaaS NRR intelligence platform. Ingests product usage, support, and GTM signals to deliver calibrated 90-day churn probability, expansion propensity, SHAP-grounded explanations, and AI-generated CS briefs.
 ">
       
       
@@ -16,7 +16,7 @@
         <link rel="canonical" href="https://joewynn.github.io/SaaSGuard/ADR/ADR-001-duckdb-over-postgres/">
       
       
-        <link rel="prev" href="../../API/">
+        <link rel="prev" href="../../change-management/">
       
       
         <link rel="next" href="../ADR-002-ddd-architecture/">
@@ -26,11 +26,11 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>ADR-001 DuckDB - SaaSGuard – Churn & Risk Prediction Platform</title>
+        <title>ADR-001 Analytical Warehouse - SaaSGuard – Revenue Protection & Expansion Platform</title>
       
     
     
@@ -101,7 +101,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="SaaSGuard – Churn &amp; Risk Prediction Platform" class="md-header__button md-logo" aria-label="SaaSGuard – Churn & Risk Prediction Platform" data-md-component="logo">
+    <a href="../.." title="SaaSGuard – Revenue Protection &amp; Expansion Platform" class="md-header__button md-logo" aria-label="SaaSGuard – Revenue Protection & Expansion Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -115,13 +115,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            SaaSGuard – Churn & Risk Prediction Platform
+            SaaSGuard – Revenue Protection & Expansion Platform
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-001 DuckDB
+              ADR-001 Analytical Warehouse
             
           </span>
         </div>
@@ -234,7 +234,7 @@
   
     
   
-  Home
+  Overview
 
       </a>
     </li>
@@ -253,26 +253,7 @@
   
     
   
-  Getting Started
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../demo/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Demo
+  Quick Start
 
       </a>
     </li>
@@ -303,14 +284,73 @@
   
   
   
+    <li class="md-tabs__item">
+      <a href="../../benchmarks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Benchmarks
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       <li class="md-tabs__item">
-        <a href="../../prd/" class="md-tabs__link">
+        <a href="../../model-card/" class="md-tabs__link">
           
   
   
-  Product & Planning
+  Churn Detection
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../expansion-model-card/" class="md-tabs__link">
+          
+  
+  
+  Expansion Propensity
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../economic-model/" class="md-tabs__link">
+          
+  
+  
+  Business Context
 
         </a>
       </li>
@@ -346,46 +386,6 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../eda-findings/" class="md-tabs__link">
-          
-  
-  
-  Analysis & Experiments
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../model-card/" class="md-tabs__link">
-          
-  
-  
-  Models & Explainability
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
         <a href="../../ethical-guardrails/" class="md-tabs__link">
           
   
@@ -403,38 +403,17 @@
   
   
   
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../dashboard-guide/" class="md-tabs__link">
-          
-  
-  
-  Dashboard
-
-        </a>
-      </li>
-    
-  
-
-      
+    <li class="md-tabs__item">
+      <a href="../../dashboard-guide/" class="md-tabs__link">
         
   
   
-  
-  
     
-    
-      <li class="md-tabs__item">
-        <a href="../../change-management/" class="md-tabs__link">
-          
   
-  
-  Operations
+  Dashboards
 
-        </a>
-      </li>
-    
+      </a>
+    </li>
   
 
       
@@ -462,6 +441,26 @@
   
   
   
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../runbook/" class="md-tabs__link">
+          
+  
+  
+  Operations
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
     
   
   
@@ -472,7 +471,7 @@
           
   
   
-  ADRs
+  Engineering Decisions
 
         </a>
       </li>
@@ -493,25 +492,6 @@
     
   
   Changelog
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Benchmarks
 
       </a>
     </li>
@@ -546,13 +526,13 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="SaaSGuard – Churn &amp; Risk Prediction Platform" class="md-nav__button md-logo" aria-label="SaaSGuard – Churn & Risk Prediction Platform" data-md-component="logo">
+    <a href="../.." title="SaaSGuard – Revenue Protection &amp; Expansion Platform" class="md-nav__button md-logo" aria-label="SaaSGuard – Revenue Protection & Expansion Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    SaaSGuard – Churn & Risk Prediction Platform
+    SaaSGuard – Revenue Protection & Expansion Platform
   </label>
   
     <div class="md-nav__source">
@@ -583,7 +563,7 @@
   <span class="md-ellipsis">
     
   
-    Home
+    Overview
   
 
     
@@ -610,34 +590,7 @@
   <span class="md-ellipsis">
     
   
-    Getting Started
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../demo/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Demo
+    Quick Start
   
 
     
@@ -683,6 +636,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
     
@@ -707,7 +687,7 @@
   <span class="md-ellipsis">
     
   
-    Product & Planning
+    Churn Detection
   
 
     
@@ -723,436 +703,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Product & Planning
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../prd/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    PRD
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../tickets/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tickets
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../roi-calculator/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ROI Calculator
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../growth-framework/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Growth Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../stakeholder-notes/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Stakeholder Research (VoC)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Data
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../data_dictionary/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Dictionary
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../data-generation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Generation Methodology
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Analysis & Experiments
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Analysis & Experiments
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../eda-findings/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    EDA Findings
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../experiment-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Experiment Design (CS Intervention)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Models & Explainability
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Models & Explainability
+    Churn Detection
   
 
           </label>
@@ -1229,6 +780,463 @@
     
   
     SHAP Feature Importance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../eda-findings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EDA Findings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expansion Propensity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Expansion Propensity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../expansion-model-card/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expansion Model Card
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../expansion-propensity-methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expansion Methodology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Context
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Business Context
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../economic-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Economic Model & NRR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stakeholder-notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VoC & Stakeholder Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../growth-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Growth Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../experiment-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A/B Experiment Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements & Scope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data_dictionary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Dictionary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Engineering
   
 
     
@@ -1343,7 +1351,7 @@
   <span class="md-ellipsis">
     
   
-    LLM Time Saved (ROI)
+    LLM Efficiency
   
 
     
@@ -1366,58 +1374,6 @@
     
       
       
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
-        
-          
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Dashboard
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_10">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Dashboard
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
   
   
   
@@ -1430,7 +1386,7 @@
   <span class="md-ellipsis">
     
   
-    Dashboard Guide
+    Dashboards
   
 
     
@@ -1439,14 +1395,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -1481,7 +1429,7 @@
   <span class="md-ellipsis">
     
   
-    Operations
+    API Reference
   
 
     
@@ -1494,149 +1442,6 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_11">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Operations
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../change-management/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Change Management
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbook/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Runbook
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../one-pager/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    One-Pager
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
-        
-          
-          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Reference
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_12">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1745,6 +1550,34 @@
     
   
     Prediction Domain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/expansion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expansion Domain
   
 
     
@@ -1884,7 +1717,122 @@
   <span class="md-ellipsis">
     
   
-    FastAPI Endpoints
+    HTTP Endpoints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../change-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Change Management
   
 
     
@@ -1940,7 +1888,7 @@
   <span class="md-ellipsis">
     
   
-    ADRs
+    Engineering Decisions
   
 
     
@@ -1956,7 +1904,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    ADRs
+    Engineering Decisions
   
 
           </label>
@@ -1985,7 +1933,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-001 DuckDB
+    ADR-001 Analytical Warehouse
   
 
     
@@ -2003,7 +1951,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-001 DuckDB
+    ADR-001 Analytical Warehouse
   
 
     
@@ -2095,7 +2043,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-002 DDD
+    ADR-002 Domain Architecture
   
 
     
@@ -2123,7 +2071,7 @@
   <span class="md-ellipsis">
     
   
-    ADR-003 Railway
+    ADR-003 Deployment Platform
   
 
     
@@ -2187,33 +2135,6 @@
     
   
     Changelog
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Benchmarks
   
 
     
@@ -2319,11 +2240,27 @@
 <h1 id="adr-001-use-duckdb-as-the-analytical-warehouse">ADR-001: Use DuckDB as the Analytical Warehouse<a class="headerlink" href="#adr-001-use-duckdb-as-the-analytical-warehouse" title="Permanent link">&para;</a></h1>
 <p><strong>Date:</strong> 2026-03-14
 <strong>Status:</strong> Accepted
-<strong>Deciders:</strong> Joseph M</p>
+<strong>Deciders:</strong> Engineering</p>
+<hr />
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>SaaSGuard needs an analytical warehouse to store synthetic data (~5,000 customers, millions of usage events) and serve dbt transformations and ML feature queries. Options considered: PostgreSQL, SQLite, Snowflake, DuckDB.</p>
+<p>SaaSGuard requires an analytical warehouse to persist ~5,500 customers, millions of
+usage events, and the dbt-built feature marts that feed ML training and inference.
+The warehouse must satisfy three constraints:</p>
+<ol>
+<li><strong>Auditability:</strong> Feature engineering lives in dbt SQL. The warehouse must support
+   dbt-core natively so that any risk tier surfaced in a dashboard is reproducible from
+   SQL alone, without a Python runtime.</li>
+<li><strong>Versionability:</strong> Model artifacts and training data must be co-versioned. Reproducing
+   a historical model run requires restoring both the artifact and the data state.</li>
+<li><strong>Operational simplicity:</strong> The system must run in a single-command Docker environment
+   with no external services, cloud credentials, or connection management overhead.</li>
+</ol>
+<p>Options evaluated: PostgreSQL, SQLite, Snowflake, DuckDB.</p>
+<hr />
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p>Use <strong>DuckDB</strong> (file-based, <code>.duckdb</code> file mounted as a Docker volume).</p>
+<p><strong>DuckDB</strong> — file-based columnar warehouse, <code>.duckdb</code> file mounted as a Docker volume,
+tracked by DVC alongside model artifacts.</p>
+<hr />
 <h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2339,11 +2276,11 @@
 <td>Zero-ops setup</td>
 <td>✅ file-based</td>
 <td>❌ server process</td>
-<td>❌ cloud account</td>
+<td>❌ cloud account required</td>
 </tr>
 <tr>
 <td>OLAP performance</td>
-<td>✅ columnar</td>
+<td>✅ columnar, vectorised</td>
 <td>⚠️ row-store</td>
 <td>✅ columnar</td>
 </tr>
@@ -2361,31 +2298,40 @@
 </tr>
 <tr>
 <td>Cost</td>
-<td>✅ free</td>
-<td>✅ free</td>
-<td>⚠️ trial only</td>
+<td>✅ no licensing</td>
+<td>✅ no licensing</td>
+<td>⚠️ consumption-based</td>
 </tr>
 <tr>
 <td>DVC versionability</td>
-<td>✅ single file</td>
-<td>❌ dump required</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Portfolio demo (offline)</td>
-<td>✅</td>
-<td>⚠️</td>
-<td>❌</td>
+<td>✅ single file — <code>dvc add</code></td>
+<td>❌ requires dump + restore</td>
+<td>❌ external state</td>
 </tr>
 </tbody>
 </table>
-<p>DuckDB's columnar engine handles analytical queries efficiently without a running server, making <code>git clone → docker compose up</code> a true single-command demo.</p>
+<p>DuckDB's columnar execution engine handles the analytical query patterns (feature aggregation
+CTEs, window functions, GROUP BY across millions of events) with sub-second latency on the
+5,500-customer dataset. The single-file model means <code>dvc repro</code> retrains deterministically
+from the exact data state that produced any historical model version.</p>
+<p><strong>Migration path:</strong> The <code>dbt-duckdb</code> → <code>dbt-snowflake</code> swap is a <code>profiles.yml</code> change.
+No dbt model SQL requires modification. This is the documented upgrade path if write
+concurrency or dataset scale requirements change.</p>
+<hr />
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Positive:</strong> Entire warehouse is a single versioned file tracked by DVC. No cloud credentials needed for demo.</li>
-<li><strong>Negative:</strong> Not suitable for high-concurrency writes (acceptable — this is an analytical, not transactional, system).</li>
-<li><strong>Migration path:</strong> dbt-duckdb → dbt-snowflake swap is a profiles.yml change if scale requires it.</li>
-</ul>
+<p><strong>Positive:</strong>
+- Entire warehouse is a single versioned file. <code>dvc pull</code> restores both data and model
+  artifacts to a known state without cloud credentials or network access.
+- <code>dbt run</code> and feature extraction query the same physical file — no sync lag between
+  the feature mart and the inference path.
+- dbt data contracts (<code>schema.yml</code> tests) run against the live warehouse on every CI run.</p>
+<p><strong>Negative:</strong>
+- DuckDB does not support high-concurrency writes. This is acceptable because SaaSGuard
+  is an analytical system — reads dominate, and the one write path (dbt build) is a
+  scheduled batch process, not a transactional workload.
+- File-based storage is not appropriate for multi-node deployments. At the point where
+  concurrent dbt + API read load requires horizontal scaling, the <code>profiles.yml</code> migration
+  to Snowflake or Redshift is the planned path.</p>
 
 
 
@@ -2408,7 +2354,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 15, 2026 00:23:13 UTC"><span class="timeago" datetime="2026-03-15T00:23:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 15, 2026 00:23:13 UTC">2026-03-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 21, 2026 04:11:05 UTC"><span class="timeago" datetime="2026-03-21T04:11:05+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 21, 2026 04:11:05 UTC">2026-03-21</span>
   </span>
 
     
