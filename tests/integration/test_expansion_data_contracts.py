@@ -16,6 +16,7 @@ import pytest
 try:
     import duckdb
     from scipy import stats
+
     _DEPS_AVAILABLE = True
 except ImportError:
     _DEPS_AVAILABLE = False
@@ -26,6 +27,7 @@ DB_PATH = "data/saasguard.duckdb"
 def _get_conn():  # type: ignore[return]
     """Return a DuckDB connection if the DB file exists."""
     import os
+
     if not os.path.exists(DB_PATH):
         pytest.skip(f"DuckDB file not found at {DB_PATH} — run data generation first.")
     return duckdb.connect(DB_PATH, read_only=True)
@@ -33,7 +35,6 @@ def _get_conn():  # type: ignore[return]
 
 @pytest.mark.skipif(not _DEPS_AVAILABLE, reason="duckdb or scipy not installed")
 class TestExpansionDataContracts:
-
     def test_upgrade_date_column_exists_in_customers(self) -> None:
         """upgrade_date column must be present in raw.customers."""
         conn = _get_conn()
@@ -44,8 +45,7 @@ class TestExpansionDataContracts:
             ).fetchall()
             col_names = [r[0] for r in cols]
             assert "upgrade_date" in col_names, (
-                "upgrade_date column missing from raw.customers — "
-                "run generate_synthetic_data.py to regenerate."
+                "upgrade_date column missing from raw.customers — run generate_synthetic_data.py to regenerate."
             )
         finally:
             conn.close()
@@ -55,8 +55,7 @@ class TestExpansionDataContracts:
         conn = _get_conn()
         try:
             count = conn.execute(
-                "SELECT COUNT(*) FROM raw.usage_events "
-                "WHERE event_type = 'premium_feature_trial'"
+                "SELECT COUNT(*) FROM raw.usage_events WHERE event_type = 'premium_feature_trial'"
             ).fetchone()[0]
             assert count > 0, (
                 "No premium_feature_trial events found in raw.usage_events. "
@@ -74,9 +73,7 @@ class TestExpansionDataContracts:
                 "WHERE table_schema = 'raw' AND table_name = 'gtm_opportunities'"
             ).fetchall()
             col_names = [r[0] for r in cols]
-            assert "opportunity_type" in col_names, (
-                "opportunity_type column missing from raw.gtm_opportunities."
-            )
+            assert "opportunity_type" in col_names, "opportunity_type column missing from raw.gtm_opportunities."
         finally:
             conn.close()
 
@@ -85,8 +82,7 @@ class TestExpansionDataContracts:
         conn = _get_conn()
         try:
             total, upgraded = conn.execute(
-                "SELECT COUNT(*), SUM(CASE WHEN upgrade_date IS NOT NULL THEN 1 ELSE 0 END) "
-                "FROM raw.customers"
+                "SELECT COUNT(*), SUM(CASE WHEN upgrade_date IS NOT NULL THEN 1 ELSE 0 END) FROM raw.customers"
             ).fetchone()
             rate = upgraded / total
             assert 0.05 <= rate <= 0.25, (
@@ -128,9 +124,7 @@ class TestExpansionDataContracts:
         assert len(upgraded_counts) > 10, "Too few upgraded customers for statistical test."
         assert len(non_upgraded_counts) > 10, "Too few non-upgraded customers."
 
-        stat, p_value = stats.mannwhitneyu(
-            upgraded_counts, non_upgraded_counts, alternative="greater"
-        )
+        stat, p_value = stats.mannwhitneyu(upgraded_counts, non_upgraded_counts, alternative="greater")
         assert p_value < 0.05, (
             f"Mann-Whitney U test failed: p={p_value:.4f}. "
             "Expanded customers should have significantly more premium_feature_trial events. "
@@ -152,13 +146,16 @@ class TestExpansionOutreachLogContract:
             ).fetchall()
             col_names = {r[0] for r in cols}
             required = {
-                "outreach_id", "customer_id", "contacted_date",
-                "propensity_at_outreach", "outreach_channel", "outcome",
+                "outreach_id",
+                "customer_id",
+                "contacted_date",
+                "propensity_at_outreach",
+                "outreach_channel",
+                "outcome",
             }
             missing = required - col_names
             assert not missing, (
-                f"expansion_outreach_log missing columns: {missing}. "
-                "Run generate_synthetic_data.py to regenerate."
+                f"expansion_outreach_log missing columns: {missing}. Run generate_synthetic_data.py to regenerate."
             )
         finally:
             conn.close()
@@ -167,16 +164,12 @@ class TestExpansionOutreachLogContract:
         """All outcome values must be in the allowed set."""
         conn = _get_conn()
         try:
-            rows = conn.execute(
-                "SELECT DISTINCT outcome FROM raw.expansion_outreach_log"
-            ).fetchall()
+            rows = conn.execute("SELECT DISTINCT outcome FROM raw.expansion_outreach_log").fetchall()
         finally:
             conn.close()
         valid = {"upgraded", "churned", "no_response", "active"}
         found = {r[0] for r in rows}
-        assert found.issubset(valid), (
-            f"Invalid outcome values: {found - valid}"
-        )
+        assert found.issubset(valid), f"Invalid outcome values: {found - valid}"
 
     def test_top_decile_customers_were_contacted(self) -> None:
         """At least 50% of outreach rows should have propensity_at_outreach > 0.65."""
@@ -194,9 +187,7 @@ class TestExpansionOutreachLogContract:
             conn.close()
         assert total > 0, "expansion_outreach_log is empty."
         rate = high_prop / total
-        assert rate >= 0.50, (
-            f"Only {rate:.1%} of outreach rows have propensity > 0.65 (expected ≥50%)."
-        )
+        assert rate >= 0.50, f"Only {rate:.1%} of outreach rows have propensity > 0.65 (expected ≥50%)."
 
     def test_outreach_outcome_upgrade_rate_within_range(self) -> None:
         """Upgrade conversion rate from outreach should be 15-40%."""
@@ -214,9 +205,7 @@ class TestExpansionOutreachLogContract:
             conn.close()
         assert total > 0, "expansion_outreach_log is empty."
         rate = upgraded / total
-        assert 0.15 <= rate <= 0.40, (
-            f"Outreach upgrade rate {rate:.1%} is outside expected range [15%, 40%]."
-        )
+        assert 0.15 <= rate <= 0.40, f"Outreach upgrade rate {rate:.1%} is outside expected range [15%, 40%]."
 
 
 @pytest.mark.skipif(not _DEPS_AVAILABLE, reason="duckdb or scipy not installed")
@@ -228,12 +217,9 @@ class TestFreeTierDataContracts:
         conn = _get_conn()
         try:
             count = conn.execute(
-                "SELECT COUNT(*) FROM raw.usage_events "
-                "WHERE event_type = 'feature_limit_hit'"
+                "SELECT COUNT(*) FROM raw.usage_events WHERE event_type = 'feature_limit_hit'"
             ).fetchone()[0]
-            assert count > 0, (
-                "No feature_limit_hit events found. Run generate_synthetic_data.py."
-            )
+            assert count > 0, "No feature_limit_hit events found. Run generate_synthetic_data.py."
         finally:
             conn.close()
 
@@ -241,12 +227,8 @@ class TestFreeTierDataContracts:
         """At least 400 free-tier customers must be present."""
         conn = _get_conn()
         try:
-            count = conn.execute(
-                "SELECT COUNT(*) FROM raw.customers WHERE plan_tier = 'free'"
-            ).fetchone()[0]
-            assert count >= 400, (
-                f"Only {count} free-tier customers found (expected ≥400)."
-            )
+            count = conn.execute("SELECT COUNT(*) FROM raw.customers WHERE plan_tier = 'free'").fetchone()[0]
+            assert count >= 400, f"Only {count} free-tier customers found (expected ≥400)."
         finally:
             conn.close()
 
@@ -255,12 +237,9 @@ class TestFreeTierDataContracts:
         conn = _get_conn()
         try:
             non_zero = conn.execute(
-                "SELECT COUNT(*) FROM raw.customers "
-                "WHERE plan_tier = 'free' AND mrr != 0"
+                "SELECT COUNT(*) FROM raw.customers WHERE plan_tier = 'free' AND mrr != 0"
             ).fetchone()[0]
-            assert non_zero == 0, (
-                f"{non_zero} free-tier customers have non-zero MRR."
-            )
+            assert non_zero == 0, f"{non_zero} free-tier customers have non-zero MRR."
         finally:
             conn.close()
 
@@ -277,9 +256,7 @@ class TestFreeTierDataContracts:
                   AND e.event_type = 'feature_limit_hit'
                 """
             ).fetchone()[0]
-            assert count > 0, (
-                "No free-tier customers have feature_limit_hit events."
-            )
+            assert count > 0, "No free-tier customers have feature_limit_hit events."
         finally:
             conn.close()
 
@@ -318,7 +295,7 @@ class TestFreeTierDataContracts:
 
     def test_mart_expansion_features_has_free_tier(self) -> None:
         """mart_customer_expansion_features must include free-tier rows (if dbt was run)."""
-        import os
+
         conn = _get_conn()
         try:
             # Check if marts schema/table exists before querying
@@ -330,8 +307,7 @@ class TestFreeTierDataContracts:
             if not tables:
                 pytest.skip("mart_customer_expansion_features not built yet — run dbt run.")
             count = conn.execute(
-                "SELECT COUNT(*) FROM marts.mart_customer_expansion_features "
-                "WHERE plan_tier = 'free'"
+                "SELECT COUNT(*) FROM marts.mart_customer_expansion_features WHERE plan_tier = 'free'"
             ).fetchone()[0]
             assert count >= 0, "mart_customer_expansion_features query failed."
         finally:

@@ -34,7 +34,8 @@ def _make_ask_response_dict() -> dict[str, object]:
     return {
         "customer_id": "cust-e2e-001",
         "question": "Why is this customer at risk?",
-        "answer": "Based on available data, low product engagement (events_last_30d=3) is the primary driver.\n\n" + WATERMARK,
+        "answer": "Based on available data, low product engagement (events_last_30d=3) is the primary driver.\n\n"
+        + WATERMARK,
         "confidence_score": 1.0,
         "guardrail_flags": [],
         "scope_exceeded": False,

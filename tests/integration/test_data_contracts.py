@@ -59,6 +59,7 @@ def risk_signals() -> pd.DataFrame:
 
 # ── All files exist ───────────────────────────────────────────────────────────
 
+
 class TestFilesExist:
     def test_customers_exists(self) -> None:
         assert (DATA_DIR / "customers.csv").exists()
@@ -77,6 +78,7 @@ class TestFilesExist:
 
 
 # ── Customers table ───────────────────────────────────────────────────────────
+
 
 class TestCustomersContract:
     def test_customer_id_unique(self, customers: pd.DataFrame) -> None:
@@ -110,6 +112,7 @@ class TestCustomersContract:
 
 # ── Usage events table ────────────────────────────────────────────────────────
 
+
 class TestUsageEventsContract:
     def test_event_id_unique(self, usage_events: pd.DataFrame) -> None:
         assert usage_events["event_id"].nunique() == len(usage_events)
@@ -117,9 +120,7 @@ class TestUsageEventsContract:
     def test_no_null_customer_id(self, usage_events: pd.DataFrame) -> None:
         assert usage_events["customer_id"].notna().all()
 
-    def test_fk_customer_id(
-        self, customers: pd.DataFrame, usage_events: pd.DataFrame
-    ) -> None:
+    def test_fk_customer_id(self, customers: pd.DataFrame, usage_events: pd.DataFrame) -> None:
         valid_ids = set(customers["customer_id"])
         invalid = set(usage_events["customer_id"]) - valid_ids
         assert not invalid, f"{len(invalid)} usage_events reference unknown customers"
@@ -132,27 +133,19 @@ class TestUsageEventsContract:
         assert (usage_events["feature_adoption_score"] >= 0.0).all()
         assert (usage_events["feature_adoption_score"] <= 1.0).all()
 
-    def test_no_events_before_signup(
-        self, customers: pd.DataFrame, usage_events: pd.DataFrame
-    ) -> None:
+    def test_no_events_before_signup(self, customers: pd.DataFrame, usage_events: pd.DataFrame) -> None:
         signup_map = customers.set_index("customer_id")["signup_date"]
         events_with_signup = usage_events.copy()
         events_with_signup["signup_date"] = events_with_signup["customer_id"].map(signup_map)
         # Timestamps are datetime; signup_date is date — normalise
         events_with_signup["signup_dt"] = pd.to_datetime(events_with_signup["signup_date"])
-        bad = events_with_signup[
-            events_with_signup["timestamp"] < events_with_signup["signup_dt"]
-        ]
+        bad = events_with_signup[events_with_signup["timestamp"] < events_with_signup["signup_dt"]]
         assert len(bad) == 0, f"{len(bad)} events occur before customer signup_date"
 
-    def test_no_events_after_churn(
-        self, customers: pd.DataFrame, usage_events: pd.DataFrame
-    ) -> None:
+    def test_no_events_after_churn(self, customers: pd.DataFrame, usage_events: pd.DataFrame) -> None:
         churn_map = customers.set_index("customer_id")["churn_date"]
         events_with_churn = usage_events.copy()
-        events_with_churn["churn_date"] = pd.to_datetime(
-            events_with_churn["customer_id"].map(churn_map)
-        )
+        events_with_churn["churn_date"] = pd.to_datetime(events_with_churn["customer_id"].map(churn_map))
         has_churn = events_with_churn[events_with_churn["churn_date"].notna()]
         bad = has_churn[has_churn["timestamp"] > has_churn["churn_date"]]
         assert len(bad) == 0, f"{len(bad)} events occur after customer churn_date"
@@ -160,13 +153,12 @@ class TestUsageEventsContract:
 
 # ── Support tickets table ─────────────────────────────────────────────────────
 
+
 class TestSupportTicketsContract:
     def test_ticket_id_unique(self, support_tickets: pd.DataFrame) -> None:
         assert support_tickets["ticket_id"].nunique() == len(support_tickets)
 
-    def test_fk_customer_id(
-        self, customers: pd.DataFrame, support_tickets: pd.DataFrame
-    ) -> None:
+    def test_fk_customer_id(self, customers: pd.DataFrame, support_tickets: pd.DataFrame) -> None:
         valid_ids = set(customers["customer_id"])
         invalid = set(support_tickets["customer_id"]) - valid_ids
         assert not invalid, f"{len(invalid)} support_tickets reference unknown customers"
@@ -185,13 +177,12 @@ class TestSupportTicketsContract:
 
 # ── GTM opportunities table ───────────────────────────────────────────────────
 
+
 class TestGtmOpportunitiesContract:
     def test_opp_id_unique(self, gtm_opportunities: pd.DataFrame) -> None:
         assert gtm_opportunities["opp_id"].nunique() == len(gtm_opportunities)
 
-    def test_fk_customer_id(
-        self, customers: pd.DataFrame, gtm_opportunities: pd.DataFrame
-    ) -> None:
+    def test_fk_customer_id(self, customers: pd.DataFrame, gtm_opportunities: pd.DataFrame) -> None:
         valid_ids = set(customers["customer_id"])
         invalid = set(gtm_opportunities["customer_id"]) - valid_ids
         assert not invalid, f"{len(invalid)} gtm_opportunities reference unknown customers"
@@ -206,10 +197,9 @@ class TestGtmOpportunitiesContract:
 
 # ── Risk signals table ────────────────────────────────────────────────────────
 
+
 class TestRiskSignalsContract:
-    def test_fk_customer_id(
-        self, customers: pd.DataFrame, risk_signals: pd.DataFrame
-    ) -> None:
+    def test_fk_customer_id(self, customers: pd.DataFrame, risk_signals: pd.DataFrame) -> None:
         valid_ids = set(customers["customer_id"])
         invalid = set(risk_signals["customer_id"]) - valid_ids
         assert not invalid, f"{len(invalid)} risk_signals reference unknown customers"

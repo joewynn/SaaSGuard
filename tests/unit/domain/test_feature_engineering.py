@@ -16,7 +16,6 @@ P1-4  Activation Gate — integration_connects_first_30d ≥ 3 is a threshold
 
 from __future__ import annotations
 
-
 # ── Helpers that mirror the production computation rules ──────────────────────
 # These functions capture the rule once; both the dbt SQL and the Python
 # extractors must implement exactly this logic.
@@ -60,37 +59,27 @@ class TestDayZeroImputation:
 
     def test_new_customer_no_events_uses_tenure_days(self) -> None:
         """Brand-new customer on day 2 — recency = 2, not 999."""
-        result = compute_days_since_last_event(
-            total_events=0, days_since_last_event_from_db=None, tenure_days=2
-        )
+        result = compute_days_since_last_event(total_events=0, days_since_last_event_from_db=None, tenure_days=2)
         assert result == 2
 
     def test_new_customer_one_week_no_events_uses_tenure_days(self) -> None:
         """One-week-old customer with no product activity — recency = 7."""
-        result = compute_days_since_last_event(
-            total_events=0, days_since_last_event_from_db=None, tenure_days=7
-        )
+        result = compute_days_since_last_event(total_events=0, days_since_last_event_from_db=None, tenure_days=7)
         assert result == 7
 
     def test_lapsed_customer_no_events_uses_tenure_days(self) -> None:
         """180-day customer who never used the product — recency = 180 (correct)."""
-        result = compute_days_since_last_event(
-            total_events=0, days_since_last_event_from_db=None, tenure_days=180
-        )
+        result = compute_days_since_last_event(total_events=0, days_since_last_event_from_db=None, tenure_days=180)
         assert result == 180
 
     def test_active_customer_uses_actual_recency(self) -> None:
         """Customer with recent activity uses the real days_since value."""
-        result = compute_days_since_last_event(
-            total_events=42, days_since_last_event_from_db=3, tenure_days=90
-        )
+        result = compute_days_since_last_event(total_events=42, days_since_last_event_from_db=3, tenure_days=90)
         assert result == 3
 
     def test_active_customer_lapsed_uses_actual_recency(self) -> None:
         """Lapsed customer who previously had events uses the real lapse duration."""
-        result = compute_days_since_last_event(
-            total_events=15, days_since_last_event_from_db=45, tenure_days=120
-        )
+        result = compute_days_since_last_event(total_events=15, days_since_last_event_from_db=45, tenure_days=120)
         assert result == 45
 
     def test_result_is_never_999_for_zero_event_customer(self) -> None:
@@ -99,15 +88,11 @@ class TestDayZeroImputation:
             result = compute_days_since_last_event(
                 total_events=0, days_since_last_event_from_db=None, tenure_days=tenure_days
             )
-            assert result != 999, (
-                f"days_since_last_event must not be 999 for tenure_days={tenure_days}"
-            )
+            assert result != 999, f"days_since_last_event must not be 999 for tenure_days={tenure_days}"
 
     def test_zero_total_events_with_db_value_ignores_db_value(self) -> None:
         """Edge case: if total_events is 0, always use tenure_days regardless."""
-        result = compute_days_since_last_event(
-            total_events=0, days_since_last_event_from_db=999, tenure_days=5
-        )
+        result = compute_days_since_last_event(total_events=0, days_since_last_event_from_db=999, tenure_days=5)
         assert result == 5
 
 

@@ -74,7 +74,5 @@ class Customer:
         if not self.is_active:
             raise ValueError(f"Customer {self.customer_id} has already churned.")
         if churn_date < self.signup_date:
-            raise ValueError(
-                f"churn_date {churn_date} cannot precede signup_date {self.signup_date}"
-            )
+            raise ValueError(f"churn_date {churn_date} cannot precede signup_date {self.signup_date}")
         self.churn_date = churn_date

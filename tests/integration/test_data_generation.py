@@ -42,6 +42,7 @@ def risk_signals() -> pd.DataFrame:
 
 # ── Row counts ────────────────────────────────────────────────────────────────
 
+
 class TestRowCounts:
     def test_customer_count(self, customers: pd.DataFrame) -> None:
         assert len(customers) == 5_000
@@ -50,13 +51,12 @@ class TestRowCounts:
         # At least 50 events per customer on average
         assert len(usage_events) >= 5_000 * 50
 
-    def test_risk_signals_one_per_customer(
-        self, customers: pd.DataFrame, risk_signals: pd.DataFrame
-    ) -> None:
+    def test_risk_signals_one_per_customer(self, customers: pd.DataFrame, risk_signals: pd.DataFrame) -> None:
         assert len(risk_signals) == len(customers)
 
 
 # ── Plan-tier churn rates ─────────────────────────────────────────────────────
+
 
 class TestChurnRates:
     """Observed churn rates should be within ±5pp of the target probabilities.
@@ -91,6 +91,7 @@ class TestChurnRates:
 
 # ── Usage decay signal ────────────────────────────────────────────────────────
 
+
 class TestUsageDecay:
     """Churned customers must have measurably lower recent event counts.
 
@@ -99,17 +100,11 @@ class TestUsageDecay:
     """
 
     @pytest.fixture(scope="class")
-    def events_last_30d(
-        self, customers: pd.DataFrame, usage_events: pd.DataFrame
-    ) -> pd.DataFrame:
+    def events_last_30d(self, customers: pd.DataFrame, usage_events: pd.DataFrame) -> pd.DataFrame:
         cutoff = usage_events["timestamp"].max() - pd.Timedelta(days=30)
         recent = usage_events[usage_events["timestamp"] >= cutoff]
-        event_counts = (
-            recent.groupby("customer_id").size().reset_index(name="events_last_30d")
-        )
-        merged = customers[["customer_id", "churn_date"]].merge(
-            event_counts, on="customer_id", how="left"
-        )
+        event_counts = recent.groupby("customer_id").size().reset_index(name="events_last_30d")
+        merged = customers[["customer_id", "churn_date"]].merge(event_counts, on="customer_id", how="left")
         merged["events_last_30d"] = merged["events_last_30d"].fillna(0)
         return merged
 
@@ -133,85 +128,76 @@ class TestUsageDecay:
 
 # ── Integration connect retention signal ──────────────────────────────────────
 
+
 class TestIntegrationSignal:
     """Retained customers must have significantly more integration_connect events."""
 
     @pytest.fixture(scope="class")
-    def integration_counts(
-        self, customers: pd.DataFrame, usage_events: pd.DataFrame
-    ) -> pd.DataFrame:
+    def integration_counts(self, customers: pd.DataFrame, usage_events: pd.DataFrame) -> pd.DataFrame:
         integrations = usage_events[usage_events["event_type"] == "integration_connect"]
-        counts = (
-            integrations.groupby("customer_id").size().reset_index(name="integration_count")
+        counts = integrations.groupby("customer_id").size().reset_index(name="integration_count")
+        return (
+            customers[["customer_id", "churn_date"]]
+            .merge(counts, on="customer_id", how="left")
+            .assign(integration_count=lambda df: df["integration_count"].fillna(0))
         )
-        return customers[["customer_id", "churn_date"]].merge(
-            counts, on="customer_id", how="left"
-        ).assign(integration_count=lambda df: df["integration_count"].fillna(0))
 
     def test_retained_higher_integration_count(self, integration_counts: pd.DataFrame) -> None:
         churned = integration_counts[integration_counts["churn_date"].notna()]["integration_count"]
         retained = integration_counts[integration_counts["churn_date"].isna()]["integration_count"]
         _, p_value = stats.ttest_ind(retained, churned, alternative="greater")
         assert p_value < 0.01, (
-            f"Retained customers do not have significantly more integration events "
-            f"(p={p_value:.4f})."
+            f"Retained customers do not have significantly more integration events (p={p_value:.4f})."
         )
 
 
 # ── Support ticket spike signal ───────────────────────────────────────────────
 
+
 class TestSupportTicketSignal:
     """Churned customers must have more high/critical support tickets."""
 
     @pytest.fixture(scope="class")
-    def ticket_counts(
-        self, customers: pd.DataFrame, support_tickets: pd.DataFrame
-    ) -> pd.DataFrame:
-        high_priority = support_tickets[
-            support_tickets["priority"].isin(["high", "critical"])
-        ]
-        counts = (
-            high_priority.groupby("customer_id").size().reset_index(name="high_priority_tickets")
+    def ticket_counts(self, customers: pd.DataFrame, support_tickets: pd.DataFrame) -> pd.DataFrame:
+        high_priority = support_tickets[support_tickets["priority"].isin(["high", "critical"])]
+        counts = high_priority.groupby("customer_id").size().reset_index(name="high_priority_tickets")
+        return (
+            customers[["customer_id", "churn_date"]]
+            .merge(counts, on="customer_id", how="left")
+            .assign(high_priority_tickets=lambda df: df["high_priority_tickets"].fillna(0))
         )
-        return customers[["customer_id", "churn_date"]].merge(
-            counts, on="customer_id", how="left"
-        ).assign(high_priority_tickets=lambda df: df["high_priority_tickets"].fillna(0))
 
     def test_churned_higher_ticket_count(self, ticket_counts: pd.DataFrame) -> None:
         churned = ticket_counts[ticket_counts["churn_date"].notna()]["high_priority_tickets"]
         active = ticket_counts[ticket_counts["churn_date"].isna()]["high_priority_tickets"]
         _, p_value = stats.ttest_ind(churned, active, alternative="greater")
         assert p_value < 0.05, (
-            f"Churned customers do not have significantly more high-priority tickets "
-            f"(p={p_value:.4f})."
+            f"Churned customers do not have significantly more high-priority tickets (p={p_value:.4f})."
         )
 
 
 # ── Feature adoption score separation ────────────────────────────────────────
 
+
 class TestAdoptionScoreSeparation:
     """Average feature_adoption_score must correlate with active status."""
 
     @pytest.fixture(scope="class")
-    def avg_scores(
-        self, customers: pd.DataFrame, usage_events: pd.DataFrame
-    ) -> pd.DataFrame:
+    def avg_scores(self, customers: pd.DataFrame, usage_events: pd.DataFrame) -> pd.DataFrame:
         scores = (
-            usage_events.groupby("customer_id")["feature_adoption_score"]
-            .mean()
-            .reset_index(name="avg_adoption_score")
+            usage_events.groupby("customer_id")["feature_adoption_score"].mean().reset_index(name="avg_adoption_score")
         )
-        return customers[["customer_id", "churn_date"]].merge(
-            scores, on="customer_id", how="left"
-        ).assign(
-            avg_adoption_score=lambda df: df["avg_adoption_score"].fillna(0),
-            is_active=lambda df: df["churn_date"].isna().astype(int),
+        return (
+            customers[["customer_id", "churn_date"]]
+            .merge(scores, on="customer_id", how="left")
+            .assign(
+                avg_adoption_score=lambda df: df["avg_adoption_score"].fillna(0),
+                is_active=lambda df: df["churn_date"].isna().astype(int),
+            )
         )
 
     def test_point_biserial_correlation(self, avg_scores: pd.DataFrame) -> None:
-        corr, p_value = stats.pointbiserialr(
-            avg_scores["is_active"], avg_scores["avg_adoption_score"]
-        )
+        corr, p_value = stats.pointbiserialr(avg_scores["is_active"], avg_scores["avg_adoption_score"])
         assert corr > 0.35, (
             f"Point-biserial correlation between is_active and avg_adoption_score "
             f"is only {corr:.3f} (need >0.35). Data lacks adoption signal."
@@ -221,21 +207,16 @@ class TestAdoptionScoreSeparation:
 
 # ── Risk signal coherence ─────────────────────────────────────────────────────
 
+
 class TestRiskSignals:
     """Churned customers must have higher compliance_gap_score."""
 
     @pytest.fixture(scope="class")
-    def risk_with_churn(
-        self, customers: pd.DataFrame, risk_signals: pd.DataFrame
-    ) -> pd.DataFrame:
-        return customers[["customer_id", "churn_date"]].merge(
-            risk_signals, on="customer_id", how="left"
-        )
+    def risk_with_churn(self, customers: pd.DataFrame, risk_signals: pd.DataFrame) -> pd.DataFrame:
+        return customers[["customer_id", "churn_date"]].merge(risk_signals, on="customer_id", how="left")
 
     def test_churned_higher_compliance_gap(self, risk_with_churn: pd.DataFrame) -> None:
         churned = risk_with_churn[risk_with_churn["churn_date"].notna()]["compliance_gap_score"]
         active = risk_with_churn[risk_with_churn["churn_date"].isna()]["compliance_gap_score"]
         _, p_value = stats.ttest_ind(churned, active, alternative="greater")
-        assert p_value < 0.001, (
-            f"compliance_gap_score not higher for churned customers (p={p_value:.4f})."
-        )
+        assert p_value < 0.001, f"compliance_gap_score not higher for churned customers (p={p_value:.4f})."

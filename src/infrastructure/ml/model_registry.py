@@ -35,10 +35,7 @@ def load_model(name: str) -> Any:  # noqa: ANN401 — generic model loader, retu
     """
     path = _MODELS_DIR / f"{name}.pkl"
     if not path.exists():
-        raise FileNotFoundError(
-            f"Model artifact not found at {path}. "
-            "Run `dvc pull` to fetch versioned artifacts."
-        )
+        raise FileNotFoundError(f"Model artifact not found at {path}. Run `dvc pull` to fetch versioned artifacts.")
     logger.info("model.loaded", name=name, path=str(path))
     with open(path, "rb") as f:
         return pickle.load(f)  # noqa: S301

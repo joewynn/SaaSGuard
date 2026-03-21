@@ -33,7 +33,7 @@ from faker import Faker
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 RANDOM_SEED = 42
-N_CUSTOMERS = 5_500   # +500 free-tier customers added in v0.9.1
+N_CUSTOMERS = 5_500  # +500 free-tier customers added in v0.9.1
 OUTPUT_DIR = Path("data/raw")
 
 PLAN_TIERS: list[str] = ["free", "starter", "growth", "enterprise"]
@@ -41,7 +41,7 @@ PLAN_TIER_WEIGHTS = [0.09, 0.46, 0.32, 0.13]  # market distribution (renormalise
 
 # MRR ranges (min, max) per plan tier
 MRR_RANGES: dict[str, tuple[float, float]] = {
-    "free":       (0.0, 0.0),        # freemium — zero MRR
+    "free": (0.0, 0.0),  # freemium — zero MRR
     "starter": (500.0, 2_000.0),
     "growth": (2_000.0, 8_000.0),
     "enterprise": (8_000.0, 50_000.0),
@@ -49,71 +49,82 @@ MRR_RANGES: dict[str, tuple[float, float]] = {
 
 # Destiny probabilities per plan tier [early_churner, mid_churner, retained, expanded]
 DESTINY_PROBS: dict[str, list[float]] = {
-    "free":       [0.40, 0.20, 0.25, 0.15],   # high early churn, 15% convert to paid
-    "starter":    [0.25, 0.20, 0.45, 0.10],
-    "growth":     [0.08, 0.12, 0.65, 0.15],
+    "free": [0.40, 0.20, 0.25, 0.15],  # high early churn, 15% convert to paid
+    "starter": [0.25, 0.20, 0.45, 0.10],
+    "growth": [0.08, 0.12, 0.65, 0.15],
     "enterprise": [0.03, 0.05, 0.75, 0.17],
 }
 DESTINY_LABELS = ["early_churner", "mid_churner", "retained", "expanded"]
 
 INDUSTRIES = [
-    "FinTech", "HealthTech", "LegalTech", "HR Tech",
-    "EdTech", "InsurTech", "PropTech", "RetailTech",
+    "FinTech",
+    "HealthTech",
+    "LegalTech",
+    "HR Tech",
+    "EdTech",
+    "InsurTech",
+    "PropTech",
+    "RetailTech",
 ]
 
 EVENT_TYPES = [
-    "evidence_upload", "monitoring_run", "report_view",
-    "user_invite", "integration_connect", "api_call",
-    "premium_feature_trial", "feature_limit_hit",
+    "evidence_upload",
+    "monitoring_run",
+    "report_view",
+    "user_invite",
+    "integration_connect",
+    "api_call",
+    "premium_feature_trial",
+    "feature_limit_hit",
 ]
 
 # Events per week by destiny (Poisson lambda)
 EVENTS_PER_WEEK: dict[str, float] = {
     "early_churner": 1.5,
-    "mid_churner":   5.0,
-    "retained":      10.0,
-    "expanded":      12.0,
+    "mid_churner": 5.0,
+    "retained": 10.0,
+    "expanded": 12.0,
 }
 
 # integration_connect count in first 30 days (Poisson lambda)
 INTEGRATION_LAMBDA: dict[str, float] = {
     "early_churner": 0.4,
-    "mid_churner":   1.8,
-    "retained":      4.0,
-    "expanded":      4.5,
+    "mid_churner": 1.8,
+    "retained": 4.0,
+    "expanded": 4.5,
 }
 
 # feature_limit_hit event weight per destiny (probability within event draw)
 # Free/expanded customers hit limits most; all paid tiers get minimal noise
 FEATURE_LIMIT_HIT_WEIGHT: dict[str, float] = {
-    "free_expanded":      0.20,   # free customers who will convert
-    "free_retained":      0.08,   # free customers who stay free
-    "free_early_churner": 0.02,   # free customers who churn
-    "free_mid_churner":   0.02,
-    "paid":               0.01,   # all paid tiers — noise level
+    "free_expanded": 0.20,  # free customers who will convert
+    "free_retained": 0.08,  # free customers who stay free
+    "free_early_churner": 0.02,  # free customers who churn
+    "free_mid_churner": 0.02,
+    "paid": 0.01,  # all paid tiers — noise level
 }
 
 # Support ticket rate (tickets per month, Poisson lambda)
 TICKET_RATE_NORMAL: dict[str, float] = {
     "early_churner": 1.5,
-    "mid_churner":   0.8,
-    "retained":      0.3,
-    "expanded":      0.2,
-    "free_churner":  0.5,   # proxy for free early/mid churners
-    "free_other":    0.1,   # proxy for free retained/expanded
+    "mid_churner": 0.8,
+    "retained": 0.3,
+    "expanded": 0.2,
+    "free_churner": 0.5,  # proxy for free early/mid churners
+    "free_other": 0.1,  # proxy for free retained/expanded
 }
 # Rate during pre-churn spike window (last 60 days before churn)
 TICKET_RATE_SPIKE: dict[str, float] = {
     "early_churner": 4.0,
-    "mid_churner":   2.5,
+    "mid_churner": 2.5,
 }
 
 # Priority distributions (low, medium, high, critical) per destiny
 TICKET_PRIORITY_PROBS: dict[str, list[float]] = {
     "early_churner": [0.10, 0.25, 0.45, 0.20],
-    "mid_churner":   [0.15, 0.35, 0.35, 0.15],
-    "retained":      [0.40, 0.40, 0.15, 0.05],
-    "expanded":      [0.50, 0.35, 0.12, 0.03],
+    "mid_churner": [0.15, 0.35, 0.35, 0.15],
+    "retained": [0.40, 0.40, 0.15, 0.05],
+    "expanded": [0.50, 0.35, 0.12, 0.03],
 }
 
 # Topic distribution per destiny
@@ -127,10 +138,10 @@ TICKET_TOPICS_EXPANDED_PROBS = [0.55, 0.25, 0.10, 0.07, 0.03]
 
 # compliance_gap_score Beta distribution params (alpha, beta) per destiny
 COMPLIANCE_GAP_BETA: dict[str, tuple[float, float]] = {
-    "early_churner": (6.0, 2.0),   # mean ~0.75
-    "mid_churner":   (3.5, 3.0),   # mean ~0.54
-    "retained":      (1.5, 6.0),   # mean ~0.20
-    "expanded":      (1.2, 7.0),   # mean ~0.15
+    "early_churner": (6.0, 2.0),  # mean ~0.75
+    "mid_churner": (3.5, 3.0),  # mean ~0.54
+    "retained": (1.5, 6.0),  # mean ~0.20
+    "expanded": (1.2, 7.0),  # mean ~0.15
 }
 
 # Signup date range — customers joined over the last 3 years
@@ -150,6 +161,7 @@ Faker.seed(RANDOM_SEED)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def _uuid() -> str:
     # Generate 16 random bytes and build a UUID (int64 max is 2^63, so split into two halves)
@@ -178,6 +190,7 @@ def _decay_multiplier(day_offset: int, churn_days_away: int) -> float:
 
 
 # ── Customer generation ───────────────────────────────────────────────────────
+
 
 def _generate_customers() -> pd.DataFrame:
     """Generate 5,000 customers with churn destiny and derived churn_date.
@@ -228,21 +241,24 @@ def _generate_customers() -> pd.DataFrame:
             candidate = signup_date + timedelta(days=upgrade_days)
             upgrade_date = candidate if candidate <= today else None
 
-        rows.append({
-            "customer_id": _uuid(),
-            "industry": rng.choice(INDUSTRIES),
-            "plan_tier": plan_tier,
-            "signup_date": signup_date.isoformat(),
-            "mrr": mrr,
-            "churn_date": churn_date.isoformat() if churn_date else None,
-            "upgrade_date": upgrade_date.isoformat() if upgrade_date else None,
-            "_destiny": destiny,  # internal — dropped before output
-        })
+        rows.append(
+            {
+                "customer_id": _uuid(),
+                "industry": rng.choice(INDUSTRIES),
+                "plan_tier": plan_tier,
+                "signup_date": signup_date.isoformat(),
+                "mrr": mrr,
+                "churn_date": churn_date.isoformat() if churn_date else None,
+                "upgrade_date": upgrade_date.isoformat() if upgrade_date else None,
+                "_destiny": destiny,  # internal — dropped before output
+            }
+        )
 
     return pd.DataFrame(rows)
 
 
 # ── Usage events generation ───────────────────────────────────────────────────
+
 
 def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
     """Generate usage events with realistic decay patterns for churners.
@@ -265,9 +281,7 @@ def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
     for _, cust in customers.iterrows():
         destiny: str = cust["_destiny"]
         signup = date.fromisoformat(cust["signup_date"])
-        churn_date = (
-            date.fromisoformat(cust["churn_date"]) if pd.notna(cust["churn_date"]) else None
-        )
+        churn_date = date.fromisoformat(cust["churn_date"]) if pd.notna(cust["churn_date"]) else None
         end_date = churn_date if churn_date else today
         total_days = (end_date - signup).days
         if total_days <= 0:
@@ -282,13 +296,15 @@ def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
             day_offset = int(rng.integers(0, min(30, total_days)))
             ts = signup + timedelta(days=day_offset)
             score = float(np.clip(rng.normal(0.55 + 0.15 * (destiny != "early_churner"), 0.1), 0.0, 1.0))
-            all_events.append({
-                "event_id": _uuid(),
-                "customer_id": cust["customer_id"],
-                "timestamp": f"{ts}T{rng.integers(8, 20):02d}:{rng.integers(0, 60):02d}:00",
-                "event_type": "integration_connect",
-                "feature_adoption_score": round(score, 4),
-            })
+            all_events.append(
+                {
+                    "event_id": _uuid(),
+                    "customer_id": cust["customer_id"],
+                    "timestamp": f"{ts}T{rng.integers(8, 20):02d}:{rng.integers(0, 60):02d}:00",
+                    "event_type": "integration_connect",
+                    "feature_adoption_score": round(score, 4),
+                }
+            )
 
         # Week-by-week event generation
         week = 0
@@ -349,13 +365,15 @@ def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
                 w_arr = [w / w_sum for w in w_arr]
 
                 event_type = rng.choice(EVENT_TYPES, p=w_arr)
-                all_events.append({
-                    "event_id": _uuid(),
-                    "customer_id": cust["customer_id"],
-                    "timestamp": f"{ts}T{rng.integers(8, 20):02d}:{rng.integers(0, 60):02d}:00",
-                    "event_type": event_type,
-                    "feature_adoption_score": round(score, 4),
-                })
+                all_events.append(
+                    {
+                        "event_id": _uuid(),
+                        "customer_id": cust["customer_id"],
+                        "timestamp": f"{ts}T{rng.integers(8, 20):02d}:{rng.integers(0, 60):02d}:00",
+                        "event_type": event_type,
+                        "feature_adoption_score": round(score, 4),
+                    }
+                )
 
             day_offset += week_days
             week += 1
@@ -364,6 +382,7 @@ def _generate_usage_events(customers: pd.DataFrame) -> pd.DataFrame:
 
 
 # ── Support tickets generation ────────────────────────────────────────────────
+
 
 def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
     """Generate support tickets with a pre-churn spike for churning customers.
@@ -386,9 +405,7 @@ def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
     for _, cust in customers.iterrows():
         destiny: str = cust["_destiny"]
         signup = date.fromisoformat(cust["signup_date"])
-        churn_date = (
-            date.fromisoformat(cust["churn_date"]) if pd.notna(cust["churn_date"]) else None
-        )
+        churn_date = date.fromisoformat(cust["churn_date"]) if pd.notna(cust["churn_date"]) else None
         end_date = churn_date if churn_date else today
 
         priorities = ["low", "medium", "high", "critical"]
@@ -412,14 +429,16 @@ def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
             else:
                 topic = rng.choice(TICKET_TOPICS_HEALTHY, p=TICKET_TOPICS_HEALTHY_PROBS)
             res_hours = int(rng.integers(4, 48) if is_churner else rng.integers(2, 16))
-            tickets.append({
-                "ticket_id": _uuid(),
-                "customer_id": cust["customer_id"],
-                "created_date": ticket_date.isoformat(),
-                "priority": priority,
-                "resolution_time": res_hours,
-                "topic": topic,
-            })
+            tickets.append(
+                {
+                    "ticket_id": _uuid(),
+                    "customer_id": cust["customer_id"],
+                    "created_date": ticket_date.isoformat(),
+                    "priority": priority,
+                    "resolution_time": res_hours,
+                    "topic": topic,
+                }
+            )
 
         # Pre-churn spike (last 60 days)
         if churn_date and is_churner:
@@ -431,23 +450,24 @@ def _generate_support_tickets(customers: pd.DataFrame) -> pd.DataFrame:
                 ticket_date = spike_start + timedelta(days=int(rng.integers(0, spike_days)))
                 # Spike tickets skew high/critical
                 priority = rng.choice(priorities, p=[0.05, 0.15, 0.50, 0.30])
-                topic = rng.choice(
-                    TICKET_TOPICS_CHURNER, p=TICKET_TOPICS_CHURNER_PROBS
-                )
+                topic = rng.choice(TICKET_TOPICS_CHURNER, p=TICKET_TOPICS_CHURNER_PROBS)
                 res_hours = int(rng.integers(18, 72))
-                tickets.append({
-                    "ticket_id": _uuid(),
-                    "customer_id": cust["customer_id"],
-                    "created_date": ticket_date.isoformat(),
-                    "priority": priority,
-                    "resolution_time": res_hours,
-                    "topic": topic,
-                })
+                tickets.append(
+                    {
+                        "ticket_id": _uuid(),
+                        "customer_id": cust["customer_id"],
+                        "created_date": ticket_date.isoformat(),
+                        "priority": priority,
+                        "resolution_time": res_hours,
+                        "topic": topic,
+                    }
+                )
 
     return pd.DataFrame(tickets)
 
 
 # ── GTM opportunities generation ──────────────────────────────────────────────
+
 
 def _generate_gtm_opportunities(customers: pd.DataFrame) -> pd.DataFrame:
     """Generate sales opportunities, primarily for retained/expanded customers.
@@ -470,9 +490,7 @@ def _generate_gtm_opportunities(customers: pd.DataFrame) -> pd.DataFrame:
     for _, cust in customers.iterrows():
         destiny: str = cust["_destiny"]
         signup = date.fromisoformat(cust["signup_date"])
-        churn_date = (
-            date.fromisoformat(cust["churn_date"]) if pd.notna(cust["churn_date"]) else None
-        )
+        churn_date = date.fromisoformat(cust["churn_date"]) if pd.notna(cust["churn_date"]) else None
         mrr = float(cust["mrr"])
 
         # How many opps to create
@@ -509,20 +527,23 @@ def _generate_gtm_opportunities(customers: pd.DataFrame) -> pd.DataFrame:
 
             amount = round(mrr * rng.uniform(6.0, 18.0), 2)
             opportunity_type = "expansion" if destiny == "expanded" else "new_business"
-            opps.append({
-                "opp_id": _uuid(),
-                "customer_id": cust["customer_id"],
-                "stage": stage,
-                "close_date": close_date.isoformat(),
-                "amount": amount,
-                "sales_owner": rng.choice(sales_owners),
-                "opportunity_type": opportunity_type,
-            })
+            opps.append(
+                {
+                    "opp_id": _uuid(),
+                    "customer_id": cust["customer_id"],
+                    "stage": stage,
+                    "close_date": close_date.isoformat(),
+                    "amount": amount,
+                    "sales_owner": rng.choice(sales_owners),
+                    "opportunity_type": opportunity_type,
+                }
+            )
 
     return pd.DataFrame(opps)
 
 
 # ── Risk signals generation ───────────────────────────────────────────────────
+
 
 def _generate_risk_signals(customers: pd.DataFrame) -> pd.DataFrame:
     """Generate one risk signal row per customer using Beta distributions.
@@ -549,16 +570,19 @@ def _generate_risk_signals(customers: pd.DataFrame) -> pd.DataFrame:
         vendor_lambda = {"early_churner": 3.5, "mid_churner": 2.0, "retained": 0.5, "expanded": 0.3}
         vendor_flags = int(rng.poisson(vendor_lambda[destiny]))
 
-        rows.append({
-            "customer_id": cust["customer_id"],
-            "compliance_gap_score": round(gap_score, 4),
-            "vendor_risk_flags": vendor_flags,
-        })
+        rows.append(
+            {
+                "customer_id": cust["customer_id"],
+                "compliance_gap_score": round(gap_score, 4),
+                "vendor_risk_flags": vendor_flags,
+            }
+        )
 
     return pd.DataFrame(rows)
 
 
 # ── Expansion outreach log generation ─────────────────────────────────────────
+
 
 def _generate_expansion_outreach_log(customers: pd.DataFrame) -> pd.DataFrame:
     """Generate a feedback-loop log of CS outreach to expansion-propensity candidates.
@@ -604,19 +628,22 @@ def _generate_expansion_outreach_log(customers: pd.DataFrame) -> pd.DataFrame:
             contacted_date = today - timedelta(days=days_ago)
             channel = rng.choice(channels, p=channel_weights)
             outcome = rng.choice(outcomes_upgraded, p=outcome_weights_upgraded)
-            rows.append({
-                "outreach_id": _uuid(),
-                "customer_id": cid,
-                "contacted_date": contacted_date.isoformat(),
-                "propensity_at_outreach": round(propensity, 4),
-                "outreach_channel": channel,
-                "outcome": outcome,
-            })
+            rows.append(
+                {
+                    "outreach_id": _uuid(),
+                    "customer_id": cid,
+                    "contacted_date": contacted_date.isoformat(),
+                    "propensity_at_outreach": round(propensity, 4),
+                    "outreach_channel": channel,
+                    "outcome": outcome,
+                }
+            )
 
     return pd.DataFrame(rows)
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+
 
 def generate_all(output_dir: Path = OUTPUT_DIR) -> None:
     """Generate all 5 synthetic tables and write to CSV.
@@ -665,7 +692,7 @@ def generate_all(output_dir: Path = OUTPUT_DIR) -> None:
     print(f"  expansion_outreach_log: {len(outreach_log):>8,}")
 
     free_count = len(customers[customers["plan_tier"] == "free"])
-    print(f"\n── Free-tier customers: {free_count:,} ({free_count/len(customers_out):.1%})")
+    print(f"\n── Free-tier customers: {free_count:,} ({free_count / len(customers_out):.1%})")
 
     print("\n── Churn rates by plan tier ────────────────────────────────────")
     for tier in PLAN_TIERS:
@@ -676,9 +703,7 @@ def generate_all(output_dir: Path = OUTPUT_DIR) -> None:
     print("\n── Avg events per customer by destiny ──────────────────────────")
     event_counts = usage_events.groupby("customer_id").size()
     customers_with_counts = customers.copy()
-    customers_with_counts["event_count"] = customers_with_counts["customer_id"].map(
-        event_counts
-    ).fillna(0)
+    customers_with_counts["event_count"] = customers_with_counts["customer_id"].map(event_counts).fillna(0)
     for destiny in DESTINY_LABELS:
         subset = customers_with_counts[customers_with_counts["_destiny"] == destiny]
         avg = subset["event_count"].mean()

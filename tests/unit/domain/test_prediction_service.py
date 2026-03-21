@@ -38,9 +38,7 @@ class TestChurnProbability:
 
 
 class TestRiskModelService:
-    def test_all_zero_signals_produce_zero_risk(
-        self, risk_service: RiskModelService
-    ) -> None:
+    def test_all_zero_signals_produce_zero_risk(self, risk_service: RiskModelService) -> None:
         signals = RiskSignals(
             compliance_gap_score=0.0,
             vendor_risk_flags=0,
@@ -49,9 +47,7 @@ class TestRiskModelService:
         result = risk_service.compute(signals)
         assert result.value == 0.0
 
-    def test_all_max_signals_produce_score_near_one(
-        self, risk_service: RiskModelService
-    ) -> None:
+    def test_all_max_signals_produce_score_near_one(self, risk_service: RiskModelService) -> None:
         signals = RiskSignals(
             compliance_gap_score=1.0,
             vendor_risk_flags=10,
@@ -60,28 +56,19 @@ class TestRiskModelService:
         result = risk_service.compute(signals)
         assert result.value == pytest.approx(1.0, abs=0.01)
 
-    def test_vendor_flags_capped_at_normaliser(
-        self, risk_service: RiskModelService
-    ) -> None:
+    def test_vendor_flags_capped_at_normaliser(self, risk_service: RiskModelService) -> None:
         """100 vendor flags should not produce a higher score than 5 flags."""
         signals_5 = RiskSignals(0.0, 5, 0.0)
         signals_100 = RiskSignals(0.0, 100, 0.0)
         assert risk_service.compute(signals_5).value == risk_service.compute(signals_100).value
 
-    def test_usage_decay_dominates_risk_score(
-        self, risk_service: RiskModelService
-    ) -> None:
+    def test_usage_decay_dominates_risk_score(self, risk_service: RiskModelService) -> None:
         """Usage decay has the highest weight (0.50) per business calibration."""
         high_usage_decay = RiskSignals(0.0, 0, 1.0)
         high_compliance = RiskSignals(1.0, 0, 0.0)
-        assert (
-            risk_service.compute(high_usage_decay).value
-            > risk_service.compute(high_compliance).value
-        )
+        assert risk_service.compute(high_usage_decay).value > risk_service.compute(high_compliance).value
 
-    def test_risk_score_is_always_in_valid_range(
-        self, risk_service: RiskModelService
-    ) -> None:
+    def test_risk_score_is_always_in_valid_range(self, risk_service: RiskModelService) -> None:
         signals = RiskSignals(0.5, 3, 0.7)
         result = risk_service.compute(signals)
         assert 0.0 <= result.value <= 1.0

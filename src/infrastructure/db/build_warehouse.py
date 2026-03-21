@@ -94,9 +94,7 @@ def build(db_path: Path = DB_PATH, data_dir: Path = DATA_DIR) -> None:
         for table, ddl in DDL.items():
             csv_path = data_dir / f"{table}.csv"
             if not csv_path.exists():
-                raise FileNotFoundError(
-                    f"Missing: {csv_path}. Run generate_synthetic_data first."
-                )
+                raise FileNotFoundError(f"Missing: {csv_path}. Run generate_synthetic_data first.")
 
             conn.execute(ddl)
             conn.execute(f"COPY raw.{table} FROM '{csv_path}' (HEADER TRUE, NULLSTR '')")

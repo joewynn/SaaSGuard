@@ -63,8 +63,6 @@ class PredictExpansionUseCase:
         if customer is None:
             raise ValueError(f"Customer {request.customer_id} not found.")
         if not customer.is_active:
-            raise ValueError(
-                f"Customer {request.customer_id} has already churned on {customer.churn_date}."
-            )
+            raise ValueError(f"Customer {request.customer_id} has already churned on {customer.churn_date}.")
 
         return self._expansion_service.predict(customer)

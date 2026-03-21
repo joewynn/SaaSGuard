@@ -53,9 +53,7 @@ def marts_populated() -> bool:
         from src.infrastructure.db.duckdb_adapter import get_connection
 
         with get_connection(read_only=True) as conn:
-            count = conn.execute(
-                "SELECT COUNT(*) FROM marts.mart_customer_churn_features"
-            ).fetchone()
+            count = conn.execute("SELECT COUNT(*) FROM marts.mart_customer_churn_features").fetchone()
             return count is not None and count[0] > 0
     except Exception:
         return False
@@ -168,9 +166,7 @@ async def model_health() -> dict[str, object]:
         from src.infrastructure.db.duckdb_adapter import get_connection
 
         with get_connection(read_only=True) as conn:
-            prod_df = conn.execute(
-                "SELECT * FROM marts.mart_customer_churn_features LIMIT 1000"
-            ).df()
+            prod_df = conn.execute("SELECT * FROM marts.mart_customer_churn_features LIMIT 1000").df()
 
         report = _drift_detector.run(prod_df)
         _drift_detector.expose_prometheus(report)

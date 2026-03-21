@@ -48,9 +48,7 @@ class RiskModelService:
         Returns:
             RiskScore value object in [0, 1].
         """
-        vendor_normalised = min(
-            signals.vendor_risk_flags / self.VENDOR_FLAG_NORMALISER, 1.0
-        )
+        vendor_normalised = min(signals.vendor_risk_flags / self.VENDOR_FLAG_NORMALISER, 1.0)
         composite = (
             self.USAGE_WEIGHT * signals.usage_decay_score
             + self.COMPLIANCE_WEIGHT * signals.compliance_gap_score

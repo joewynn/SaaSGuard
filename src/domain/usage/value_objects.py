@@ -33,9 +33,7 @@ class FeatureAdoptionScore:
 
     def __post_init__(self) -> None:
         if not (0.0 <= self.value <= 1.0):
-            raise ValueError(
-                f"FeatureAdoptionScore must be in [0, 1], got {self.value}"
-            )
+            raise ValueError(f"FeatureAdoptionScore must be in [0, 1], got {self.value}")
 
     @property
     def is_low(self) -> bool:

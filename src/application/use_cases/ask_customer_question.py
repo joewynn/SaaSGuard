@@ -131,14 +131,10 @@ class AskCustomerQuestionUseCase:
         if customer is None:
             raise ValueError(f"Customer {request.customer_id} not found.")
         if not customer.is_active:
-            raise ValueError(
-                f"Customer {request.customer_id} has already churned on {customer.churn_date}."
-            )
+            raise ValueError(f"Customer {request.customer_id} has already churned on {customer.churn_date}.")
 
         # Get prediction for context
-        prediction = self._predict_use_case.execute(
-            PredictChurnRequest(customer_id=request.customer_id)
-        )
+        prediction = self._predict_use_case.execute(PredictChurnRequest(customer_id=request.customer_id))
 
         # Build full context (RAG retrieval)
         context = self._summary_uc._build_context(customer, prediction)

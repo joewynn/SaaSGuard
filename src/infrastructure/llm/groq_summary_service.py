@@ -73,8 +73,7 @@ class GroqSummaryService(SummaryPort):
             )
         except groq_sdk.AuthenticationError as exc:
             raise RuntimeError(
-                "Groq API key is missing or invalid. "
-                "Set GROQ_API_KEY in your environment (Railway Variables or .env)."
+                "Groq API key is missing or invalid. Set GROQ_API_KEY in your environment (Railway Variables or .env)."
             ) from exc
         except groq_sdk.APIError as exc:
             raise RuntimeError(f"Groq API error: {exc}") from exc
@@ -107,8 +106,7 @@ class GroqSummaryService(SummaryPort):
             )
         except groq_sdk.AuthenticationError as exc:
             raise RuntimeError(
-                "Groq API key is missing or invalid. "
-                "Set GROQ_API_KEY in your environment (Railway Variables or .env)."
+                "Groq API key is missing or invalid. Set GROQ_API_KEY in your environment (Railway Variables or .env)."
             ) from exc
         except groq_sdk.APIError as exc:
             raise RuntimeError(f"Groq API error: {exc}") from exc

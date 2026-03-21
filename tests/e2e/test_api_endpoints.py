@@ -9,6 +9,7 @@ import pytest
 # E2E tests are added in Phase 7 once FastAPI routers are implemented.
 # Placeholder to establish the test file structure for TDD.
 
+
 @pytest.mark.skip(reason="Implement in Phase 7 – FastAPI routers not yet built")
 class TestHealthEndpoint:
     async def test_health_returns_200(self) -> None:

@@ -25,6 +25,7 @@ from src.domain.prediction.entities import ShapFeature
 
 # ── Fakes ─────────────────────────────────────────────────────────────────────
 
+
 class FakeCustomerRepository(CustomerRepository):
     """In-memory customer store for unit tests."""
 
@@ -60,6 +61,7 @@ class FakeExpansionModel(ExpansionModelPort):
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture()
 def active_growth_customer() -> Customer:
@@ -105,26 +107,20 @@ def _make_use_case(
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
-class TestPredictExpansionUseCase:
 
-    def test_returns_expansion_result_for_active_customer(
-        self, active_growth_customer: Customer
-    ) -> None:
+class TestPredictExpansionUseCase:
+    def test_returns_expansion_result_for_active_customer(self, active_growth_customer: Customer) -> None:
         use_case = _make_use_case(active_growth_customer)
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-exp-001"))
         assert isinstance(result, ExpansionResult)
         assert result.customer_id == "cust-exp-001"
 
-    def test_propensity_matches_model_output(
-        self, active_growth_customer: Customer
-    ) -> None:
+    def test_propensity_matches_model_output(self, active_growth_customer: Customer) -> None:
         use_case = _make_use_case(active_growth_customer, probability=0.72)
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-exp-001"))
         assert result.propensity.value == pytest.approx(0.72)
 
-    def test_raises_for_unknown_customer(
-        self, active_growth_customer: Customer
-    ) -> None:
+    def test_raises_for_unknown_customer(self, active_growth_customer: Customer) -> None:
         use_case = _make_use_case(active_growth_customer)
         with pytest.raises(ValueError, match="not found"):
             use_case.execute(PredictExpansionRequest(customer_id="does-not-exist"))
@@ -141,9 +137,7 @@ class TestPredictExpansionUseCase:
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-exp-001"))
         assert result.current_mrr == pytest.approx(5000.0)
 
-    def test_plan_tier_propagated_to_target(
-        self, active_growth_customer: Customer
-    ) -> None:
+    def test_plan_tier_propagated_to_target(self, active_growth_customer: Customer) -> None:
         use_case = _make_use_case(active_growth_customer)
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-exp-001"))
         assert result.target.current_tier == PlanTier.GROWTH
@@ -162,26 +156,19 @@ def active_free_customer() -> Customer:
 
 
 class TestPredictExpansionUseCaseFreeTier:
-
-    def test_returns_expansion_result_for_free_customer(
-        self, active_free_customer: Customer
-    ) -> None:
+    def test_returns_expansion_result_for_free_customer(self, active_free_customer: Customer) -> None:
         use_case = _make_use_case(active_free_customer, probability=0.78)
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-free-app-001"))
         assert isinstance(result, ExpansionResult)
         assert result.customer_id == "cust-free-app-001"
 
-    def test_free_customer_arr_uplift_non_zero(
-        self, active_free_customer: Customer
-    ) -> None:
+    def test_free_customer_arr_uplift_non_zero(self, active_free_customer: Customer) -> None:
         # propensity=0.78, floor 500*12*0.78 = 4680
         use_case = _make_use_case(active_free_customer, probability=0.78)
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-free-app-001"))
         assert result.expected_arr_uplift > 0.0
 
-    def test_free_customer_target_is_starter(
-        self, active_free_customer: Customer
-    ) -> None:
+    def test_free_customer_target_is_starter(self, active_free_customer: Customer) -> None:
         use_case = _make_use_case(active_free_customer)
         result = use_case.execute(PredictExpansionRequest(customer_id="cust-free-app-001"))
         assert result.target.current_tier == PlanTier.FREE

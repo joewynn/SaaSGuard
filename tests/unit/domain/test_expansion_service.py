@@ -19,6 +19,7 @@ from src.domain.prediction.entities import ShapFeature
 
 # ── Fakes ─────────────────────────────────────────────────────────────────────
 
+
 class FakeExpansionModel(ExpansionModelPort):
     """Fixed-output model for unit testing — no file I/O."""
 
@@ -44,9 +45,11 @@ class FakeExpansionModel(ExpansionModelPort):
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture()
 def growth_customer() -> Customer:
     from datetime import date
+
     return Customer(
         customer_id="cust-expansion-001",
         industry=Industry.FINTECH,
@@ -59,8 +62,10 @@ def growth_customer() -> Customer:
 def _make_service(probability: float = 0.75) -> ExpansionModelService:
     feature_extractor = MagicMock()
     feature_extractor.extract.return_value = {
-        "mrr": 5500.0, "premium_feature_trials_30d": 8.0,
-        "mrr_tier_ceiling_pct": 0.85, "plan_tier": "growth",
+        "mrr": 5500.0,
+        "premium_feature_trials_30d": 8.0,
+        "mrr_tier_ceiling_pct": 0.85,
+        "plan_tier": "growth",
     }
     return ExpansionModelService(
         model=FakeExpansionModel(fixed_probability=probability),
@@ -70,8 +75,8 @@ def _make_service(probability: float = 0.75) -> ExpansionModelService:
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
-class TestExpansionModelService:
 
+class TestExpansionModelService:
     def test_returns_expansion_result(self, growth_customer: Customer) -> None:
         service = _make_service()
         result = service.predict(growth_customer)
@@ -96,6 +101,7 @@ class TestExpansionModelService:
 
     def test_target_tier_reflects_customer_plan(self, growth_customer: Customer) -> None:
         from src.domain.customer.value_objects import PlanTier
+
         result = _make_service().predict(growth_customer)
         assert result.target.current_tier == PlanTier.GROWTH
         assert result.target.next_tier == PlanTier.ENTERPRISE
@@ -115,16 +121,12 @@ class TestExpansionModelService:
         result = _make_service(probability=0.80).predict(growth_customer)
         assert "EXPANSION PRIORITY" in result.recommended_action()
 
-    def test_recommended_action_conflict_matrix_flight_risk(
-        self, growth_customer: Customer
-    ) -> None:
+    def test_recommended_action_conflict_matrix_flight_risk(self, growth_customer: Customer) -> None:
         result = _make_service(probability=0.75).predict(growth_customer)
         action = result.recommended_action(churn_probability=0.65)
         assert "Flight Risk" in action or "\u26a0" in action
 
-    def test_recommended_action_conflict_matrix_growth_engine(
-        self, growth_customer: Customer
-    ) -> None:
+    def test_recommended_action_conflict_matrix_growth_engine(self, growth_customer: Customer) -> None:
         result = _make_service(probability=0.75).predict(growth_customer)
         action = result.recommended_action(churn_probability=0.10)
         assert "Growth Engine" in action
@@ -148,6 +150,7 @@ class TestExpansionModelServiceFreeTier:
     @pytest.fixture()
     def free_customer(self) -> Customer:
         from datetime import date
+
         return Customer(
             customer_id="cust-free-svc-001",
             industry=Industry.FINTECH,
@@ -159,9 +162,11 @@ class TestExpansionModelServiceFreeTier:
     def _make_free_service(self, probability: float = 0.80) -> ExpansionModelService:
         feature_extractor = MagicMock()
         feature_extractor.extract.return_value = {
-            "mrr": 0.0, "premium_feature_trials_30d": 3.0,
+            "mrr": 0.0,
+            "premium_feature_trials_30d": 3.0,
             "feature_limit_hit_30d": 2.0,
-            "mrr_tier_ceiling_pct": 0.0, "plan_tier": "free",
+            "mrr_tier_ceiling_pct": 0.0,
+            "plan_tier": "free",
         }
         return ExpansionModelService(
             model=FakeExpansionModel(fixed_probability=probability),

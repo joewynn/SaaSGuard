@@ -26,6 +26,7 @@ REFERENCE_DATE = "2026-03-14"
 
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="module")
 def conn():
     """Open a read-only connection to the DuckDB warehouse.
@@ -144,6 +145,7 @@ def feature_df(conn) -> pd.DataFrame:
 
 # ── Tests: Kaplan-Meier signal ───────────────────────────────────────────────
 
+
 class TestKaplanMeierSignals:
     """KM curve tests: plan tiers must show statistically significant separation.
 
@@ -174,9 +176,7 @@ class TestKaplanMeierSignals:
             "Check churn destiny profile distributions in the generator."
         )
 
-    def test_starter_survival_lower_than_enterprise_at_day_180(
-        self, survival_df: pd.DataFrame
-    ) -> None:
+    def test_starter_survival_lower_than_enterprise_at_day_180(self, survival_df: pd.DataFrame) -> None:
         """Starter survival probability at day 180 must be strictly less than enterprise.
 
         Uses day-180 survival rather than median because the KM median can be undefined
@@ -212,12 +212,11 @@ class TestKaplanMeierSignals:
             survival_df["plan_tier"],
             event_observed=survival_df["event"],
         )
-        assert result.p_value < 0.01, (
-            f"Multivariate log-rank p={result.p_value:.4f} ≥ 0.01 across all three tiers."
-        )
+        assert result.p_value < 0.01, f"Multivariate log-rank p={result.p_value:.4f} ≥ 0.01 across all three tiers."
 
 
 # ── Tests: Feature correlations ─────────────────────────────────────────────
+
 
 class TestFeatureCorrelations:
     """Pre-modelling feature signal tests.
@@ -235,36 +234,24 @@ class TestFeatureCorrelations:
         "high_priority_tickets",
     ]
 
-    def _compute_correlations(
-        self, feature_df: pd.DataFrame
-    ) -> dict[str, tuple[float, float]]:
+    def _compute_correlations(self, feature_df: pd.DataFrame) -> dict[str, tuple[float, float]]:
         """Compute point-biserial correlation (r, p_value) for all features vs. churn."""
-        return {
-            col: stats.pointbiserialr(feature_df[col], feature_df["is_churned"])
-            for col in self.FEATURE_COLS
-        }
+        return {col: stats.pointbiserialr(feature_df[col], feature_df["is_churned"]) for col in self.FEATURE_COLS}
 
-    def test_events_last_30d_correlation_above_threshold(
-        self, feature_df: pd.DataFrame
-    ) -> None:
+    def test_events_last_30d_correlation_above_threshold(self, feature_df: pd.DataFrame) -> None:
         """events_last_30d must have |r| > 0.30 with churn label.
 
         Business context: Recent usage decay is the primary churn signal. If this
         correlation is weak, the sigmoid decay function in the generator failed to
         embed sufficient temporal structure.
         """
-        r, p = stats.pointbiserialr(
-            feature_df["events_last_30d"], feature_df["is_churned"]
-        )
+        r, p = stats.pointbiserialr(feature_df["events_last_30d"], feature_df["is_churned"])
         assert abs(r) > 0.30, (
-            f"|r|={abs(r):.3f} < 0.30 for events_last_30d. "
-            "Insufficient signal for the primary churn indicator."
+            f"|r|={abs(r):.3f} < 0.30 for events_last_30d. Insufficient signal for the primary churn indicator."
         )
         assert p < 0.001, f"p={p:.4f} — correlation not significant at 0.1% level."
 
-    def test_retention_signal_count_has_meaningful_signal(
-        self, feature_df: pd.DataFrame
-    ) -> None:
+    def test_retention_signal_count_has_meaningful_signal(self, feature_df: pd.DataFrame) -> None:
         """retention_signal_count must have |r| > 0.20 with the churn label.
 
         Business context: High-value events (evidence_upload, monitoring_run,
@@ -283,48 +270,36 @@ class TestFeatureCorrelations:
             "classified in the generator."
         )
 
-    def test_high_priority_tickets_positive_correlation(
-        self, feature_df: pd.DataFrame
-    ) -> None:
+    def test_high_priority_tickets_positive_correlation(self, feature_df: pd.DataFrame) -> None:
         """high_priority_tickets must be positively correlated with churn (tickets → churn risk).
 
         Business context: Support ticket spikes in the 60 days before churn are a
         designed causal feature. Positive correlation validates the synthetic data's
         causal structure — tickets reflect customer frustration, not engagement.
         """
-        r, p = stats.pointbiserialr(
-            feature_df["high_priority_tickets"], feature_df["is_churned"]
-        )
+        r, p = stats.pointbiserialr(feature_df["high_priority_tickets"], feature_df["is_churned"])
         assert r > 0, (
-            f"high_priority_tickets has negative correlation ({r:.3f}). "
-            "Expected positive (tickets → churn risk)."
+            f"high_priority_tickets has negative correlation ({r:.3f}). Expected positive (tickets → churn risk)."
         )
-        assert p < 0.01, (
-            f"Ticket correlation not significant at 1% level (p={p:.4f})."
-        )
+        assert p < 0.01, f"Ticket correlation not significant at 1% level (p={p:.4f})."
 
-    def test_avg_adoption_score_negative_correlation(
-        self, feature_df: pd.DataFrame
-    ) -> None:
+    def test_avg_adoption_score_negative_correlation(self, feature_df: pd.DataFrame) -> None:
         """avg_adoption_score must be negatively correlated with churn (adoption → retention).
 
         Business context: Feature adoption is the product's core value proposition.
         A negative correlation validates that the platform delivers on its promise.
         """
-        r, p = stats.pointbiserialr(
-            feature_df["avg_adoption_score"], feature_df["is_churned"]
-        )
+        r, p = stats.pointbiserialr(feature_df["avg_adoption_score"], feature_df["is_churned"])
         assert r < 0, (
-            f"avg_adoption_score has positive correlation ({r:.3f}). "
-            "Expected negative (higher adoption → lower churn)."
+            f"avg_adoption_score has positive correlation ({r:.3f}). Expected negative (higher adoption → lower churn)."
         )
         assert abs(r) > 0.20, (
-            f"|r|={abs(r):.3f} — adoption score signal too weak. "
-            "Check feature_adoption_score decay in the generator."
+            f"|r|={abs(r):.3f} — adoption score signal too weak. Check feature_adoption_score decay in the generator."
         )
 
 
 # ── Tests: First-90-day dropout ─────────────────────────────────────────────
+
 
 class TestFirstNinetyDayDropout:
     """First-90-day dropout rate tests: the 'leaky bucket' must be quantifiable.
@@ -334,18 +309,12 @@ class TestFirstNinetyDayDropout:
     model in the PRD is not supported by the data.
     """
 
-    def _dropout_rate(
-        self, survival_df: pd.DataFrame, tier: str, days: int = 90
-    ) -> float:
+    def _dropout_rate(self, survival_df: pd.DataFrame, tier: str, days: int = 90) -> float:
         """Compute the fraction of customers in a tier who churned within `days`."""
         tier_df = survival_df[survival_df["plan_tier"] == tier]
-        return (
-            (tier_df["event"] == 1) & (tier_df["duration_days"] <= days)
-        ).sum() / len(tier_df)
+        return ((tier_df["event"] == 1) & (tier_df["duration_days"] <= days)).sum() / len(tier_df)
 
-    def test_starter_first_90d_dropout_above_threshold(
-        self, survival_df: pd.DataFrame
-    ) -> None:
+    def test_starter_first_90d_dropout_above_threshold(self, survival_df: pd.DataFrame) -> None:
         """Starter tier must have > 20% churn rate within first 90 days.
 
         Validates the PRD leaky-bucket claim and justifies the early CS intervention
@@ -360,9 +329,7 @@ class TestFirstNinetyDayDropout:
             "Check early_churner profile share in the generator (target: 25%)."
         )
 
-    def test_enterprise_first_90d_dropout_below_starter(
-        self, survival_df: pd.DataFrame
-    ) -> None:
+    def test_enterprise_first_90d_dropout_below_starter(self, survival_df: pd.DataFrame) -> None:
         """Enterprise 90-day dropout must be meaningfully lower than starter.
 
         Validates that tier-differentiated CS budgets are justified in the first
@@ -377,9 +344,7 @@ class TestFirstNinetyDayDropout:
             "Tier differentiation in churn destiny profiles may be insufficient."
         )
 
-    def test_enterprise_first_90d_dropout_below_10_pct(
-        self, survival_df: pd.DataFrame
-    ) -> None:
+    def test_enterprise_first_90d_dropout_below_10_pct(self, survival_df: pd.DataFrame) -> None:
         """Enterprise tier must have < 10% churn in first 90 days.
 
         Enterprise accounts receive dedicated CSMs and longer contract cycles.

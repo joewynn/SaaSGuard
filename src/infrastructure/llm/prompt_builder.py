@@ -145,17 +145,22 @@ class PromptBuilder:
         p = context.prediction
 
         shap_lines = "\n".join(
-            "  - {label}: {direction} churn risk  "
-            "(value: {value})".format(
+            "  - {label}: {direction} churn risk  (value: {value})".format(
                 label=_FEATURE_LABELS.get(f.feature_name, f.feature_name),
                 direction="increases" if f.shap_impact > 0 else "reduces",
                 value=(
                     f"{f.feature_value:.0f}"
-                    if f.feature_name in (
-                        "events_last_30d", "events_last_7d", "total_events",
-                        "tenure_days", "days_since_last_event",
-                        "retention_signal_count", "integration_connects_first_30d",
-                        "tickets_last_30d", "high_priority_tickets",
+                    if f.feature_name
+                    in (
+                        "events_last_30d",
+                        "events_last_7d",
+                        "total_events",
+                        "tenure_days",
+                        "days_since_last_event",
+                        "retention_signal_count",
+                        "integration_connects_first_30d",
+                        "tickets_last_30d",
+                        "high_priority_tickets",
                     )
                     else f"{f.feature_value:.2f}"
                 ),
@@ -178,17 +183,13 @@ class PromptBuilder:
         )
 
         event_lines = (
-            "\n".join(
-                f"  - {etype}: {count}"
-                for etype, count in context.events_last_30d_by_type.items()
-            )
+            "\n".join(f"  - {etype}: {count}" for etype, count in context.events_last_30d_by_type.items())
             if context.events_last_30d_by_type
             else "  (none)"
         )
 
         gtm_block = (
-            f"  stage={context.gtm_opportunity.get('stage')}, "
-            f"amount={context.gtm_opportunity.get('amount')}"
+            f"  stage={context.gtm_opportunity.get('stage')}, amount={context.gtm_opportunity.get('amount')}"
             if context.gtm_opportunity
             else "  (none)"
         )

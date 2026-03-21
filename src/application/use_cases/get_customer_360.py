@@ -118,13 +118,9 @@ class GetCustomer360UseCase:
         if customer is None:
             raise ValueError(f"Customer {request.customer_id} not found.")
 
-        prediction = self._predict_use_case.execute(
-            PredictChurnRequest(customer_id=request.customer_id)
-        )
+        prediction = self._predict_use_case.execute(PredictChurnRequest(customer_id=request.customer_id))
 
-        events_last_30d, open_ticket_count, gtm_stage = self._query_supplemental(
-            request.customer_id
-        )
+        events_last_30d, open_ticket_count, gtm_stage = self._query_supplemental(request.customer_id)
 
         shap_features = [
             ShapFeatureSummary(
@@ -150,9 +146,7 @@ class GetCustomer360UseCase:
             latest_prediction_at=prediction.predicted_at.isoformat(),
         )
 
-    def _query_supplemental(
-        self, customer_id: str
-    ) -> tuple[int, int, str | None]:
+    def _query_supplemental(self, customer_id: str) -> tuple[int, int, str | None]:
         """Fetch events_last_30d, open_ticket_count, and GTM stage from DuckDB.
 
         Business Context: These signals are leading indicators of churn risk —

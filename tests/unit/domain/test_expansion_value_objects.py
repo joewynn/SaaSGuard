@@ -158,7 +158,9 @@ class TestTargetTierFreeTier:
         result = ExpansionResult(
             customer_id="cust-free-001",
             current_mrr=0.0,
-            propensity=__import__("src.domain.expansion.value_objects", fromlist=["UpgradePropensity"]).UpgradePropensity(value=0.80),
+            propensity=__import__(
+                "src.domain.expansion.value_objects", fromlist=["UpgradePropensity"]
+            ).UpgradePropensity(value=0.80),
             target=TargetTier(PlanTier.FREE),
         )
         assert result.propensity.tier == RiskTier.CRITICAL
@@ -170,7 +172,9 @@ class TestTargetTierFreeTier:
         result = ExpansionResult(
             customer_id="cust-free-002",
             current_mrr=0.0,
-            propensity=__import__("src.domain.expansion.value_objects", fromlist=["UpgradePropensity"]).UpgradePropensity(value=0.30),
+            propensity=__import__(
+                "src.domain.expansion.value_objects", fromlist=["UpgradePropensity"]
+            ).UpgradePropensity(value=0.30),
             target=TargetTier(PlanTier.FREE),
         )
         assert result.is_high_value_target is False

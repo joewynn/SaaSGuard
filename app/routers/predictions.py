@@ -134,9 +134,7 @@ async def get_customer_360(
         raise HTTPException(status_code=503, detail=f"Churn prediction error: {exc}") from exc
 
     try:
-        expansion_result = expansion_use_case.execute(
-            PredictExpansionRequest(customer_id=customer_id)
-        )
+        expansion_result = expansion_use_case.execute(PredictExpansionRequest(customer_id=customer_id))
     except ValueError as exc:
         # Customer may be active for churn but excluded from expansion mart
         # (e.g. already upgraded) — return churn result only with placeholder expansion
@@ -164,7 +162,8 @@ async def get_customer_360(
         f"Churn probability {churn_prob:.0%} and upgrade propensity "
         f"{expansion_prop:.0%} both exceed 50% threshold. "
         "Restore account health before any upsell motion."
-        if is_flight_risk else None
+        if is_flight_risk
+        else None
     )
 
     return Customer360Response(
@@ -173,10 +172,7 @@ async def get_customer_360(
         churn_risk_tier=churn_result.churn_probability.risk_tier.value,
         upgrade_propensity=expansion_prop,
         propensity_tier=expansion_result.propensity.tier.value,
-        target_tier=(
-            expansion_result.target.next_tier.value
-            if expansion_result.target.next_tier else None
-        ),
+        target_tier=(expansion_result.target.next_tier.value if expansion_result.target.next_tier else None),
         expected_arr_uplift=expansion_result.expected_arr_uplift,
         is_high_value_target=expansion_result.is_high_value_target,
         recommended_action=recommended_action,

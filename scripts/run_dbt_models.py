@@ -9,7 +9,6 @@ Usage: uv run python scripts/run_dbt_models.py
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import duckdb

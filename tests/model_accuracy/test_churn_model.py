@@ -32,6 +32,7 @@ _TEST_DIR = Path(__file__).parent
 DB_PATH = str(_TEST_DIR.parent.parent / "data" / "saasguard.duckdb")
 REFERENCE_DATE = "2026-03-14"
 
+
 # ── Mart availability check ────────────────────────────────────────────────────
 # The feature extractor queries marts.mart_customer_churn_features, which is
 # created by dbt run (inside Docker). This flag gates tests that require it.
@@ -88,9 +89,7 @@ def conn() -> duckdb.DuckDBPyConnection:  # type: ignore[misc]
 @pytest.fixture(scope="module")
 def active_customer_id(conn: duckdb.DuckDBPyConnection) -> str:
     """One active customer_id for inference-path tests."""
-    row = conn.execute(
-        "SELECT customer_id FROM raw.customers WHERE churn_date IS NULL LIMIT 1"
-    ).fetchone()
+    row = conn.execute("SELECT customer_id FROM raw.customers WHERE churn_date IS NULL LIMIT 1").fetchone()
     assert row is not None, "No active customers found in DuckDB."
     return str(row[0])
 
@@ -208,9 +207,7 @@ class TestChurnFeatureExtractor:
     require dbt to have been run (marts schema must exist in DuckDB).
     """
 
-    def test_feature_extractor_returns_correct_keys(
-        self, active_customer_id: str
-    ) -> None:
+    def test_feature_extractor_returns_correct_keys(self, active_customer_id: str) -> None:
         """extract() output must contain exactly the 15 expected feature keys."""
         from src.infrastructure.ml.churn_feature_extractor import ChurnFeatureExtractor
         from src.infrastructure.repositories.customer_repository import (
@@ -224,13 +221,9 @@ class TestChurnFeatureExtractor:
 
         missing = EXPECTED_FEATURE_KEYS - set(features.keys())
         extra = set(features.keys()) - EXPECTED_FEATURE_KEYS
-        assert not missing and not extra, (
-            f"Key mismatch — missing: {missing}, extra: {extra}"
-        )
+        assert not missing and not extra, f"Key mismatch — missing: {missing}, extra: {extra}"
 
-    def test_feature_extractor_returns_numeric_values(
-        self, active_customer_id: str
-    ) -> None:
+    def test_feature_extractor_returns_numeric_values(self, active_customer_id: str) -> None:
         """Numeric features must be int/float (no NaN); categorical features must be non-empty str.
 
         plan_tier and industry are returned as raw strings for the OrdinalEncoder
@@ -301,9 +294,7 @@ class TestXGBoostChurnModel:
         features = ChurnFeatureExtractor().extract(customer)
         shap_features = XGBoostChurnModel().explain(features)
 
-        assert len(shap_features) >= 5, (
-            f"Only {len(shap_features)} SHAP features returned, expected ≥ 5."
-        )
+        assert len(shap_features) >= 5, f"Only {len(shap_features)} SHAP features returned, expected ≥ 5."
         assert all(isinstance(sf, ShapFeature) for sf in shap_features)
 
 
@@ -314,10 +305,21 @@ class TestModelAccuracy:
     """Accuracy metrics on the held-out out-of-time test set."""
 
     _FEATURE_COLS = [
-        "mrr", "tenure_days", "total_events", "events_last_30d", "events_last_7d",
-        "avg_adoption_score", "days_since_last_event", "retention_signal_count",
-        "tickets_last_30d", "high_priority_tickets", "avg_resolution_hours",
-        "integration_connects_first_30d", "plan_tier", "industry", "is_early_stage",
+        "mrr",
+        "tenure_days",
+        "total_events",
+        "events_last_30d",
+        "events_last_7d",
+        "avg_adoption_score",
+        "days_since_last_event",
+        "retention_signal_count",
+        "tickets_last_30d",
+        "high_priority_tickets",
+        "avg_resolution_hours",
+        "integration_connects_first_30d",
+        "plan_tier",
+        "industry",
+        "is_early_stage",
     ]
 
     def _pipeline(self) -> Any:
@@ -340,10 +342,7 @@ class TestModelAccuracy:
         y_proba = pipeline.predict_proba(X_test)[:, 1]
         auc = roc_auc_score(y_test, y_proba)
 
-        assert auc > 0.80, (
-            f"AUC-ROC = {auc:.4f} < 0.80. "
-            "Model discrimination is below the production threshold."
-        )
+        assert auc > 0.80, f"AUC-ROC = {auc:.4f} < 0.80. Model discrimination is below the production threshold."
 
     def test_model_brier_score_below_threshold(self, test_df: pd.DataFrame) -> None:
         """Brier score must be below 0.15 — validates probability calibration.
@@ -361,14 +360,9 @@ class TestModelAccuracy:
         y_proba = pipeline.predict_proba(X_test)[:, 1]
         brier = brier_score_loss(y_test, y_proba)
 
-        assert brier < 0.15, (
-            f"Brier score = {brier:.4f} ≥ 0.15. "
-            "Probabilities are poorly calibrated."
-        )
+        assert brier < 0.15, f"Brier score = {brier:.4f} ≥ 0.15. Probabilities are poorly calibrated."
 
-    def test_model_calibration_by_tier(
-        self, test_df: pd.DataFrame, conn: duckdb.DuckDBPyConnection
-    ) -> None:
+    def test_model_calibration_by_tier(self, test_df: pd.DataFrame, conn: duckdb.DuckDBPyConnection) -> None:
         """Predicted churn rate per plan tier must be within 15pp of KM 1-year estimate.
 
         Ties the model output to the Phase 3 survival analysis baseline — the key
@@ -414,9 +408,7 @@ class TestModelAccuracy:
                 f"KM 1-yr churn rate={km_churn_rate:.3f}, gap={gap:.3f} > {tolerance}"
             )
 
-    def test_top_shap_features_are_known_signals(
-        self, test_df: pd.DataFrame
-    ) -> None:
+    def test_top_shap_features_are_known_signals(self, test_df: pd.DataFrame) -> None:
         """Top 2 global SHAP features must include at least one known churn signal.
 
         Phase 3 validated events_last_30d, avg_adoption_score, retention_signal_count,
@@ -460,9 +452,7 @@ class TestModelAccuracy:
 class TestChurnPredictionAPI:
     """End-to-end test of POST /predictions/churn via FastAPI TestClient."""
 
-    def test_predict_churn_endpoint_returns_200(
-        self, active_customer_id: str
-    ) -> None:
+    def test_predict_churn_endpoint_returns_200(self, active_customer_id: str) -> None:
         """POST /predictions/churn returns 200 with the correct response schema."""
         from fastapi.testclient import TestClient
 
@@ -474,9 +464,7 @@ class TestChurnPredictionAPI:
                 json={"customer_id": active_customer_id},
             )
 
-        assert response.status_code == 200, (
-            f"Expected 200, got {response.status_code}: {response.text}"
-        )
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
         assert "churn_probability" in data
         assert "risk_tier" in data

@@ -125,6 +125,4 @@ class XGBoostExpansionModel(ExpansionModelPort):
             return 0.0
 
     def _to_dataframe(self, features: dict[str, float | str]) -> pd.DataFrame:
-        return pd.DataFrame(
-            [{feat: features.get(feat, 0.0) for feat in _EXPANSION_FEATURE_ORDER}]
-        )
+        return pd.DataFrame([{feat: features.get(feat, 0.0) for feat in _EXPANSION_FEATURE_ORDER}])

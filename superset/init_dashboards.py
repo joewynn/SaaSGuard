@@ -33,6 +33,7 @@ try:
     from superset.models.slice import Slice  # type: ignore[import]
 
     from superset import app as superset_app  # type: ignore[import]
+
     HAS_SUPERSET = True
 except ImportError:
     HAS_SUPERSET = False
@@ -195,6 +196,7 @@ def main() -> None:
 
     with superset_app.app_context():
         from superset.extensions import db as superset_db
+
         session = superset_db.session
 
         print("\n=== SaaSGuard Superset Initialization ===\n")

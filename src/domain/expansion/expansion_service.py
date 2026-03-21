@@ -106,8 +106,6 @@ class ExpansionModelService:
             current_mrr=float(customer.mrr.amount),
             propensity=UpgradePropensity(value=propensity_value),
             target=TargetTier(current_tier=customer.plan_tier),
-            top_features=sorted(
-                shap_features, key=lambda f: abs(f.shap_impact), reverse=True
-            )[:5],
+            top_features=sorted(shap_features, key=lambda f: abs(f.shap_impact), reverse=True)[:5],
             model_version=self._model.version,
         )

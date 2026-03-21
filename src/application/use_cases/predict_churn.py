@@ -74,9 +74,7 @@ class PredictChurnUseCase:
         if customer is None:
             raise ValueError(f"Customer {request.customer_id} not found.")
         if not customer.is_active:
-            raise ValueError(
-                f"Customer {request.customer_id} has already churned on {customer.churn_date}."
-            )
+            raise ValueError(f"Customer {request.customer_id} has already churned on {customer.churn_date}.")
 
         # Resolve real risk signals when the infrastructure repo is available
         if self._risk_signals_repo is not None:

@@ -49,9 +49,7 @@ def seeded_db() -> Generator[None, None, None]:
     yield
 
 
-@pytest.mark.skip(
-    reason="Requires shared connection fixture – implement in Phase 2 when warehouse is built"
-)
+@pytest.mark.skip(reason="Requires shared connection fixture – implement in Phase 2 when warehouse is built")
 class TestDuckDBCustomerRepository:
     def test_get_by_id_returns_customer(self, seeded_db: None) -> None:
         repo = DuckDBCustomerRepository()

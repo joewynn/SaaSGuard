@@ -22,6 +22,7 @@ from src.domain.usage.repository import UsageRepository
 
 # ── Fakes (in-memory implementations of repository ports) ────────────────────
 
+
 class FakeCustomerRepository(CustomerRepository):
     def __init__(self, customers: list[Customer]) -> None:
         self._store = {c.customer_id: c for c in customers}
@@ -43,9 +44,7 @@ class FakeUsageRepository(UsageRepository):
     def __init__(self, events: list[UsageEvent] | None = None) -> None:
         self._events = events or []
 
-    def get_events_for_customer(
-        self, customer_id: str, since: object = None
-    ) -> Sequence[UsageEvent]:
+    def get_events_for_customer(self, customer_id: str, since: object = None) -> Sequence[UsageEvent]:
         return [e for e in self._events if e.customer_id == customer_id]
 
     def get_event_count_last_n_days(self, customer_id: str, days: int) -> int:
@@ -69,10 +68,9 @@ class FakeChurnModel(ChurnModelPort):
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
+
 class TestPredictChurnUseCase:
-    def _make_use_case(
-        self, customer: Customer, churn_prob: float = 0.7
-    ) -> PredictChurnUseCase:
+    def _make_use_case(self, customer: Customer, churn_prob: float = 0.7) -> PredictChurnUseCase:
         feature_extractor = MagicMock()
         feature_extractor.extract.return_value = {}
 
@@ -86,33 +84,25 @@ class TestPredictChurnUseCase:
             risk_service=RiskModelService(),
         )
 
-    def test_returns_prediction_result_for_active_customer(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_returns_prediction_result_for_active_customer(self, active_starter_customer: Customer) -> None:
         use_case = self._make_use_case(active_starter_customer)
         result = use_case.execute(PredictChurnRequest(customer_id="cust-001"))
 
         assert isinstance(result, PredictionResult)
         assert result.customer_id == "cust-001"
 
-    def test_churn_probability_matches_model_output(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_churn_probability_matches_model_output(self, active_starter_customer: Customer) -> None:
         use_case = self._make_use_case(active_starter_customer, churn_prob=0.85)
         result = use_case.execute(PredictChurnRequest(customer_id="cust-001"))
 
         assert result.churn_probability.value == pytest.approx(0.85)
 
-    def test_raises_for_unknown_customer(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_raises_for_unknown_customer(self, active_starter_customer: Customer) -> None:
         use_case = self._make_use_case(active_starter_customer)
         with pytest.raises(ValueError, match="not found"):
             use_case.execute(PredictChurnRequest(customer_id="unknown-id"))
 
-    def test_raises_for_already_churned_customer(
-        self, churned_customer: Customer
-    ) -> None:
+    def test_raises_for_already_churned_customer(self, churned_customer: Customer) -> None:
         use_case = PredictChurnUseCase(
             customer_repo=FakeCustomerRepository([churned_customer]),
             usage_repo=FakeUsageRepository(),
@@ -125,9 +115,7 @@ class TestPredictChurnUseCase:
         with pytest.raises(ValueError, match="already churned"):
             use_case.execute(PredictChurnRequest(customer_id="cust-002"))
 
-    def test_high_churn_probability_triggers_action(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_high_churn_probability_triggers_action(self, active_starter_customer: Customer) -> None:
         use_case = self._make_use_case(active_starter_customer, churn_prob=0.9)
         result = use_case.execute(PredictChurnRequest(customer_id="cust-001"))
         assert result.churn_probability.requires_immediate_action is True

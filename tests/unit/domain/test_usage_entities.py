@@ -52,11 +52,13 @@ class TestFeatureAdoptionScore:
 
 class TestUsageEventRetentionSignal:
     def test_integration_connect_is_retention_signal(
-        self, retention_event  # type: ignore[no-untyped-def]
+        self,
+        retention_event,  # type: ignore[no-untyped-def]
     ) -> None:
         assert retention_event.is_retention_signal is True
 
     def test_report_view_is_not_retention_signal(
-        self, low_adoption_event  # type: ignore[no-untyped-def]
+        self,
+        low_adoption_event,  # type: ignore[no-untyped-def]
     ) -> None:
         assert low_adoption_event.is_retention_signal is False

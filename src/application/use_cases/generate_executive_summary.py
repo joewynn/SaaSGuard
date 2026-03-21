@@ -97,14 +97,10 @@ class GenerateExecutiveSummaryUseCase:
         if customer is None:
             raise ValueError(f"Customer {request.customer_id} not found.")
         if not customer.is_active:
-            raise ValueError(
-                f"Customer {request.customer_id} has already churned on {customer.churn_date}."
-            )
+            raise ValueError(f"Customer {request.customer_id} has already churned on {customer.churn_date}.")
 
         # Step 2 — run churn prediction (Phase 4 pipeline)
-        prediction = self._predict_use_case.execute(
-            PredictChurnRequest(customer_id=request.customer_id)
-        )
+        prediction = self._predict_use_case.execute(PredictChurnRequest(customer_id=request.customer_id))
 
         # Step 3 — build context (RAG retrieval from DuckDB)
         context = self._build_context(customer, prediction)
@@ -155,9 +151,7 @@ class GenerateExecutiveSummaryUseCase:
 
         # Fetch events in last 30 days and aggregate by type
         since_30d = datetime.now(UTC) - timedelta(days=30)
-        events = self._usage_repo.get_events_for_customer(
-            customer.customer_id, since=since_30d
-        )
+        events = self._usage_repo.get_events_for_customer(customer.customer_id, since=since_30d)
         events_by_type: dict[str, int] = {}
         for event in events:
             key = str(event.event_type)
@@ -204,10 +198,7 @@ class GenerateExecutiveSummaryUseCase:
                     """,
                     [customer_id],
                 ).fetchall()
-            return [
-                {"priority": r[0], "topic": r[1], "age_days": r[2], "status": r[3]}
-                for r in rows
-            ]
+            return [{"priority": r[0], "topic": r[1], "age_days": r[2], "status": r[3]} for r in rows]
         except Exception:
             return []
 

@@ -88,9 +88,7 @@ class GuardrailsService:
     should trigger human review before the summary is used.
     """
 
-    def validate(
-        self, raw_text: str, context: SummaryContext
-    ) -> tuple[str, GuardrailResult]:
+    def validate(self, raw_text: str, context: SummaryContext) -> tuple[str, GuardrailResult]:
         """Validate raw LLM output and append the required watermark.
 
         Business Context: Called by GenerateExecutiveSummaryUseCase after
@@ -115,8 +113,18 @@ class GuardrailsService:
         _FEATURE_PATTERN = re.compile(r"^[a-z][a-z0-9]*(_[a-z0-9]+){1,}$")  # noqa: N806
         # Tokens that look like feature names but are safe (common English compounds)
         _SAFE_TOKENS: frozenset[str] = frozenset(  # noqa: N806
-            ["plan_tier", "customer_id", "risk_tier", "churn_date", "sign_up",
-             "follow_up", "well_known", "opt_in", "check_in", "log_in"]
+            [
+                "plan_tier",
+                "customer_id",
+                "risk_tier",
+                "churn_date",
+                "sign_up",
+                "follow_up",
+                "well_known",
+                "opt_in",
+                "check_in",
+                "log_in",
+            ]
         )
         seen_hallucinations: set[str] = set()
         tokens = raw_text.split()

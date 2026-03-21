@@ -32,7 +32,9 @@ class ChurnPredictionResponse(BaseModel):
 
 
 class UpgradePredictionRequest(BaseModel):
-    customer_id: str = Field(..., min_length=1, max_length=64, description="UUID of the customer to score for upgrade propensity")
+    customer_id: str = Field(
+        ..., min_length=1, max_length=64, description="UUID of the customer to score for upgrade propensity"
+    )
 
 
 class UpgradePredictionResponse(BaseModel):

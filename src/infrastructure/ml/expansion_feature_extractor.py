@@ -238,9 +238,7 @@ class ExpansionFeatureExtractor:
             ).fetchone()
 
         if row is None:
-            raise ValueError(
-                f"Customer {customer.customer_id} not found in raw.customers."
-            )
+            raise ValueError(f"Customer {customer.customer_id} not found in raw.customers.")
 
         features = self._row_to_features(row)
         logger.debug(

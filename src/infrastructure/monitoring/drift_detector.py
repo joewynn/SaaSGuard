@@ -153,9 +153,7 @@ class FeatureDriftResult:
     drift_detected: bool = field(init=False)
 
     def __post_init__(self) -> None:
-        self.drift_detected = (
-            self.psi > PSI_ALERT_THRESHOLD or self.ks_pvalue < KS_PVALUE_THRESHOLD
-        )
+        self.drift_detected = self.psi > PSI_ALERT_THRESHOLD or self.ks_pvalue < KS_PVALUE_THRESHOLD
 
 
 @dataclass
@@ -402,15 +400,11 @@ class DriftDetector:
         hist_base = np.array(baseline.hist)
 
         eps = 1e-10
-        psi_terms = (hist_prod_norm - hist_base) * np.log(
-            (hist_prod_norm + eps) / (hist_base + eps)
-        )
+        psi_terms = (hist_prod_norm - hist_base) * np.log((hist_prod_norm + eps) / (hist_base + eps))
         return float(max(psi_terms.sum(), 0.0))
 
     @staticmethod
-    def _compute_ks(
-        baseline: FeatureBaseline, prod_series: pd.Series
-    ) -> tuple[float, float]:
+    def _compute_ks(baseline: FeatureBaseline, prod_series: pd.Series) -> tuple[float, float]:
         """Two-sample KS test between stored training sample and production data.
 
         Uses the stored random subsample from the baseline for the training
@@ -452,9 +446,7 @@ def export_baseline(output_path: Path | None = None) -> Path:
     logger.info("drift_baseline.export_start", output_path=str(out))
 
     with get_connection(read_only=True) as conn:
-        df = conn.execute(
-            "SELECT * FROM marts.mart_customer_churn_features"
-        ).df()
+        df = conn.execute("SELECT * FROM marts.mart_customer_churn_features").df()
 
     logger.info("drift_baseline.data_loaded", n_rows=len(df))
 
@@ -497,9 +489,7 @@ def export_baseline(output_path: Path | None = None) -> Path:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="SaaSGuard drift detector — PSI + KS test against training baseline"
-    )
+    parser = argparse.ArgumentParser(description="SaaSGuard drift detector — PSI + KS test against training baseline")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         "--export-baseline",
@@ -547,9 +537,7 @@ if __name__ == "__main__":
         detector = DriftDetector()
 
         with get_connection(read_only=True) as conn:
-            prod_df = conn.execute(
-                "SELECT * FROM marts.mart_customer_churn_features"
-            ).df()
+            prod_df = conn.execute("SELECT * FROM marts.mart_customer_churn_features").df()
 
         report = detector.run(prod_df)
 

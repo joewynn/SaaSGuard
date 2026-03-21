@@ -102,8 +102,6 @@ class ChurnModelService:
             customer_id=customer.customer_id,
             churn_probability=ChurnProbability(value=churn_prob),
             risk_score=risk_score,
-            top_shap_features=sorted(
-                shap_features, key=lambda f: abs(f.shap_impact), reverse=True
-            )[:5],
+            top_shap_features=sorted(shap_features, key=lambda f: abs(f.shap_impact), reverse=True)[:5],
             model_version=self._model.version,
         )

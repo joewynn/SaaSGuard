@@ -85,10 +85,7 @@ class TestFlightRiskResponseSchema:
         # Simulate /upgrade path: no churn_probability available
         churn_prob = None
         propensity = 0.80
-        is_flight_risk = (
-            False if churn_prob is None
-            else (churn_prob >= 0.50 and propensity >= 0.50)
-        )
+        is_flight_risk = False if churn_prob is None else (churn_prob >= 0.50 and propensity >= 0.50)
         assert is_flight_risk is False
 
     def test_flight_risk_reason_populated_when_true(self) -> None:
@@ -97,9 +94,9 @@ class TestFlightRiskResponseSchema:
         propensity = 0.60
         is_flight_risk = churn_prob >= 0.50 and propensity >= 0.50
         flight_risk_reason = (
-            f"Churn probability {churn_prob:.0%} and upgrade propensity "
-            f"{propensity:.0%} both exceed 50% threshold."
-            if is_flight_risk else None
+            f"Churn probability {churn_prob:.0%} and upgrade propensity {propensity:.0%} both exceed 50% threshold."
+            if is_flight_risk
+            else None
         )
         assert is_flight_risk is True
         assert flight_risk_reason is not None
@@ -111,9 +108,9 @@ class TestFlightRiskResponseSchema:
         propensity = 0.80
         is_flight_risk = churn_prob >= 0.50 and propensity >= 0.50
         flight_risk_reason = (
-            f"Churn probability {churn_prob:.0%} and upgrade propensity "
-            f"{propensity:.0%} both exceed 50% threshold."
-            if is_flight_risk else None
+            f"Churn probability {churn_prob:.0%} and upgrade propensity {propensity:.0%} both exceed 50% threshold."
+            if is_flight_risk
+            else None
         )
         assert is_flight_risk is False
         assert flight_risk_reason is None

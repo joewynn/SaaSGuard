@@ -65,11 +65,11 @@ class TargetTier:
     def next_tier(self) -> PlanTier | None:
         """The next plan tier in the upgrade sequence, or None at the ceiling."""
         mapping: dict[PlanTier, PlanTier | None] = {
-            PlanTier.FREE:       PlanTier.STARTER,   # freemium → first paid tier
-            PlanTier.STARTER:    PlanTier.GROWTH,
-            PlanTier.GROWTH:     PlanTier.ENTERPRISE,
-            PlanTier.ENTERPRISE: PlanTier.CUSTOM,   # seat/add-on expansion, not full tier flip
-            PlanTier.CUSTOM:     None,               # ceiling reached
+            PlanTier.FREE: PlanTier.STARTER,  # freemium → first paid tier
+            PlanTier.STARTER: PlanTier.GROWTH,
+            PlanTier.GROWTH: PlanTier.ENTERPRISE,
+            PlanTier.ENTERPRISE: PlanTier.CUSTOM,  # seat/add-on expansion, not full tier flip
+            PlanTier.CUSTOM: None,  # ceiling reached
         }
         return mapping.get(self.current_tier)
 
@@ -84,11 +84,11 @@ class TargetTier:
         handles the FREE → STARTER conversion using the Starter floor ARR instead.
         """
         multipliers: dict[PlanTier, float] = {
-            PlanTier.FREE:       0.0,   # sentinel — guard clause handles FREE conversion
-            PlanTier.STARTER:    3.0,   # ~$1k → ~$3k MRR
-            PlanTier.GROWTH:     5.0,   # ~$5k → ~$25k MRR
-            PlanTier.ENTERPRISE: 1.2,   # seat/add-on upsell, not a tier flip
-            PlanTier.CUSTOM:     0.0,   # no automated propensity above this
+            PlanTier.FREE: 0.0,  # sentinel — guard clause handles FREE conversion
+            PlanTier.STARTER: 3.0,  # ~$1k → ~$3k MRR
+            PlanTier.GROWTH: 5.0,  # ~$5k → ~$25k MRR
+            PlanTier.ENTERPRISE: 1.2,  # seat/add-on upsell, not a tier flip
+            PlanTier.CUSTOM: 0.0,  # no automated propensity above this
         }
         return multipliers.get(self.current_tier, 0.0)
 

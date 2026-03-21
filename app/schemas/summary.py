@@ -37,9 +37,7 @@ class GenerateSummaryResponse(BaseModel):
     confidence_score: float = Field(
         ..., ge=0.0, le=1.0, description="1.0 = all guardrails passed; degrades 0.2 per flag."
     )
-    guardrail_flags: list[str] = Field(
-        default_factory=list, description="List of guardrail violations detected."
-    )
+    guardrail_flags: list[str] = Field(default_factory=list, description="List of guardrail violations detected.")
     generated_at: str
     model_used: str
     llm_provider: str

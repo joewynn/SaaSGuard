@@ -73,8 +73,7 @@ class TestGuardrailsService:
         context = _make_context(churn_prob=0.72)
         # "days_until_renewal" is NOT in KNOWN_FEATURES
         bad_text = (
-            "The customer's days_until_renewal is critically low, indicating high churn. "
-            "Churn probability is 72%."
+            "The customer's days_until_renewal is critically low, indicating high churn. Churn probability is 72%."
         )
         _, result = self.svc.validate(bad_text, context)
         assert result.passed is False
@@ -84,10 +83,7 @@ class TestGuardrailsService:
     def test_flags_wrong_probability(self) -> None:
         """Summary stating a probability >2pp off from model output should be flagged."""
         context = _make_context(churn_prob=0.45)
-        bad_text = (
-            "This customer has a 78% churn probability according to the model. "
-            "Immediate action needed."
-        )
+        bad_text = "This customer has a 78% churn probability according to the model. Immediate action needed."
         _, result = self.svc.validate(bad_text, context)
         assert result.passed is False
         assert "probability_mismatch" in result.flags

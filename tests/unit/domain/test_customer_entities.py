@@ -16,6 +16,7 @@ from src.domain.customer.value_objects import MRR, Industry, PlanTier
 
 # ── MRR Value Object ──────────────────────────────────────────────────────────
 
+
 class TestMRR:
     def test_valid_mrr_stores_amount(self) -> None:
         mrr = MRR(amount=Decimal("1500.00"))
@@ -50,27 +51,20 @@ class TestMRR:
 
 # ── Customer Entity ───────────────────────────────────────────────────────────
 
+
 class TestCustomerEntity:
-    def test_active_customer_has_no_churn_date(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_active_customer_has_no_churn_date(self, active_starter_customer: Customer) -> None:
         assert active_starter_customer.is_active is True
         assert active_starter_customer.churn_date is None
 
-    def test_churned_customer_is_not_active(
-        self, churned_customer: Customer
-    ) -> None:
+    def test_churned_customer_is_not_active(self, churned_customer: Customer) -> None:
         assert churned_customer.is_active is False
 
-    def test_tenure_days_for_active_customer_grows_over_time(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_tenure_days_for_active_customer_grows_over_time(self, active_starter_customer: Customer) -> None:
         # Tenure should be positive and increase over time
         assert active_starter_customer.tenure_days > 0
 
-    def test_tenure_days_for_churned_customer_is_fixed(
-        self, churned_customer: Customer
-    ) -> None:
+    def test_tenure_days_for_churned_customer_is_fixed(self, churned_customer: Customer) -> None:
         expected = (churned_customer.churn_date - churned_customer.signup_date).days  # type: ignore[operator]
         assert churned_customer.tenure_days == expected
 
@@ -84,23 +78,17 @@ class TestCustomerEntity:
         )
         assert customer.is_early_stage is True
 
-    def test_mark_churned_sets_churn_date(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_mark_churned_sets_churn_date(self, active_starter_customer: Customer) -> None:
         churn_date = date(2026, 4, 1)
         active_starter_customer.mark_churned(churn_date)
         assert active_starter_customer.churn_date == churn_date
         assert active_starter_customer.is_active is False
 
-    def test_mark_churned_raises_if_already_churned(
-        self, churned_customer: Customer
-    ) -> None:
+    def test_mark_churned_raises_if_already_churned(self, churned_customer: Customer) -> None:
         with pytest.raises(ValueError, match="already churned"):
             churned_customer.mark_churned(date(2026, 4, 1))
 
-    def test_mark_churned_raises_if_before_signup(
-        self, active_starter_customer: Customer
-    ) -> None:
+    def test_mark_churned_raises_if_before_signup(self, active_starter_customer: Customer) -> None:
         with pytest.raises(ValueError, match="cannot precede signup_date"):
             active_starter_customer.mark_churned(date(2020, 1, 1))
 

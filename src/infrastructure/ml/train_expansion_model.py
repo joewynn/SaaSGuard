@@ -270,8 +270,15 @@ def _build_pipeline(scale_pos_weight: float) -> Pipeline:
                     categories=[
                         ["free", "starter", "growth", "enterprise", "custom"],  # plan_tier
                         [
-                            "fintech", "healthtech", "legaltech", "hr tech",
-                            "edtech", "insurtech", "proptech", "retailtech", "other",
+                            "fintech",
+                            "healthtech",
+                            "legaltech",
+                            "hr tech",
+                            "edtech",
+                            "insurtech",
+                            "proptech",
+                            "retailtech",
+                            "other",
                         ],  # industry
                     ],
                 ),

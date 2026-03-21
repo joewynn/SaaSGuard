@@ -76,15 +76,9 @@ class ExpansionResult:
         Returns:
             True if the account should be escalated for active outreach.
         """
-        if (
-            self.target.current_tier == PlanTier.FREE
-            and self.propensity.tier == RiskTier.CRITICAL
-        ):
+        if self.target.current_tier == PlanTier.FREE and self.propensity.tier == RiskTier.CRITICAL:
             return True
-        return (
-            self.expected_arr_uplift > 10_000
-            and self.propensity.tier in (RiskTier.HIGH, RiskTier.CRITICAL)
-        )
+        return self.expected_arr_uplift > 10_000 and self.propensity.tier in (RiskTier.HIGH, RiskTier.CRITICAL)
 
     def recommended_action(self, churn_probability: float | None = None) -> str:
         """Deterministic GTM playbook routing based on propensity tier.
@@ -123,15 +117,9 @@ class ExpansionResult:
 
         # Single-score routing (no churn context)
         if self.propensity.tier == RiskTier.CRITICAL:
-            return (
-                f"EXPANSION PRIORITY: High intent detected. "
-                f"Immediate outreach for {next_plan} migration."
-            )
+            return f"EXPANSION PRIORITY: High intent detected. Immediate outreach for {next_plan} migration."
         if self.propensity.tier == RiskTier.HIGH:
-            return (
-                f"NURTURE: Strong usage signals. "
-                f"Highlight {next_plan} features in next QBR."
-            )
+            return f"NURTURE: Strong usage signals. Highlight {next_plan} features in next QBR."
         if self.propensity.tier == RiskTier.MEDIUM:
             return "MONITOR: Early signals detected. Increase feature-adoption marketing."
         return "STABLE: Maintain current service levels."
