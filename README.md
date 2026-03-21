@@ -47,20 +47,31 @@ Live deployment: **[saasguard.up.railway.app/docs](https://saasguard.up.railway.
 
 ---
 
-## Why I built this
+## Engineering principles
 
-I kept seeing the same pattern: a company builds a churn model, it lives in a notebook,
-the CS team never trusts it because they can't see why a customer scored high, and the
-model quietly rots until someone re-discovers it a year later.
+Four constraints shaped every architectural decision; they are documented formally in the
+ADRs linked above.
 
-SaaSGuard is opinionated about that failure mode. The dbt layer makes feature engineering
-auditable by anyone who can read SQL. The SHAP-to-business-language translation removes
-the "what does this mean?" question from CS workflows. The guardrail layer means the AI
-summaries are something you can actually put in front of a VP without checking them first.
+**Auditability over convenience.** Feature engineering lives in dbt SQL, not Python.
+Every risk tier surfaced in a dashboard is reproducible from `mart_customer_risk_scores`
+alone — no Python runtime required. CS and Compliance teams can audit a score without
+reading model code.
 
-The DDD structure is not ceremony — it is what makes this testable. The domain layer has
-no file I/O, no database calls, no HTTP. Every prediction path can be unit-tested with
-injected fakes. The 153-test suite runs in under 8 seconds locally.
+**Calibration is non-negotiable.** `CalibratedClassifierCV` (isotonic, cv=5) ensures a
+predicted probability of 0.72 corresponds to a 72% historical churn rate in that decile.
+Uncalibrated probabilities produce inconsistent business outcomes when used for SLA
+prioritisation.
+
+**Grounded AI, not generative AI.** The executive summary layer is constrained to
+DuckDB-verified facts via a structured `[CONTEXT]` block. The `GuardrailsService` checks
+every output against a feature whitelist and the model's probability output. Confidence
+degrades 0.2 per violation; outputs below 0.5 require human review before reaching CS
+workflows. The LLM cannot fabricate signals it was not given.
+
+**Zero-dependency domain layer.** ADR-002 specifies that `src/domain/` has no file I/O,
+no database calls, and no HTTP dependencies. Every prediction path is fully unit-testable
+with injected fakes. This is what enables the 153-test suite to complete in under 8
+seconds locally and makes safe refactoring possible at infrastructure layer boundaries.
 
 ---
 

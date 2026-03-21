@@ -61,6 +61,6 @@ Run a **90-day pilot** with 60 at-risk accounts.
 
 ---
 
-> **Repo:** [github.com/josephwam/saasguard](https://github.com/josephwam/saasguard)
+> **Repo:** [github.com/joewynn/saasguard](https://github.com/joewynn/saasguard)
 > **Docs:** `docker compose --profile dev up -d` → [localhost:8001](http://localhost:8001)
 > **Full deck:** [docs/presentation/deck.md](presentation/deck.md)

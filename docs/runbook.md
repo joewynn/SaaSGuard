@@ -88,6 +88,96 @@ docker compose -f docker-compose.prod.yml up -d --scale api=2
 
 ---
 
+### Model drift alert (PSI > 0.20 on any monitored feature)
+
+**Symptom:** GitHub Issue auto-opened by `drift-monitor.yml` with title
+`[Drift Alert] PSI > 0.20 — <feature_name>`. Prometheus gauge
+`saasguard_drift_psi{feature="<name>"}` exceeds 0.20.
+
+**Severity thresholds:**
+
+| PSI | Action |
+|---|---|
+| 0.10 – 0.20 | Moderate drift — log, monitor next weekly run before acting |
+| > 0.20 | Significant drift — investigate root cause, schedule retrain |
+| > 0.20 on `events_last_30d` or `avg_adoption_score` | Immediate escalation — these are primary churn signal features |
+
+**Diagnosis:**
+```bash
+# Review which features are drifting and by how much
+curl http://localhost:8000/metrics | grep saasguard_drift
+
+# Check the drift monitor workflow logs
+gh run list --workflow=drift-monitor.yml --limit=5
+gh run view <run-id> --log
+```
+
+**Root cause checklist:**
+1. **Data pipeline failure** — check if `data-pipeline.yml` ran successfully this week.
+   A skipped dbt run leaves stale mart data; the drift detector compares against a
+   stale distribution, producing false-positive drift signals.
+2. **Real behavioural shift** — if the dbt run was healthy, the distribution change
+   reflects genuine customer behaviour (e.g., a product change reduced `events_last_30d`
+   across the board). This requires model retraining.
+3. **New customer segment** — free-tier customers were added in v0.9.0. If their volume
+   changes significantly, `mrr` and `mrr_tier_ceiling_pct` distributions will shift.
+   Check segment proportions before retraining.
+
+**Resolution — false positive (data pipeline failure):**
+```bash
+# Re-run the data pipeline manually
+docker compose exec dbt dbt run
+docker compose exec dbt dbt test
+# Re-run drift detection against refreshed data
+uv run python -m src.infrastructure.monitoring.drift_detector --check
+```
+
+**Resolution — confirmed drift (retrain required):**
+```bash
+# 1. Export a fresh baseline from current data
+uv run python -m src.infrastructure.monitoring.drift_detector --export-baseline
+
+# 2. Retrain — see Section 5 (Model Retraining)
+dvc repro
+
+# 3. After retrain, run accuracy gates
+pytest tests/model_accuracy/ -v --no-cov
+
+# 4. If accuracy gates pass, close the GitHub Issue with the retrain commit SHA
+```
+
+**Escalate if:** PSI > 0.20 on three or more features simultaneously — this signals a
+systemic data change (schema migration, ingestion failure, or a major product change)
+rather than organic model staleness.
+
+---
+
+### Prediction 500 errors (model inference failure)
+
+**Symptom:** `POST /predictions/churn` or `POST /predictions/upgrade` returns 503 with
+`"Prediction service error"`.
+
+**Diagnosis:**
+```bash
+docker compose logs api --tail=100 | grep "ERROR"
+# Look for: "model_not_loaded", "feature_extraction_failed", "mart_unavailable"
+```
+
+**Triage by log message:**
+
+| Log key | Cause | Resolution |
+|---|---|---|
+| `model_not_loaded` | `.pkl` file missing from `MODELS_DIR` | `dvc pull && docker compose restart api` |
+| `mart_unavailable` | dbt mart not built | `docker compose exec dbt dbt run --select mart_customer_churn_features` |
+| `feature_extraction_failed` | Customer not found in raw tables | Verify `customer_id` exists: `SELECT COUNT(*) FROM raw.customers WHERE customer_id = '<id>'` |
+| `expansion_feature_extractor.mart_unavailable` | Expansion mart stale | `docker compose exec dbt dbt run --select mart_customer_expansion_features` |
+
+The feature extractor has an automatic raw-table fallback — a mart miss does not
+immediately surface as a 503. A 503 from the prediction endpoint indicates a deeper
+failure (missing model artifact or missing customer).
+
+---
+
 ## 2. Deployment Procedure
 
 ### Standard Release

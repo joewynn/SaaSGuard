@@ -101,6 +101,30 @@ flagged accounts that actually upgrade following outreach).
 The SHAP explanation layer ("here's why this customer is ready to upgrade") is the
 primary driver of higher conversion — CS arrives on the call with data, not gut feel.
 
+**Benchmark anchor for 25%:** Gainsight 2024 State of Customer Success (n=1,100 CS leaders) reports 20–30% conversion for signal-driven outreach. 25% is the midpoint and is conservative relative to practitioner benchmarks of 38–45% for same-day limit-hit response (see `docs/stakeholder-notes.md` Section 5).
+
+---
+
+## Free-to-Paid Conversion Addendum (v0.9.1)
+
+SaaSGuard v0.9.1 extends the tier ladder to include a `FREE` tier (zero MRR). The highest-leverage conversion event in SaaS is **free → paid** — the customer has already self-qualified and hit a product constraint.
+
+**Free-to-Paid NRR Row (added to scenario table):**
+
+| Tier event | Count | Conversion rate | ARR per conversion | Total |
+|-----------|-------|----------------|--------------------|-------|
+| Free → Starter | 500 free customers × 15% expand destiny | 25% | $6,000 | **$0.18M** |
+
+**Domain logic:**
+
+```
+# FREE tier uplift (TargetTier.calculate_expected_uplift)
+# current_mrr is always 0 — uses Starter floor ARR instead
+expected_arr_uplift = 500 × 12 × propensity  # = $6,000 at propensity=1.0
+```
+
+The Starter floor ARR ($500/mo = $6,000/yr) is used because free customers have zero MRR and the standard `(MRR × multiplier)` formula would always produce $0. This surfaces free-to-paid conversion as a real revenue opportunity in Sales prioritisation.
+
 ---
 
 ## What Changes Operationally

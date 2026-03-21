@@ -199,3 +199,69 @@ docker compose exec dbt dbt run --select mart_customer_risk_scores
 4. **Uplift assumptions**: The 10/15/20% churn reduction rates are industry benchmarks
    (Forrester 2023). Your actual intervention effectiveness should be measured and
    substituted once the program has run for one quarter.
+
+---
+
+## Dashboard 5 — Propensity Quadrant
+
+**Purpose:** Maps every active expansion candidate into one of four quadrants based on
+rule-based churn risk and expansion proxy score. CS can instantly see which customers to
+expand, which to rescue, and which are in conflict.
+
+**Data source:** `marts.mart_propensity_quadrant` (backed by `mart_customer_risk_scores` + `mart_customer_expansion_features`)
+
+**URL:** `:8088/superset/dashboard/propensity-quadrant/`
+
+**Primary users:** VP CS, Head of Revenue
+
+**Refresh:** Daily (run `dbt run --select mart_propensity_quadrant`)
+
+### Quadrant Definitions
+
+| Quadrant | Churn risk | Expansion signal | Action |
+|----------|-----------|-----------------|--------|
+| **Flight Risk** | ≥ 0.50 | ≥ 0.50 | Senior Exec intervention — restore health before any upsell motion |
+| **Growth Engine** | < 0.25 | ≥ 0.50 | Active upgrade conversation — highest ROI segment |
+| **Churn Candidate** | ≥ 0.50 | < 0.25 | Retention priority — defer expansion until account health restored |
+| **Stable Base** | all others | all others | Nurture — product-led expansion signals, no active outreach needed |
+
+### SQL Chart Config (Superset)
+
+```sql
+-- Scatter plot: churn_probability (X) vs upgrade_propensity_proxy (Y)
+-- Color by quadrant_label, size by expected_arr_uplift_proxy
+SELECT
+    customer_id,
+    churn_probability,
+    upgrade_propensity_proxy,
+    quadrant_label,
+    expected_arr_uplift_proxy,
+    plan_tier,
+    was_contacted,
+    days_since_last_outreach
+FROM marts.mart_propensity_quadrant
+ORDER BY expected_arr_uplift_proxy DESC
+```
+
+**Chart type:** Scatter plot
+- X-axis: `churn_probability` [0, 1]
+- Y-axis: `upgrade_propensity_proxy` [0, 1]
+- Color dimension: `quadrant_label`
+- Size dimension: `expected_arr_uplift_proxy`
+- Add reference lines at X=0.5 and Y=0.5 to draw quadrant borders
+
+### Refresh Command
+
+```bash
+# Rebuild the quadrant mart after dbt run
+docker compose exec dbt dbt run --select mart_propensity_quadrant
+# Or full refresh:
+docker compose exec dbt dbt run && dbt test --select mart_propensity_quadrant
+```
+
+### Notes
+
+- The expansion proxy score is **rule-based**, not the ML model score. It uses a weighted sum of `premium_feature_trials_30d` (0.30), `feature_limit_hit_30d` (0.25), `feature_request_tickets_90d` (0.15), `has_open_expansion_opp` (0.20), and `mrr_tier_ceiling_pct` (0.10).
+- For free-tier customers, `feature_limit_hit_30d` carries more weight than `mrr_tier_ceiling_pct` (which is always 0).
+- The `was_contacted` and `days_since_last_outreach` columns enable CS managers to see which Flight Risk and Growth Engine customers have already been contacted.
+- To get the ML-scored version, use the `/predictions/customers/{id}/360` API endpoint which returns `is_flight_risk` as a machine-readable boolean.

@@ -90,17 +90,22 @@ Full DDD diagram with request flow → [Architecture](architecture.md).
 
 ---
 
-## Why I built this
+## Engineering principles
 
-Most churn tools give you a score and stop there. SaaSGuard closes the loop: raw product
-events → calibrated 90-day probability → SHAP-grounded explanation → AI brief a CS manager
-can act on in under two minutes.
+Four constraints shaped every architectural decision, documented formally in the ADRs above.
 
-The dbt layer makes feature engineering auditable by anyone who can read SQL. The
-SHAP-to-business-language translation removes the "what does this mean?" question from CS
-workflows. The guardrail layer means AI summaries are something you can put in front of a VP
-without checking them first.
+**Auditability over convenience.** Feature engineering lives in dbt SQL, not Python.
+Every risk tier surfaced in a dashboard is reproducible from `mart_customer_risk_scores`
+alone — no Python runtime required. CS and Compliance teams can audit a score without
+reading model code.
 
-The DDD structure is not ceremony — it is what makes this testable end-to-end. The domain
-layer has no file I/O, no database calls, no HTTP. Every prediction path is unit-tested with
-injected fakes. The 153-test suite runs in under 8 seconds locally.
+**Calibration is non-negotiable.** `CalibratedClassifierCV` (isotonic, cv=5) ensures a
+predicted probability of 0.72 corresponds to a 72% historical churn rate in that decile.
+
+**Grounded AI, not generative AI.** The executive summary layer is constrained to
+DuckDB-verified facts. The `GuardrailsService` checks every output against a feature
+whitelist and the model's probability output. Confidence degrades 0.2 per violation.
+
+**Zero-dependency domain layer.** `src/domain/` has no file I/O, no database calls, and
+no HTTP dependencies. Every prediction path is fully unit-testable with injected fakes.
+The 153-test suite completes in under 8 seconds locally.

@@ -1,6 +1,6 @@
 # Tickets — SaaSGuard v1.0
 
-> **Single source of truth: [GitHub Issues](https://github.com/josephwam/saasguard/issues)**
+> **Single source of truth: [GitHub Issues](https://github.com/joewynn/saasguard/issues)**
 >
 > This file is the **canonical spec** used to generate GitHub Issues via `scripts/create_issues.sh`.
 > Live progress, open/closed state, PR links, and assignees are tracked in GitHub Issues — not here.
@@ -290,7 +290,7 @@ realistic training signal.
 ### SGD-042 · Create expansion propensity notebook (Section 10)
 **Type:** Notebook | **Priority:** P2 | **Phase:** Expansion (v0.9.0)
 
-**User story:** As a portfolio reviewer, I want a notebook that walks through the complete
+**User story:** As an engineering lead reviewing the expansion module, I want a notebook that walks through the complete
 expansion analysis — data validation, EDA, calibration, SHAP, ROI, and Propensity Quadrant.
 
 **Acceptance criteria:**

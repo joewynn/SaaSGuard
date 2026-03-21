@@ -7,7 +7,7 @@ Step-by-step walkthrough for running the full SaaSGuard demo — designed for st
 ## Setup (2 minutes)
 
 ```bash
-git clone https://github.com/josephwam/saasguard
+git clone https://github.com/joewynn/saasguard
 cd saasguard && cp .env.example .env
 docker compose --profile dev up -d
 ```

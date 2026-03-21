@@ -1,7 +1,7 @@
-# Model Card — SaaSGuard Churn Prediction Model v0.4
+# Model Card — SaaSGuard Churn Prediction Model v0.5
 
 > Intended for CS operations teams, product analytics, and technical stakeholders.
-> Updated: 2026-03-14. Artifact: `models/churn_model.pkl` (DVC-tracked).
+> Updated: 2026-03-20. Artifact: `models/churn_model.pkl` (DVC-tracked).
 
 ---
 
@@ -11,7 +11,7 @@
 |---|---|
 | **Task** | Binary classification — P(customer churns within next 90 days) |
 | **Algorithm** | XGBoost inside sklearn `Pipeline`, wrapped in `CalibratedClassifierCV` (isotonic, cv=5) |
-| **Feature count** | 15 (13 numerical + 2 categorical encoded as ordinal) |
+| **Feature count** | 16 (14 numerical + 2 categorical encoded as ordinal) |
 | **Training data** | 5,000 customers (1,471 churned / 3,529 active); RANDOM_SEED=42 |
 | **Validation strategy** | Out-of-time split — train: `signup_date < 2025-06-01`, test: `≥ 2025-06-01` |
 | **Output** | Calibrated probability ∈ [0, 1] + top-5 SHAP drivers + risk tier + recommended CS action |
@@ -26,7 +26,7 @@
 
 **Output consumed by:**
 - `POST /predictions/churn` — individual prediction with SHAP explanation
-- Superset Churn Heatmap dashboard — portfolio view ranked by `churn_probability × MRR`
+- Superset Churn Heatmap dashboard — account-level risk ranked by `churn_probability × MRR`
 - CS intervention queue — `GET /customers?tier=critical&limit=20`
 
 **Not intended for:**
@@ -53,7 +53,8 @@
 | `high_priority_tickets` | Numerical | `raw.support_tickets` | r = +0.27 |
 | `avg_resolution_hours` | Numerical | `raw.support_tickets` | CS experience quality |
 | `is_early_stage` | Binary (int) | Derived: `tenure_days ≤ 90` | First-90-day cohort flag |
-| `plan_tier` | Categorical → ordinal | `raw.customers` | starter=0, growth=1, enterprise=2 |
+| `activated_at_30d` | Binary (int) | Derived: `integration_connects_first_30d ≥ 3` | Onboarding activation gate — 2.7× lower churn (log-rank p<0.001) |
+| `plan_tier` | Categorical → ordinal | `raw.customers` | free=0, starter=1, growth=2, enterprise=3, custom=4 |
 | `industry` | Categorical → ordinal | `raw.customers` | fintech=0, healthtech=1, legaltech=2, proptech=3, saas=4 |
 
 All features are pre-aggregated by dbt in `mart_customer_churn_features`. Feature engineering lives entirely in dbt — not duplicated in Python.

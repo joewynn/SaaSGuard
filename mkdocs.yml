@@ -1,8 +1,9 @@
-site_name: SaaSGuard – Churn & Risk Prediction Platform
+site_name: SaaSGuard – Revenue Protection & Expansion Platform
 site_url: https://joewynn.github.io/SaaSGuard/
 site_description: >
-  Production-grade B2B SaaS churn and compliance risk prediction platform.
-  Built with DDD, TDD, FastAPI, DuckDB, and Apache Superset.
+  B2B SaaS NRR intelligence platform. Ingests product usage, support, and GTM
+  signals to deliver calibrated 90-day churn probability, expansion propensity,
+  SHAP-grounded explanations, and AI-generated CS briefs.
 site_author: Joseph M
 repo_url: https://github.com/joewynn/SaaSGuard
 repo_name: joewynn/SaaSGuard
@@ -92,38 +93,42 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Demo: demo.md
+  # ── Platform Overview ──────────────────────────────────────────────────────
+  - Overview: index.md
+  - Quick Start: getting-started.md
   - Architecture: architecture.md
-  - Product & Planning:
-    - PRD: prd.md
-    - Tickets: tickets.md
-    - ROI Calculator: roi-calculator.md
-    - Economic Model (NRR): economic-model.md
-    - Growth Framework: growth-framework.md
-    - Stakeholder Research (VoC): stakeholder-notes.md
-  - Data:
-    - Data Dictionary: data_dictionary.md
-    - Data Generation Methodology: data-generation.md
-  - Analysis & Experiments:
-    - EDA Findings: eda-findings.md
-    - Experiment Design (CS Intervention): experiment-design.md
-  - Models & Explainability:
+  - Benchmarks: benchmarks.md
+
+  # ── Revenue Intelligence ───────────────────────────────────────────────────
+  - Churn Detection:
     - Model Card: model-card.md
     - Model Design & Accuracy: model-design.md
     - SHAP Feature Importance: shap-analysis.md
+    - EDA Findings: eda-findings.md
+  - Expansion Propensity:
     - Expansion Model Card: expansion-model-card.md
-    - Expansion Propensity Methodology: expansion-propensity-methodology.md
+    - Expansion Methodology: expansion-propensity-methodology.md
+  - Business Context:
+    - Economic Model & NRR: economic-model.md
+    - VoC & Stakeholder Research: stakeholder-notes.md
+    - Growth Framework: growth-framework.md
+    - A/B Experiment Design: experiment-design.md
+    - Requirements & Scope: prd.md
+
+  # ── Data & Feature Store ───────────────────────────────────────────────────
+  - Data:
+    - Data Dictionary: data_dictionary.md
+    - Feature Engineering: data-generation.md
+
+  # ── AI Layer ───────────────────────────────────────────────────────────────
   - AI Layer:
     - Ethical Guardrails: ethical-guardrails.md
-    - LLM Time Saved (ROI): llm-time-saved.md
-  - Dashboard:
-    - Dashboard Guide: dashboard-guide.md
-  - Operations:
-    - Change Management: change-management.md
-    - Runbook: runbook.md
-    - One-Pager: one-pager.md
+    - LLM Efficiency: llm-time-saved.md
+
+  # ── Dashboards ─────────────────────────────────────────────────────────────
+  - Dashboards: dashboard-guide.md
+
+  # ── API Reference ──────────────────────────────────────────────────────────
   - API Reference:
     - Overview: api-reference/index.md
     - Customer Domain: api-reference/customer.md
@@ -134,14 +139,22 @@ nav:
     - Application Use Cases: api-reference/use-cases.md
     - AI Summary Domain: api-reference/ai-summary.md
     - Infrastructure: api-reference/infrastructure.md
-    - FastAPI Endpoints: API.md
-  - ADRs:
-    - ADR-001 DuckDB: ADR/ADR-001-duckdb-over-postgres.md
-    - ADR-002 DDD: ADR/ADR-002-ddd-architecture.md
-    - ADR-003 Railway: ADR/ADR-003-render-deployment.md
+    - HTTP Endpoints: API.md
+
+  # ── Operations ─────────────────────────────────────────────────────────────
+  - Operations:
+    - Runbook: runbook.md
+    - Change Management: change-management.md
+
+  # ── Engineering Decisions ──────────────────────────────────────────────────
+  - Engineering Decisions:
+    - ADR-001 Analytical Warehouse: ADR/ADR-001-duckdb-over-postgres.md
+    - ADR-002 Domain Architecture: ADR/ADR-002-ddd-architecture.md
+    - ADR-003 Deployment Platform: ADR/ADR-003-render-deployment.md
     - ADR-004 Drift Detection: ADR/ADR-004-drift-detection.md
+
+  # ── Reference ─────────────────────────────────────────────────────────────
   - Changelog: CHANGELOG.md
-  - Benchmarks: benchmarks.md
 
 extra:
   social:

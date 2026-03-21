@@ -15,7 +15,7 @@
 
 ```bash
 # 1. Clone
-git clone https://github.com/josephwam/saasguard
+git clone https://github.com/joewynn/saasguard
 cd saasguard
 
 # 2. Copy env file

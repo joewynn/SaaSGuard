@@ -1,7 +1,7 @@
 # Expansion Propensity Model Card
 
 **Model name:** `expansion_model`
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Type:** XGBoostClassifier + CalibratedClassifierCV (isotonic, cv=5)
 **Task:** Binary classification — P(upgrade to next plan tier within 90 days)
 **Artifact:** `models/expansion_model.pkl` + `models/expansion_model_metadata.json`
@@ -14,9 +14,9 @@ The expansion propensity model is the **offensive** complement to the defensive 
 
 ---
 
-## Features (20 total)
+## Features (22 total)
 
-### Base churn features (15) — reused from `mart_customer_churn_features`
+### Base churn features (16) — reused from `mart_customer_churn_features`
 
 | Feature | Type | Description |
 |---------|------|-------------|
@@ -33,18 +33,22 @@ The expansion propensity model is the **offensive** complement to the defensive 
 | `high_priority_tickets` | numeric | Lifetime high/critical ticket count |
 | `avg_resolution_hours` | numeric | Average ticket resolution time |
 | `is_early_stage` | binary | In first 90 days of tenure |
-| `plan_tier` | categorical | starter / growth / enterprise / custom |
+| `activated_at_30d` | binary | ≥3 integration connects in first 30 days (2.7× lower churn, log-rank p<0.001) |
+| `plan_tier` | categorical | **free** / starter / growth / enterprise / custom |
 | `industry` | categorical | Industry vertical |
 
-### Expansion-specific signals (5) — from `mart_customer_expansion_features`
+### Expansion-specific signals (6) — from `mart_customer_expansion_features`
 
-| Feature | Type | Description | Business meaning |
-|---------|------|-------------|-----------------|
-| `premium_feature_trials_30d` | numeric | `premium_feature_trial` events last 30d | Customers trialing capabilities above their tier |
-| `feature_request_tickets_90d` | numeric | Feature request tickets last 90d | Asking for capabilities they don't have yet |
-| `has_open_expansion_opp` | binary | Active expansion GTM opportunity | Sales team already sees upgrade signal |
-| `expansion_opp_amount` | numeric | USD value of open expansion opp | Dollar size of Sales-identified opportunity |
-| `mrr_tier_ceiling_pct` | numeric [0,1] | (MRR − floor) / (ceiling − floor) | How close MRR is to the top of current tier |
+| # | Feature | Type | Description | Business meaning |
+|---|---------|------|-------------|-----------------|
+| 16 | `premium_feature_trials_30d` | numeric | `premium_feature_trial` events last 30d | Customers trialing capabilities above their tier |
+| 17 | `feature_request_tickets_90d` | numeric | Feature request tickets last 90d | Asking for capabilities they don't have yet |
+| 18 | `has_open_expansion_opp` | binary | Active expansion GTM opportunity | Sales team already sees upgrade signal |
+| 19 | `expansion_opp_amount` | numeric | USD value of open expansion opp | Dollar size of Sales-identified opportunity |
+| 20 | `mrr_tier_ceiling_pct` | numeric [0,1] | (MRR − floor) / (ceiling − floor) | How close MRR is to the top of current tier. **FREE tier: always 0.0** |
+| 21 | `feature_limit_hit_30d` | numeric | `feature_limit_hit` events last 30d | **Primary free-tier signal** — customer has hit a data-sharing/export limit |
+
+**Feature 21 rationale:** For free-tier customers, `mrr_tier_ceiling_pct` is always 0.0 (no MRR). `feature_limit_hit_30d` provides a direct behavioural signal that the customer has outgrown their tier. CS practitioners report 38–45% conversion when contacting free customers who hit limits during active audit cycles (see `docs/stakeholder-notes.md` Section 5.1).
 
 ---
 
