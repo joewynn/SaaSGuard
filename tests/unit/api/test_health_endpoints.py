@@ -33,7 +33,10 @@ class TestHealthEndpoints:
 
     def test_readiness_returns_200_when_model_loaded(self, client: TestClient) -> None:
         """GET /ready should return 200 when model artifacts are present."""
-        with patch("app.main.model_registry_loaded", return_value=True):
+        with (
+            patch("app.main.model_registry_loaded", return_value=True),
+            patch("app.main.marts_populated", return_value=True),
+        ):
             response = client.get("/ready")
 
         assert response.status_code == 200
