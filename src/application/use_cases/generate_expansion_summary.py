@@ -59,9 +59,7 @@ class GenerateExpansionSummaryRequest:
     """
 
     customer_id: str
-    audience: Literal["account_executive", "csm"] = field(
-        default="account_executive"
-    )
+    audience: Literal["account_executive", "csm"] = field(default="account_executive")
     include_email_draft: bool = False
 
 
@@ -132,14 +130,10 @@ class GenerateExpansionSummaryUseCase:
         if customer is None:
             raise ValueError(f"Customer {request.customer_id} not found.")
         if not customer.is_active:
-            raise ValueError(
-                f"Customer {request.customer_id} has already churned on {customer.churn_date}."
-            )
+            raise ValueError(f"Customer {request.customer_id} has already churned on {customer.churn_date}.")
 
         # Step 2 — run expansion prediction
-        expansion_result = self._expansion_use_case.execute(
-            PredictExpansionRequest(customer_id=request.customer_id)
-        )
+        expansion_result = self._expansion_use_case.execute(PredictExpansionRequest(customer_id=request.customer_id))
         propensity = expansion_result.propensity.value
 
         # Step 3 — API-layer propensity gate
@@ -182,9 +176,7 @@ class GenerateExpansionSummaryUseCase:
         log.info("expansion_summary.llm.response_received", length=len(raw_text))
 
         # Step 8 — parse email draft from LLM output (if requested)
-        ae_brief_raw, email_draft_raw = self._split_llm_output(
-            raw_text, include_draft
-        )
+        ae_brief_raw, email_draft_raw = self._split_llm_output(raw_text, include_draft)
 
         # Step 9 — validate + transform via guardrails
         guardrail_result = self._guardrails.validate(
@@ -210,17 +202,11 @@ class GenerateExpansionSummaryUseCase:
 
     # ── helpers ───────────────────────────────────────────────────────────────
 
-    def _not_ready_result(
-        self, expansion_result: ExpansionResult, correlation_id: str
-    ) -> ExpansionSummaryResult:
+    def _not_ready_result(self, expansion_result: ExpansionResult, correlation_id: str) -> ExpansionSummaryResult:
         """Return a 'not ready' result without invoking the LLM."""
         propensity = expansion_result.propensity.value
         tier = str(expansion_result.propensity.tier.value)
-        target = (
-            expansion_result.target.next_tier.value
-            if expansion_result.target.next_tier
-            else "N/A"
-        )
+        target = expansion_result.target.next_tier.value if expansion_result.target.next_tier else "N/A"
         return ExpansionSummaryResult(
             customer_id=expansion_result.customer_id,
             propensity_summary=(
@@ -247,9 +233,7 @@ class GenerateExpansionSummaryUseCase:
             correlation_id=correlation_id,
         )
 
-    def _split_llm_output(
-        self, raw_text: str, include_draft: bool
-    ) -> tuple[str, str | None]:
+    def _split_llm_output(self, raw_text: str, include_draft: bool) -> tuple[str, str | None]:
         """Split LLM output into ae_brief and optional email_draft.
 
         The prompt instructs the LLM to label the email section as [EMAIL_DRAFT]:
@@ -273,16 +257,9 @@ class GenerateExpansionSummaryUseCase:
         """Assemble the final ExpansionSummaryResult from pipeline outputs."""
         propensity = expansion_result.propensity.value
         tier = str(expansion_result.propensity.tier.value)
-        target = (
-            expansion_result.target.next_tier.value
-            if expansion_result.target.next_tier
-            else None
-        )
+        target = expansion_result.target.next_tier.value if expansion_result.target.next_tier else None
 
-        key_drivers = [
-            _FEATURE_LABELS.get(f.feature_name, f.feature_name)
-            for f in expansion_result.top_features[:3]
-        ]
+        key_drivers = [_FEATURE_LABELS.get(f.feature_name, f.feature_name) for f in expansion_result.top_features[:3]]
 
         propensity_summary = (
             f"This account has {tier.upper()} expansion propensity "
@@ -291,11 +268,7 @@ class GenerateExpansionSummaryUseCase:
         )
 
         # CSM audience never includes an email draft — enforce at result level.
-        email_draft = (
-            guardrail_result.email_draft
-            if request.audience == "account_executive"
-            else None
-        )
+        email_draft = guardrail_result.email_draft if request.audience == "account_executive" else None
 
         return ExpansionSummaryResult(
             customer_id=request.customer_id,

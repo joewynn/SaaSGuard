@@ -75,9 +75,7 @@ class TestExpansionGuardrailsService:
     def test_gate1_rejects_hallucinated_signal(self) -> None:
         """Two or more hallucinated snake_case signals → REJECTED."""
         result = self.service.validate(
-            ae_tactical_brief=(
-                "The fake_signal_one and another_made_up_signal are driving intent."
-            ),
+            ae_tactical_brief=("The fake_signal_one and another_made_up_signal are driving intent."),
             email_draft=None,
             expansion_result=_make_expansion_result(["premium_feature_trials_30d"]),
             propensity=0.72,
@@ -99,9 +97,7 @@ class TestExpansionGuardrailsService:
     def test_gate1_two_hallucinations_triggers_rejection(self) -> None:
         """Two distinct hallucinated signals → status is REJECTED."""
         result = self.service.validate(
-            ae_tactical_brief=(
-                "Seeing high_usage_velocity_rate and increased churn_risk_indicator_score."
-            ),
+            ae_tactical_brief=("Seeing high_usage_velocity_rate and increased churn_risk_indicator_score."),
             email_draft=None,
             expansion_result=_make_expansion_result([]),
             propensity=0.72,
@@ -113,9 +109,7 @@ class TestExpansionGuardrailsService:
     def test_gate2_strips_urgency_language_for_medium_propensity(self) -> None:
         """Urgency words stripped from ae_tactical_brief when propensity < 0.50."""
         result = self.service.validate(
-            ae_tactical_brief=(
-                "This is critical and urgent. Immediately schedule the upgrade call."
-            ),
+            ae_tactical_brief=("This is critical and urgent. Immediately schedule the upgrade call."),
             email_draft=None,
             expansion_result=_make_expansion_result(),
             propensity=0.42,
@@ -145,9 +139,7 @@ class TestExpansionGuardrailsService:
         """UUID patterns are removed from email_draft."""
         result = self.service.validate(
             ae_tactical_brief="Solid brief here.",
-            email_draft=(
-                "Dear team, customer abc12345-6789-0000-abcd-ef1234567890 is ready."
-            ),
+            email_draft=("Dear team, customer abc12345-6789-0000-abcd-ef1234567890 is ready."),
             expansion_result=_make_expansion_result(),
             propensity=0.65,
         )
@@ -158,9 +150,7 @@ class TestExpansionGuardrailsService:
         """Technical ML terms are removed from email_draft."""
         result = self.service.validate(
             ae_tactical_brief="Solid brief here.",
-            email_draft=(
-                "Our xgboost model and shap analysis indicate high propensity_score."
-            ),
+            email_draft=("Our xgboost model and shap analysis indicate high propensity_score."),
             expansion_result=_make_expansion_result(),
             propensity=0.65,
         )

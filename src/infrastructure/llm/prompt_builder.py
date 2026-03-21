@@ -8,6 +8,7 @@ This is the primary hallucination-prevention mechanism at the prompt level.
 from __future__ import annotations
 
 from src.domain.ai_summary.entities import SummaryContext
+from src.domain.expansion.entities import ExpansionResult
 
 # Maps ML feature names → plain-English business labels shown to the LLM.
 # The LLM uses these labels in its output instead of raw column names.
@@ -110,7 +111,7 @@ class PromptBuilder:
 
     def build_expansion_prompt(
         self,
-        expansion_result: object,
+        expansion_result: ExpansionResult,
         audience: str,
         include_email_draft: bool = False,
     ) -> str:
@@ -130,8 +131,8 @@ class PromptBuilder:
         Returns:
             Complete prompt string ready to send to the LLM.
         """
-        ctx = expansion_result.to_summary_context()  # type: ignore[union-attr]
-        top3 = expansion_result.top_features[:3]  # type: ignore[union-attr]
+        ctx = expansion_result.to_summary_context()
+        top3 = expansion_result.top_features[:3]
 
         signal_lines = "\n".join(
             "  - {label} (impact: {direction})".format(

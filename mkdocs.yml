@@ -61,7 +61,9 @@ plugins:
 
 exclude_docs: |
   project-local.md
-  presentation/
+  presentation/deck.md
+  presentation/speaker-notes.md
+  presentation/video-script.md
 
 watch:
   - src
@@ -152,6 +154,10 @@ nav:
     - ADR-002 Domain Architecture: ADR/ADR-002-ddd-architecture.md
     - ADR-003 Deployment Platform: ADR/ADR-003-render-deployment.md
     - ADR-004 Drift Detection: ADR/ADR-004-drift-detection.md
+
+  # ── Presentation ───────────────────────────────────────────────────────────
+  - Revenue Story:
+    - Full-Platform Narrative (12 slides): presentation/revenue-maximization-story.md
 
   # ── Reference ─────────────────────────────────────────────────────────────
   - Changelog: CHANGELOG.md

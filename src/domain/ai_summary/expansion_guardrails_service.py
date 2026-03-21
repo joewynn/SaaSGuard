@@ -156,11 +156,10 @@ class ExpansionGuardrailsService:
         """
         # Build the fact whitelist from the expansion result's actual features.
         top_feature_names: frozenset[str] = frozenset(
-            f.feature_name for f in expansion_result.top_features  # type: ignore[attr-defined]
+            f.feature_name
+            for f in expansion_result.top_features  # type: ignore[attr-defined]
         )
-        allowed_tokens: frozenset[str] = (
-            top_feature_names | _EXPANSION_KNOWN_FEATURES | _SAFE_TOKENS
-        )
+        allowed_tokens: frozenset[str] = top_feature_names | _EXPANSION_KNOWN_FEATURES | _SAFE_TOKENS
 
         # ── Gate 1: hallucination detection ───────────────────────────────────
         flags: list[str] = []

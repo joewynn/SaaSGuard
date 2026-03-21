@@ -103,9 +103,7 @@ class GroqSummaryService(SummaryPort):
                 temperature=0.2,
             )
         except groq_sdk.AuthenticationError as exc:
-            raise RuntimeError(
-                "Groq API key is missing or invalid. Set GROQ_API_KEY in your environment."
-            ) from exc
+            raise RuntimeError("Groq API key is missing or invalid. Set GROQ_API_KEY in your environment.") from exc
         except groq_sdk.APIError as exc:
             raise RuntimeError(f"Groq API error: {exc}") from exc
         return response.choices[0].message.content or ""

@@ -118,12 +118,8 @@ class TestExpansionSummaryRouter:
         )
 
         mock_use_case = MagicMock()
-        mock_use_case.execute.side_effect = PropensityTooLowError(
-            "Propensity 0.10 below minimum threshold 0.15"
-        )
-        app.dependency_overrides[get_expansion_summary_use_case] = (
-            lambda: mock_use_case
-        )
+        mock_use_case.execute.side_effect = PropensityTooLowError("Propensity 0.10 below minimum threshold 0.15")
+        app.dependency_overrides[get_expansion_summary_use_case] = lambda: mock_use_case
         client = TestClient(app)
         response = client.post(
             "/summaries/expansion",
@@ -139,9 +135,7 @@ class TestExpansionSummaryRouter:
 
         mock_use_case = MagicMock()
         mock_use_case.execute.side_effect = ValueError("Customer ghost-id not found.")
-        app.dependency_overrides[get_expansion_summary_use_case] = (
-            lambda: mock_use_case
-        )
+        app.dependency_overrides[get_expansion_summary_use_case] = lambda: mock_use_case
         client = TestClient(app)
         response = client.post(
             "/summaries/expansion",
@@ -157,9 +151,7 @@ class TestExpansionSummaryRouter:
 
         mock_use_case = MagicMock()
         mock_use_case.execute.side_effect = RuntimeError("Groq API error: connection refused")
-        app.dependency_overrides[get_expansion_summary_use_case] = (
-            lambda: mock_use_case
-        )
+        app.dependency_overrides[get_expansion_summary_use_case] = lambda: mock_use_case
         client = TestClient(app)
         response = client.post(
             "/summaries/expansion",
@@ -186,9 +178,7 @@ class TestExpansionSummaryRouter:
         mock_use_case.execute.return_value = _make_use_case_result(
             email_draft="Hi Sarah, your account is ready for an upgrade."
         )
-        app.dependency_overrides[get_expansion_summary_use_case] = (
-            lambda: mock_use_case
-        )
+        app.dependency_overrides[get_expansion_summary_use_case] = lambda: mock_use_case
         client = TestClient(app)
         response = client.post(
             "/summaries/expansion",

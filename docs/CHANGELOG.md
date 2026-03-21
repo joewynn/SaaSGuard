@@ -11,6 +11,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.2.0] – 2026-03-21 – Expansion Narrative Service + Full-Platform Revenue Story
+
+### Docs
+
+- **`docs/presentation/revenue-maximization-story.md`** — new 12-slide executive narrative covering the full Retain + Expand + Explain platform; all figures sourced from `economic-model.md` and model cards; includes appendix of source verification for every dollar figure
+- **`mkdocs.yml`** — added `Revenue Story` nav section; tightened `exclude_docs` to allow new deck while keeping internal presentation files excluded
+
+---
+
 ## [1.2.0] – 2026-03-21 – Expansion Narrative Service (Signal-to-Action Engine)
 
 ### Added

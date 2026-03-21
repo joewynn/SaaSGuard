@@ -14,14 +14,13 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from src.application.use_cases.generate_expansion_summary import (
     GenerateExpansionSummaryRequest,
     GenerateExpansionSummaryUseCase,
-    PropensityTooLowError,
 )
 from src.domain.expansion.summary_entities import ExpansionSummaryResult
 
@@ -103,29 +102,21 @@ class TestGenerateExpansionSummaryUseCase:
     def test_returns_expansion_summary_result_entity(self) -> None:
         """Execute returns an ExpansionSummaryResult dataclass."""
         use_case, *_ = self._build_use_case()
-        result = use_case.execute(
-            GenerateExpansionSummaryRequest(customer_id="cust-001")
-        )
+        result = use_case.execute(GenerateExpansionSummaryRequest(customer_id="cust-001"))
         assert isinstance(result, ExpansionSummaryResult)
 
     def test_low_propensity_returns_not_ready_without_llm_call(self) -> None:
         """Propensity < 0.35 → brief says 'not ready', LLM is never called."""
         expansion_result = _make_expansion_result(propensity_value=0.30)
-        use_case, _, _, summary_service, _ = self._build_use_case(
-            expansion_result=expansion_result
-        )
-        result = use_case.execute(
-            GenerateExpansionSummaryRequest(customer_id="cust-001")
-        )
+        use_case, _, _, summary_service, _ = self._build_use_case(expansion_result=expansion_result)
+        result = use_case.execute(GenerateExpansionSummaryRequest(customer_id="cust-001"))
         summary_service.generate_from_prompt.assert_not_called()
         assert result.ae_tactical_brief.startswith("Account not ready")
 
     def test_medium_propensity_calls_llm(self) -> None:
         """Propensity >= 0.35 → LLM is called."""
         expansion_result = _make_expansion_result(propensity_value=0.50)
-        use_case, _, _, summary_service, _ = self._build_use_case(
-            expansion_result=expansion_result
-        )
+        use_case, _, _, summary_service, _ = self._build_use_case(expansion_result=expansion_result)
         use_case.execute(GenerateExpansionSummaryRequest(customer_id="cust-001"))
         summary_service.generate_from_prompt.assert_called_once()
 
@@ -152,9 +143,7 @@ class TestGenerateExpansionSummaryUseCase:
             ae_brief="Flagged brief. ⚠️ AI-generated. Requires human review.",
         )
         use_case, *_ = self._build_use_case(guardrail_result=guardrail_result)
-        result = use_case.execute(
-            GenerateExpansionSummaryRequest(customer_id="cust-001")
-        )
+        result = use_case.execute(GenerateExpansionSummaryRequest(customer_id="cust-001"))
         assert result.guardrail_status == "REJECTED"
 
     def test_ae_audience_with_email_draft_sets_email_draft_field(self) -> None:
@@ -174,12 +163,8 @@ class TestGenerateExpansionSummaryUseCase:
 
     def test_csm_audience_never_sets_email_draft(self) -> None:
         """CSM audience → email_draft is None even if include_email_draft=True."""
-        guardrail_result = _make_guardrail_result(
-            email_draft="This should be suppressed."
-        )
-        use_case, _, _, summary_service, guardrails = self._build_use_case(
-            guardrail_result=guardrail_result
-        )
+        guardrail_result = _make_guardrail_result(email_draft="This should be suppressed.")
+        use_case, _, _, summary_service, guardrails = self._build_use_case(guardrail_result=guardrail_result)
         result = use_case.execute(
             GenerateExpansionSummaryRequest(
                 customer_id="cust-001",
@@ -191,18 +176,14 @@ class TestGenerateExpansionSummaryUseCase:
         # Guardrails called with include_email_draft=False (CSM override)
         call_kwargs = guardrails.validate.call_args
         assert call_kwargs is not None
-        passed_draft = call_kwargs.kwargs.get(
-            "email_draft", call_kwargs.args[1] if len(call_kwargs.args) > 1 else None
-        )
+        passed_draft = call_kwargs.kwargs.get("email_draft", call_kwargs.args[1] if len(call_kwargs.args) > 1 else None)
         assert passed_draft is None
 
     def test_generated_at_is_set(self) -> None:
         """generated_at is a UTC datetime close to now."""
         use_case, *_ = self._build_use_case()
         before = datetime.now(UTC)
-        result = use_case.execute(
-            GenerateExpansionSummaryRequest(customer_id="cust-001")
-        )
+        result = use_case.execute(GenerateExpansionSummaryRequest(customer_id="cust-001"))
         after = datetime.now(UTC)
         assert before <= result.generated_at <= after
 
@@ -210,11 +191,7 @@ class TestGenerateExpansionSummaryUseCase:
         """ae_tactical_brief always contains the AI watermark."""
         from src.domain.ai_summary.expansion_guardrails_service import WATERMARK
 
-        guardrail_result = _make_guardrail_result(
-            ae_brief=f"Strong signals detected.\n\n{WATERMARK}"
-        )
+        guardrail_result = _make_guardrail_result(ae_brief=f"Strong signals detected.\n\n{WATERMARK}")
         use_case, *_ = self._build_use_case(guardrail_result=guardrail_result)
-        result = use_case.execute(
-            GenerateExpansionSummaryRequest(customer_id="cust-001")
-        )
+        result = use_case.execute(GenerateExpansionSummaryRequest(customer_id="cust-001"))
         assert WATERMARK in result.ae_tactical_brief
