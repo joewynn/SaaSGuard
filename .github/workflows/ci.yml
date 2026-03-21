@@ -78,11 +78,14 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dbt-duckdb
-        run: uv pip install --system dbt-duckdb==1.9.6
+      - name: Generate synthetic data and build warehouse
+        run: |
+          uv sync --frozen --all-extras
+          uv run python -m src.infrastructure.data_generation.generate_synthetic_data
+          uv run python -m src.infrastructure.db.build_warehouse
 
       - name: Run dbt build & test
-        run: dbt build --project-dir dbt_project --profiles-dir dbt_project
+        run: uv run --with dbt-duckdb==1.9.6 dbt build --project-dir dbt_project --profiles-dir dbt_project
 
   # ── Docker Build ──────────────────────────────────────────────────────────────
   docker:
