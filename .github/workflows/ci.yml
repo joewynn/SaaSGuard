@@ -53,6 +53,9 @@ jobs:
       - name: Run unit tests
         run: uv run pytest tests/unit/ -v --cov=src --cov-report=xml
 
+      - name: Generate synthetic data for integration tests
+        run: uv run python -m src.infrastructure.data_generation.generate_synthetic_data
+
       - name: Run integration tests
         run: uv run pytest tests/integration/ -v
 
