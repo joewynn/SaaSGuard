@@ -17,7 +17,7 @@ import pytest
 
 DATA_DIR = Path("data/raw")
 
-VALID_PLAN_TIERS = {"starter", "growth", "enterprise"}
+VALID_PLAN_TIERS = {"free", "starter", "growth", "enterprise"}
 VALID_EVENT_TYPES = {
     "evidence_upload",
     "monitoring_run",
@@ -26,6 +26,7 @@ VALID_EVENT_TYPES = {
     "integration_connect",
     "api_call",
     "premium_feature_trial",  # added v0.9.0 — expansion intent signal
+    "feature_limit_hit",  # added v0.9.2 — free-tier upgrade signal
 }
 VALID_PRIORITIES = {"low", "medium", "high", "critical"}
 VALID_TICKET_TOPICS = {"compliance", "integration", "billing", "onboarding", "feature_request"}
@@ -97,8 +98,11 @@ class TestCustomersContract:
     def test_no_null_signup_date(self, customers: pd.DataFrame) -> None:
         assert customers["signup_date"].notna().all()
 
-    def test_mrr_positive(self, customers: pd.DataFrame) -> None:
-        assert (customers["mrr"] > 0).all()
+    def test_mrr_non_negative(self, customers: pd.DataFrame) -> None:
+        """MRR is 0.0 for free-tier customers; all others must be positive."""
+        assert (customers["mrr"] >= 0).all()
+        paid = customers[customers["plan_tier"] != "free"]
+        assert (paid["mrr"] > 0).all()
 
     def test_churn_date_after_signup(self, customers: pd.DataFrame) -> None:
         churned = customers[customers["churn_date"].notna()]
@@ -191,8 +195,9 @@ class TestGtmOpportunitiesContract:
         invalid = set(gtm_opportunities["stage"].unique()) - VALID_OPP_STAGES
         assert not invalid, f"Invalid stage values: {invalid}"
 
-    def test_amount_positive(self, gtm_opportunities: pd.DataFrame) -> None:
-        assert (gtm_opportunities["amount"] > 0).all()
+    def test_amount_non_negative(self, gtm_opportunities: pd.DataFrame) -> None:
+        """Opportunity amount is 0 for free-tier prospects; all others must be > 0."""
+        assert (gtm_opportunities["amount"] >= 0).all()
 
 
 # ── Risk signals table ────────────────────────────────────────────────────────

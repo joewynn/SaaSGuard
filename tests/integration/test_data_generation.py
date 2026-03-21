@@ -45,11 +45,11 @@ def risk_signals() -> pd.DataFrame:
 
 class TestRowCounts:
     def test_customer_count(self, customers: pd.DataFrame) -> None:
-        assert len(customers) == 5_000
+        assert len(customers) == 5_500
 
     def test_usage_events_minimum(self, usage_events: pd.DataFrame) -> None:
         # At least 50 events per customer on average
-        assert len(usage_events) >= 5_000 * 50
+        assert len(usage_events) >= 5_500 * 50
 
     def test_risk_signals_one_per_customer(self, customers: pd.DataFrame, risk_signals: pd.DataFrame) -> None:
         assert len(risk_signals) == len(customers)
