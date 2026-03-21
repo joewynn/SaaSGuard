@@ -101,7 +101,12 @@ addopts = [
 ]
 
 [tool.coverage.run]
-omit = ["tests/*", "notebooks/*"]
+omit = [
+    "tests/*",
+    "notebooks/*",
+    # Infrastructure requires a live DB/model artifacts — covered by integration tests, not unit tests
+    "src/infrastructure/*",
+]
 
 [dependency-groups]
 dev = [
