@@ -30,6 +30,7 @@ _FEATURE_ORDER = [
     "days_since_last_event",
     "retention_signal_count",
     "integration_connects_first_30d",
+    "activated_at_30d",
     "tickets_last_30d",
     "high_priority_tickets",
     "avg_resolution_hours",
@@ -99,7 +100,7 @@ class XGBoostChurnModel(ChurnModelPort):
             features: Feature dict from ChurnFeatureExtractor.extract().
 
         Returns:
-            List of ShapFeature objects for all 15 features (sorted by
+            List of ShapFeature objects for all 16 features (sorted by
             |shap_impact| descending in ChurnModelService.predict()).
         """
         X = self._to_dataframe(features)

@@ -93,6 +93,9 @@ exclude = ["notebooks/", "dbt_project/"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "integration: marks tests as integration tests (real I/O, no mocks)",
+]
 addopts = [
     "--cov=src",
     "--cov-report=term-missing",

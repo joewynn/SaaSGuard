@@ -11,6 +11,24 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.2.1] – 2026-03-22 – Fix: stale _FEATURE_ORDER constants cause production inference failures
+
+### Fixed
+
+- **`xgboost_churn_model.py`** — added `activated_at_30d` to `_FEATURE_ORDER` (15 → 16 features); constant was never updated when the column was added to the mart and training script, causing XGBoost to raise `"columns are missing: {'activated_at_30d'}"` at inference time on `GET /customers/:id`
+- **`xgboost_expansion_model.py`** — added `activated_at_30d` and `feature_limit_hit_30d` to `_EXPANSION_FEATURE_ORDER` (20 → 22 features); same root cause, surfacing on `POST /summaries/expansion`
+- **`Dockerfile`** — aligned `dbt-duckdb` version `1.8.4` → `1.9.6` to match CI pipeline
+
+### Added
+
+- **`tests/integration/test_model_inference.py`** — 4 no-mock integration tests exercising the full real path (feature dict → `_to_dataframe()` → real XGBoost `predict_proba()` / `explain()`); these tests would have caught the production bug before deploy
+
+### Changed
+
+- **`pyproject.toml`** — registered `integration` as a named pytest mark to eliminate `PytestUnknownMarkWarning`
+
+---
+
 ## [1.2.0] – 2026-03-21 – Expansion Narrative Service + Full-Platform Revenue Story
 
 ### Docs

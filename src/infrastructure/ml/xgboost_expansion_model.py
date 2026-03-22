@@ -21,7 +21,7 @@ from src.infrastructure.ml import model_registry
 
 logger = structlog.get_logger(__name__)
 
-# Must match ALL_FEATURES order in train_expansion_model.py (20 features)
+# Must match ALL_FEATURES order in train_expansion_model.py (22 features)
 _EXPANSION_FEATURE_ORDER = [
     "mrr",
     "tenure_days",
@@ -32,6 +32,7 @@ _EXPANSION_FEATURE_ORDER = [
     "days_since_last_event",
     "retention_signal_count",
     "integration_connects_first_30d",
+    "activated_at_30d",
     "tickets_last_30d",
     "high_priority_tickets",
     "avg_resolution_hours",
@@ -44,6 +45,7 @@ _EXPANSION_FEATURE_ORDER = [
     "has_open_expansion_opp",
     "expansion_opp_amount",
     "mrr_tier_ceiling_pct",
+    "feature_limit_hit_30d",
 ]
 
 
@@ -96,7 +98,7 @@ class XGBoostExpansionModel(ExpansionModelPort):
             features: Feature dict from ExpansionFeatureExtractor.extract().
 
         Returns:
-            List of ShapFeature objects for all 20 features.
+            List of ShapFeature objects for all 22 features.
         """
         X = self._to_dataframe(features)
         X_transformed = self._base_pipeline[:-1].transform(X)

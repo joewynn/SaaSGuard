@@ -24,7 +24,7 @@ FROM deps AS data-gen
 
 # Install build-time-only tools: dbt-duckdb for transforms, faker for synthetic data.
 # These are dev/build deps not present in the prod image.
-RUN uv pip install --no-cache-dir dbt-duckdb==1.8.4 faker
+RUN uv pip install --no-cache-dir dbt-duckdb==1.9.6 faker
 
 COPY src/ ./src/
 COPY dbt_project/ ./dbt_project/
