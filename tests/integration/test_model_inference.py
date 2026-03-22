@@ -18,6 +18,9 @@ from pathlib import Path
 
 import pytest
 
+from src.infrastructure.ml.xgboost_churn_model import XGBoostChurnModel
+from src.infrastructure.ml.xgboost_expansion_model import XGBoostExpansionModel
+
 _MODELS_DIR = Path(os.getenv("MODELS_DIR", "models"))
 _CHURN_PKL = _MODELS_DIR / "churn_model.pkl"
 _EXPANSION_PKL = _MODELS_DIR / "expansion_model.pkl"
@@ -30,9 +33,6 @@ _models_available = pytest.mark.skipif(
         "and `uv run python -m src.infrastructure.ml.train_expansion_model` first."
     ),
 )
-
-from src.infrastructure.ml.xgboost_churn_model import XGBoostChurnModel
-from src.infrastructure.ml.xgboost_expansion_model import XGBoostExpansionModel
 
 # ---------------------------------------------------------------------------
 # Shared fixture helpers
