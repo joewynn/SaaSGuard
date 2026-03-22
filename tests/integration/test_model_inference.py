@@ -3,11 +3,33 @@
 These tests exercise the full inference path with no mocks. They would have caught the
 production "columns are missing" errors immediately — the bug was that _FEATURE_ORDER
 constants were stale and did not include activated_at_30d / feature_limit_hit_30d.
+
+CI behaviour: these tests require trained .pkl artifacts. In CI the artifacts are built
+inside Docker (data-gen stage: generate → warehouse → dbt → train). The CI test job runs
+before Docker, so pkl files are absent — tests are skipped automatically with a clear
+message. The Docker build + smoke test is the CI gate for real inference correctness.
+Run these locally after `uv run python -m src.infrastructure.ml.train_churn_model` etc.
 """
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import pytest
+
+_MODELS_DIR = Path(os.getenv("MODELS_DIR", "models"))
+_CHURN_PKL = _MODELS_DIR / "churn_model.pkl"
+_EXPANSION_PKL = _MODELS_DIR / "expansion_model.pkl"
+
+_models_available = pytest.mark.skipif(
+    not _CHURN_PKL.exists() or not _EXPANSION_PKL.exists(),
+    reason=(
+        "Trained model artifacts not found in models/. "
+        "Run `uv run python -m src.infrastructure.ml.train_churn_model` "
+        "and `uv run python -m src.infrastructure.ml.train_expansion_model` first."
+    ),
+)
 
 from src.infrastructure.ml.xgboost_churn_model import XGBoostChurnModel
 from src.infrastructure.ml.xgboost_expansion_model import XGBoostExpansionModel
@@ -51,6 +73,7 @@ _EXPANSION_EXTRA_FEATURES: dict[str, float | str] = {
 
 
 @pytest.mark.integration
+@_models_available
 def test_churn_model_accepts_full_feature_dict() -> None:
     """Real XGBoostChurnModel.predict_proba() must accept all 16 features including activated_at_30d.
 
@@ -64,6 +87,7 @@ def test_churn_model_accepts_full_feature_dict() -> None:
 
 
 @pytest.mark.integration
+@_models_available
 def test_churn_model_explain_returns_all_features() -> None:
     """SHAP explain() must return one ShapFeature per entry in _FEATURE_ORDER."""
     from src.infrastructure.ml.xgboost_churn_model import _FEATURE_ORDER
@@ -81,6 +105,7 @@ def test_churn_model_explain_returns_all_features() -> None:
 
 
 @pytest.mark.integration
+@_models_available
 def test_expansion_model_accepts_full_feature_dict() -> None:
     """Real XGBoostExpansionModel.predict_proba() must accept all 21 features.
 
@@ -95,6 +120,7 @@ def test_expansion_model_accepts_full_feature_dict() -> None:
 
 
 @pytest.mark.integration
+@_models_available
 def test_expansion_model_explain_returns_all_features() -> None:
     """SHAP explain() must return one ShapFeature per entry in _EXPANSION_FEATURE_ORDER (22 total)."""
     from src.infrastructure.ml.xgboost_expansion_model import _EXPANSION_FEATURE_ORDER
