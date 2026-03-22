@@ -2,7 +2,7 @@
 name: commit-and-close
 description: Verify green tests, stage files, write a conventional commit, update CHANGELOG, sync docs, push to origin, and close linked GitHub issues. Run at the end of every feature or phase.
 triggers: ["commit and close", "commit progress", "close issue", "wrap up", "finalize phase", "ship it", "close the feature"]
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Commit and Close Skill
@@ -30,10 +30,14 @@ Invoke with optional arguments:
 
 ### Step 1 — Verify green status
 
-Run the test suite. If any test fails, **stop and surface the failure** — do not proceed.
+Run the **full** test suite — unit AND integration. If any test fails, **stop and surface the failure** — do not proceed.
 
 ```bash
-pytest --no-cov -q
+# Unit tests with coverage
+pytest tests/unit/ --cov=src --cov-fail-under=80 -q
+
+# Integration tests (real I/O — no mocks)
+pytest tests/integration/ --no-cov -q
 ```
 
 Also run linters:
@@ -43,6 +47,23 @@ mypy . --ignore-missing-imports
 ```
 
 If any check fails: report the error, suggest a fix, and ask the user whether to proceed anyway or fix first. Do **not** silently skip.
+
+**ML model special check** — if any of these files were modified in this session, run this extra verification before proceeding:
+- `src/infrastructure/ml/xgboost_*.py`
+- `src/infrastructure/ml/train_*.py`
+- Any dbt mart model that feeds ML training
+
+```bash
+# Confirm inference tests pass (real pkl, no mocks)
+pytest tests/integration/test_model_inference.py -v
+
+# Confirm _FEATURE_ORDER in model classes matches ALL_FEATURES in training scripts
+# (count the entries manually or grep — they must be identical)
+grep -c '    "' src/infrastructure/ml/xgboost_churn_model.py
+grep -c '    "' src/infrastructure/ml/train_churn_model.py
+```
+
+If `_FEATURE_ORDER` was changed: confirm models were retrained (`uv run python -m src.infrastructure.ml.train_churn_model` and `train_expansion_model`) before running the integration tests. **Do not push stale pkl files.**
 
 ---
 

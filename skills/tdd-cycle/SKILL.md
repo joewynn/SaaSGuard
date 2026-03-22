@@ -2,7 +2,7 @@
 name: tdd-cycle
 description: Enforce strict Red-Green-Refactor TDD for any new domain entity, service, use case, or model in SaaSGuard. Always writes tests before implementation. Enforces 85%+ coverage, pytest + hypothesis, Google-style docstrings.
 triggers: ["tdd", "test first", "write tests", "unit test", "add tests", "new entity test", "new service test"]
-version: 1.0.0
+version: 1.1.0
 ---
 
 # TDD Cycle Skill
@@ -109,3 +109,59 @@ Output the following in order:
 | Tests | All pass, including property-based |
 | Docstrings | All public functions/classes |
 | Business context note | Present in all domain service methods |
+| ML inference path | If an ML model is touched, a no-mock integration test must exist (see below) |
+
+---
+
+## ML Model Inference Rule (mandatory for any ML model change)
+
+**Triggered by:** Any change to `_FEATURE_ORDER`, `_EXPANSION_FEATURE_ORDER`, training scripts (`train_*.py`), or model infrastructure (`xgboost_*.py`).
+
+### The production failure pattern to prevent
+
+When a new column is added to a dbt mart and a training script, but `_FEATURE_ORDER` in the corresponding model class is not updated, the trained `.pkl` captures the new column as an expected feature. At inference time `_to_dataframe()` produces a DataFrame missing that column, and XGBoost raises `"columns are missing: {col}"`. Unit tests miss this entirely because they mock the model.
+
+### Mandatory test for every ML model
+
+For each model that was modified, a test in `tests/integration/` must exist that:
+
+1. Instantiates the **real** model class (loads the real `.pkl` — no mocks)
+2. Calls `predict_proba()` with a **complete** feature dict (all columns in `_FEATURE_ORDER`)
+3. Asserts the result is in `[0.0, 1.0]`
+4. Calls `explain()` and asserts `len(shap_features) == len(_FEATURE_ORDER)`
+
+```python
+@pytest.mark.integration
+def test_churn_model_accepts_full_feature_dict() -> None:
+    model = XGBoostChurnModel()               # real pkl, no mock
+    features = {all N features including new ones}
+    prob = model.predict_proba(features)
+    assert 0.0 <= prob <= 1.0                 # fails if any column is missing
+
+@pytest.mark.integration
+def test_churn_model_explain_returns_all_features() -> None:
+    from src.infrastructure.ml.xgboost_churn_model import _FEATURE_ORDER
+    model = XGBoostChurnModel()
+    shap_features = model.explain(features)
+    assert len(shap_features) == len(_FEATURE_ORDER)  # fails if pkl is stale
+```
+
+### Retrain requirement
+
+After any change to `_FEATURE_ORDER` or training scripts, the model **must be retrained** before the integration tests will pass:
+
+```bash
+uv run python -m src.infrastructure.ml.train_churn_model
+uv run python -m src.infrastructure.ml.train_expansion_model
+```
+
+The Docker build does this automatically. For local development, retrain manually after any feature constant change.
+
+### Sync check
+
+Before committing any ML model change, verify that `_FEATURE_ORDER` in the model class exactly matches `ALL_FEATURES` (= `NUMERICAL_FEATURES + CATEGORICAL_FEATURES`) in the corresponding training script:
+
+| Model class | Training script | Constant name |
+|---|---|---|
+| `xgboost_churn_model.py` | `train_churn_model.py` | `_FEATURE_ORDER` vs `ALL_FEATURES` |
+| `xgboost_expansion_model.py` | `train_expansion_model.py` | `_EXPANSION_FEATURE_ORDER` vs `ALL_FEATURES` |

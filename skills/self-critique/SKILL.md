@@ -2,7 +2,7 @@
 name: self-critique
 description: Force a structured review of the last output before handing it to the user. Checks for correctness, completeness, DDD/TDD compliance, docs quality, security issues, and business storytelling gaps. Run after any significant output.
 triggers: ["self critique", "review output", "check your work", "critique this", "review last response", "quality check", "before we commit"]
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Self-Critique Skill
@@ -107,6 +107,24 @@ Run through every dimension. Score each: ✅ Pass | ⚠️ Needs improvement | �
 
 ---
 
+### Dimension 8: ML Model Safety
+
+**Required whenever any of these files were touched:** `xgboost_*.py`, `train_*.py`, `_FEATURE_ORDER` constants, dbt mart models that feed ML training.
+
+| Check | Pass criteria |
+|---|---|
+| `_FEATURE_ORDER` sync | `_FEATURE_ORDER` in each model class exactly matches `ALL_FEATURES` in its training script — count AND order |
+| No-mock inference test exists | `tests/integration/test_model_inference.py` has a test for every modified model that calls real `predict_proba()` with a complete feature dict |
+| `explain()` SHAP length test exists | Integration test asserts `len(shap_features) == len(_FEATURE_ORDER)` — catches stale pkl files |
+| Models retrained after constant change | If `_FEATURE_ORDER` was modified, `uv run python -m src.infrastructure.ml.train_*` was run and new `.pkl` files exist |
+| Smoke test covers prediction endpoints | CI smoke test (or manual check) hits `GET /customers/:id` and `POST /summaries/expansion` — not just `/health` and `/ready` |
+
+**Red flag:** Any unit test that mocks the model and feature extractor for an inference path. Mocked tests **cannot** catch `"columns are missing"` errors. Integration tests with real pkl files are required.
+
+**The production failure pattern:** Training script adds column X → dbt mart includes X → pkl is trained with X → `_FEATURE_ORDER` NOT updated → inference DataFrame missing X → XGBoost raises `"columns are missing: {'X'}"`. This bug is invisible to all unit tests and only surfaces at inference time in production.
+
+---
+
 ## Output Format
 
 ```
@@ -131,6 +149,9 @@ Run through every dimension. Score each: ✅ Pass | ⚠️ Needs improvement | �
 [Issue found / nothing to report]
 
 ### Dimension 7: Completeness   [✅/⚠️/❌]
+[Issue found / nothing to report]
+
+### Dimension 8: ML Model Safety [✅/⚠️/❌]  (N/A if no ML files touched)
 [Issue found / nothing to report]
 
 ---

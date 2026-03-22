@@ -65,3 +65,4 @@ To create a new skill:
 |---|---|
 | 1.0.0 | Initial 9 skills: tdd-cycle, ddd-entity, phase-advance, mkdocs-autoupdate, docker-harden, dvc-version, exec-story, self-critique, data-contract |
 | 1.1.0 | Added commit-and-close skill — git commit + push + GitHub issue closing SOP |
+| 1.2.0 | Post-mortem: codified ML model safety rules across tdd-cycle, self-critique, commit-and-close — mandatory no-mock integration tests for inference paths, `_FEATURE_ORDER` sync check, retrain-before-push gate |
