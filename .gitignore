@@ -6,6 +6,12 @@ docs/project-local.md
 # C extensions
 *.so
 
+
+docs/saasguard-zenml-adopt-feedback-02.md
+docs/saasguard-zenml-adoption-plan-2026-05-14.md
+docs/saasguard-zenml-feedback.md
+
+
 # Distribution / packaging
 .Python
 build/
@@ -26,6 +32,16 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+docs/zenml-adoption.md
+
+# Add to .gitignore
+
+# ZenML local state (not committed — each developer has their own)
+.zen/
+pipelines/artifacts/
+
+# MLflow local tracking (use a shared server in production)
+mlruns/
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
