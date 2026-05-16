@@ -35,6 +35,11 @@ dependencies = [
     "groq>=0.9.0",
     "ollama>=0.3.0",
     "zenml[dvc,server,xgboost]>=0.94.4",
+    "pandas-stubs~=2.3.3",
+    "mlflow>=3.12.0",
+    "s3fs>2022.3.0,!=2025.3.1",
+    "boto3>=1.43.0",
+    "aws-profile-manager>=0.7.3",
 ]
 
 [project.optional-dependencies]

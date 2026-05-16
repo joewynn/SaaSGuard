@@ -36,8 +36,9 @@ docs/zenml-adoption.md
 
 # Add to .gitignore
 
-# ZenML local state (not committed — each developer has their own)
-.zen/
+# ZenML local state — ignore config.yaml (machine-specific paths) but commit setup scripts
+.zen/*
+!.zen/*.sh
 pipelines/artifacts/
 
 # MLflow local tracking (use a shared server in production)
