@@ -9,6 +9,12 @@ run — useful for local development and Railway cold-deploys.
 
 from __future__ import annotations
 
+from datetime import datetime
+
+import duckdb
+import pandas as pd
+
+from pathlib import Path
 import structlog
 
 from src.domain.customer.entities import Customer
@@ -97,6 +103,7 @@ LEFT JOIN event_agg      e ON TRUE
 LEFT JOIN integration_agg i ON TRUE
 LEFT JOIN ticket_agg      t ON TRUE
 """
+
 
 
 class ChurnFeatureExtractor:
@@ -251,3 +258,47 @@ class ChurnFeatureExtractor:
             "industry": str(industry).lower(),
             "is_early_stage": float(int(is_early_stage)),
         }
+
+    @staticmethod
+    def build_feature_matrix(
+        db_path: Path,
+        cutoff_date: str,
+    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+        """Build the training/test feature matrix for the churn model.
+
+        Delegates to _load_training_data so the SQL lives in exactly one place
+        and stays in sync with the production training script.
+
+        Args:
+            db_path: Path to the DuckDB warehouse file.
+            cutoff_date: ISO date string for the time-based split.
+                Rows with signup_date < cutoff_date go to training.
+
+        Returns:
+            Tuple of (X_train, X_test, y_train, y_test).
+        """
+        from src.infrastructure.ml.train_churn_model import (
+            ALL_FEATURES,
+            LABEL_COL,
+            _load_training_data,
+        )
+
+        with duckdb.connect(str(db_path)) as conn:
+            df = _load_training_data(conn)
+
+        train_mask = df["signup_date"] < pd.Timestamp(cutoff_date)
+
+        X_train = df.loc[train_mask, ALL_FEATURES]
+        X_test = df.loc[~train_mask, ALL_FEATURES]
+        y_train = df.loc[train_mask, LABEL_COL]
+        y_test = df.loc[~train_mask, LABEL_COL]
+
+        logger.info(
+            "churn_feature_extractor.build_feature_matrix",
+            n_train=len(X_train),
+            n_test=len(X_test),
+            train_churn_rate=round(float(y_train.mean()), 4),
+            test_churn_rate=round(float(y_test.mean()), 4),
+        )
+
+        return X_train, X_test, y_train, y_test

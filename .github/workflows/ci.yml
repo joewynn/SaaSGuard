@@ -184,6 +184,53 @@ jobs:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           GITHUB_SHA: ${{ github.sha }}
 
+  # ── ZenML Training Pipeline ───────────────────────────────────────────────────
+  ml-pipeline:
+    name: ZenML Training Pipeline
+    runs-on: ubuntu-latest
+    needs: [dbt]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras
+
+      - name: Pull DVC data
+        run: uv run dvc pull
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DVC_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DVC_AWS_SECRET_ACCESS_KEY }}
+
+      - name: Connect to ZenML server
+        run: uv run zenml connect --url "${{ secrets.ZENML_SERVER_URL }}" --api-key "${{ secrets.ZENML_API_KEY }}"
+
+      - name: Set production stack
+        run: uv run zenml stack set saasguard_production
+
+      - name: Run training pipeline
+        run: uv run python -m pipelines.churn_training_pipeline
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DVC_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DVC_AWS_SECRET_ACCESS_KEY }}
+
+      - name: Verify model promoted to production
+        run: |
+          uv run python -c "
+          from zenml.client import Client
+          from zenml.enums import ModelStages
+          client = Client()
+          prod = client.get_model_version('churn_model', ModelStages.PRODUCTION)
+          metrics = prod.get_artifact('evaluation_metrics').load()
+          auc = metrics['auc_roc']
+          print(f'Production model: version={prod.version}, AUC={auc:.4f}')
+          assert auc >= 0.80, f'AUC {auc:.4f} below production threshold'
+          "
+
   # ── Deploy to Railway ─────────────────────────────────────────────────────────
   deploy:
     name: Deploy to Railway
